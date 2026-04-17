@@ -26,9 +26,30 @@ export const CrimeReel: React.FC<CrimeReelProps> = ({ c }) => {
       <Audio
         src={staticFile("music/crime-bgm.mp3")}
         volume={(f) => {
-          const fadeIn = Math.min(1, f / (CRIME_FPS * 1));
-          const fadeOut = Math.min(1, (total - f) / (CRIME_FPS * 1));
-          return 0.22 * Math.min(fadeIn, fadeOut);
+          // Dynamic ducking: quieter during speech, louder during breath pads.
+          // Scene transitions happen at cumulative offsets; each has a 1.2s
+          // (36-frame) breath pad where no narration plays — let BGM breathe.
+          const fadeIn = Math.min(1, f / (CRIME_FPS * 1.5));
+          const fadeOut = Math.min(1, (total - f) / (CRIME_FPS * 1.5));
+          const envelope = Math.min(fadeIn, fadeOut);
+
+          // Build transition boundaries from scene frame lengths
+          const scenes = [s.hook, s.setup, ...s.events, s.twist, s.aftermath, s.cta];
+          let acc = 0;
+          let inBreath = false;
+          const breathFrames = Math.round(CRIME_FPS * 1.2); // 1.2s pad
+          for (const dur of scenes) {
+            const speechEnd = acc + dur - breathFrames;
+            if (f >= speechEnd && f < acc + dur) {
+              inBreath = true;
+              break;
+            }
+            acc += dur;
+          }
+
+          // Speech: 12% volume. Breath pad: 35% (let BGM fill the gap).
+          const baseVol = inBreath ? 0.35 : 0.12;
+          return baseVol * envelope;
         }}
       />
       <Sequence from={at(s.hook)} durationInFrames={s.hook}>
