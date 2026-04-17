@@ -1,0 +1,19 @@
+== App Store 關鍵字（100 字元上限）==
+
+【繁體中文】
+日語,學日文,JLPT,N5,N4,N3,N2,N1,五十音,假名,單字,文法,聽力,漢字,SRS,日本旅遊
+（共 48 字元）
+
+【English】
+japanese,learn,jlpt,vocabulary,kanji,hiragana,katakana,grammar,flashcard,srs,quiz,n5,n1
+（共 88 字元）
+
+【한국어】
+일본어,JLPT,단어,히라가나,가타카나,한자,문법,듣기,N5,N4,N3,N2,N1,일본여행,학습
+（共 50 字元）
+
+== App Store 副標題建議（30 字元上限）==
+
+繁中：五十音到 N1・SRS 間隔學習法
+English：Learn Japanese · N5 to N1 · SRS
+한국어：히라가나부터 N1까지 · SRS 학습

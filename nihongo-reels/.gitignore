@@ -1,0 +1,7 @@
+node_modules/
+out/
+output/
+.DS_Store
+*.mp4
+public/crime/*/
+!public/crime/300m-yen/

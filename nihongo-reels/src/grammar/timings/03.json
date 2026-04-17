@@ -1,0 +1,7 @@
+{
+  "pattern": 2.4,
+  "example1": 3.12,
+  "example2": 3.48,
+  "wrong": 3.192,
+  "correct": 2.928
+}

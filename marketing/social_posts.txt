@@ -1,0 +1,153 @@
+================================================================
+IG / Threads 首發貼文
+================================================================
+
+花了一杯手搖的錢，做了一個日語學習 App。
+
+身為獨立開發者，我做了 Nihongo Manabi —
+一個 NT$30 買斷、沒有訂閱、沒有廣告的日語學習工具。
+
+功能：
+📚 800+ 單字（N5 到 N1）
+あ 平假名 + 片假名完整練習
+📖 170+ 文法條目
+👂 聽力練習（聽音選字）
+漢 漢字雙向練習
+🎓 JLPT N5-N1 模擬考
+🔁 SRS 間隔重複，自動安排複習
+
+特色：
+・深色模式
+・繁中 / English / 한국어 三語介面
+・離線可用
+・持續免費更新
+
+不想被訂閱制綁架的話，試試看吧 👇
+App Store 搜尋「Nihongo Manabi」
+
+#日語學習 #日本語 #JLPT #學日文 #五十音 #日語單字 #獨立開發 #indiedev #nihongo #japanese #learnjapanese #日語檢定 #N5 #N4 #N3 #N2 #N1
+
+
+================================================================
+Reddit — r/LearnJapanese 首發
+================================================================
+
+Title: I made a $1 one-time purchase Japanese learning app (no subscriptions, no ads)
+
+Body:
+
+Hey everyone! I'm an indie developer and I just released Nihongo Manabi on the App Store.
+
+I was frustrated with most Japanese apps being subscription-based ($10-20/month), so I built one that's a one-time $1 purchase with no ads and free updates.
+
+**What's inside:**
+- 800+ vocabulary words (N5 through N1)
+- Full hiragana & katakana practice with confusable character hints
+- 170+ grammar points with examples
+- Listening practice — hear audio, pick the correct written form
+- Kanji drills (kanji→reading & reading→kanji)
+- JLPT mock exams for all levels (N5–N1)
+- SRS (spaced repetition) scheduling
+- Progress tracking with streak counter
+
+**Other features:**
+- Dark mode
+- 3 UI languages (Chinese/English/Korean)
+- Works offline
+
+I'd really appreciate any feedback! I'm actively developing and adding content regularly.
+
+App Store: [search "Nihongo Manabi"]
+
+
+================================================================
+Reddit — r/JLPT
+================================================================
+
+Title: Free JLPT mock exams (N5-N1) in my $1 app — Nihongo Manabi
+
+Body:
+
+I built a Japanese learning app with full JLPT mock exams for every level:
+
+- N5: 15 questions (8 vocab + 7 grammar)
+- N4: 18 questions (10 vocab + 8 grammar)
+- N3: 20 questions (12 vocab + 8 grammar)
+- N2: 23 questions (14 vocab + 9 grammar)
+- N1: 26 questions (16 vocab + 10 grammar)
+
+Each exam shows your results with wrong answer explanations, and keeps a history of your past attempts so you can track improvement.
+
+The app also includes 800+ vocab with SRS, grammar study, listening practice, and kanji drills.
+
+One-time $1 purchase, no subscriptions, no ads. Search "Nihongo Manabi" on the App Store.
+
+Studying for JLPT? I'd love to hear your feedback!
+
+
+================================================================
+PTT 日語板 (Nihongo 或 JP_Learn)
+================================================================
+
+[心得] 分享自己做的日語學習 App — Nihongo Manabi
+
+大家好，我是獨立開發者，
+最近做了一個日語學習 App，跟大家分享一下。
+
+會做這個的原因是覺得市面上的日語 App 幾乎都是訂閱制，
+一個月動輒兩三百，但其實很多功能用不到。
+所以我做了一個 30 元買斷的版本，功能齊全但不收月費。
+
+【功能列表】
+・800+ 單字（N5～N1 五級）
+・SRS 間隔重複記憶法，自動排複習
+・平假名 + 片假名練習，附易混淆字提示
+・170+ 文法（N5～N1）
+・聽力練習（聽音選字）
+・漢字雙向練習
+・JLPT 模擬考（N5～N1）
+・18 句旅遊實用短句
+・學習進度追蹤 + 每日通知
+・深色模式
+・繁中/英文/韓文 三語介面
+・離線可用
+
+【售價】
+NT$30 買斷，無廣告，無訂閱，持續更新。
+
+App Store 搜尋「Nihongo Manabi」就找得到。
+
+歡迎回饋，我會持續改進！
+如果覺得不錯的話幫忙留個評價，對獨立開發者來說真的很重要 🙏
+
+
+================================================================
+Dcard 日語學習版
+================================================================
+
+分享｜自己做的日語 App，30 元買斷不用訂閱
+
+哈囉大家～
+
+我是一個獨立開發者，最近做了一個日語學習 App 叫 Nihongo Manabi，
+想來跟版上的大家分享一下！
+
+因為自己也在學日語，覺得很多 App 都要訂閱超貴，
+所以就自己做了一個，30 元買斷就好，沒有廣告也不會再跟你收錢。
+
+功能蠻多的：
+📚 800 多個單字（N5 到 N1 都有）
+あ 五十音練習（會告訴你哪些字容易搞混）
+📖 170 多條文法
+👂 聽力練習
+漢 漢字練習
+🎓 JLPT 模擬考（N5 到 N1）
+🔁 SRS 自動幫你安排複習時間
+🌙 有深色模式
+🌍 支援繁中/英文/韓文
+
+在 App Store 搜尋「Nihongo Manabi」就找得到～
+如果有什麼建議或 bug 歡迎跟我說！
+
+覺得還不錯的話拜託幫我留個好評 🥺
+對小開發者來說真的差很多 謝謝大家！

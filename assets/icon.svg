@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E1B4B"/>
+      <stop offset="100%" style="stop-color:#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="brush" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#E0D7FF;stop-opacity:0.85"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="200" fill="url(#bg)"/>
+
+  <!-- Subtle glow in center -->
+  <ellipse cx="512" cy="520" rx="320" ry="280" fill="#6D28D9" opacity="0.35"/>
+
+  <!-- Calligraphy brush stroke (学ぶ feel) — stylized thick brushstroke forming a swoosh -->
+  <!-- Main vertical stroke -->
+  <path d="M 420 260 C 410 340 405 440 420 550 C 435 650 460 720 500 780"
+        stroke="url(#brush)" stroke-width="72" stroke-linecap="round" fill="none" opacity="0.95"/>
+  <!-- Horizontal crossbar -->
+  <path d="M 310 430 C 380 415 480 408 600 418 C 660 423 710 430 740 442"
+        stroke="url(#brush)" stroke-width="58" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <!-- Top hat stroke -->
+  <path d="M 360 260 C 420 248 520 242 620 255"
+        stroke="url(#brush)" stroke-width="46" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <!-- Right descending stroke -->
+  <path d="M 660 310 C 670 390 672 490 650 590 C 630 670 600 730 565 778"
+        stroke="url(#brush)" stroke-width="60" stroke-linecap="round" fill="none" opacity="0.88"/>
+
+  <!-- Cherry blossom petals — top right -->
+  <g transform="translate(720, 200) rotate(20)">
+    <ellipse cx="0" cy="-22" rx="10" ry="20" fill="#FBCFE8" opacity="0.9"/>
+    <ellipse cx="21" cy="-7" rx="10" ry="20" fill="#FBCFE8" opacity="0.9" transform="rotate(72)"/>
+    <ellipse cx="13" cy="18" rx="10" ry="20" fill="#F9A8D4" opacity="0.85" transform="rotate(144)"/>
+    <ellipse cx="-13" cy="18" rx="10" ry="20" fill="#FBCFE8" opacity="0.9" transform="rotate(216)"/>
+    <ellipse cx="-21" cy="-7" rx="10" ry="20" fill="#F9A8D4" opacity="0.85" transform="rotate(288)"/>
+    <circle cx="0" cy="0" r="6" fill="#FDE68A"/>
+  </g>
+
+  <!-- Cherry blossom — bottom left -->
+  <g transform="translate(230, 760) rotate(-15) scale(0.8)">
+    <ellipse cx="0" cy="-22" rx="10" ry="20" fill="#FBCFE8" opacity="0.75"/>
+    <ellipse cx="21" cy="-7" rx="10" ry="20" fill="#F9A8D4" opacity="0.75" transform="rotate(72)"/>
+    <ellipse cx="13" cy="18" rx="10" ry="20" fill="#FBCFE8" opacity="0.7" transform="rotate(144)"/>
+    <ellipse cx="-13" cy="18" rx="10" ry="20" fill="#F9A8D4" opacity="0.75" transform="rotate(216)"/>
+    <ellipse cx="-21" cy="-7" rx="10" ry="20" fill="#FBCFE8" opacity="0.7" transform="rotate(288)"/>
+    <circle cx="0" cy="0" r="6" fill="#FDE68A"/>
+  </g>
+
+  <!-- Small floating petal top left -->
+  <g transform="translate(190, 290) rotate(35) scale(0.5)">
+    <ellipse cx="0" cy="-22" rx="10" ry="20" fill="#FBCFE8" opacity="0.6"/>
+    <ellipse cx="21" cy="-7" rx="10" ry="20" fill="#F9A8D4" opacity="0.6" transform="rotate(72)"/>
+    <ellipse cx="13" cy="18" rx="10" ry="20" fill="#FBCFE8" opacity="0.55" transform="rotate(144)"/>
+    <ellipse cx="-13" cy="18" rx="10" ry="20" fill="#F9A8D4" opacity="0.6" transform="rotate(216)"/>
+    <ellipse cx="-21" cy="-7" rx="10" ry="20" fill="#FBCFE8" opacity="0.55" transform="rotate(288)"/>
+    <circle cx="0" cy="0" r="6" fill="#FDE68A"/>
+  </g>
+
+  <!-- Small floating petal bottom right -->
+  <g transform="translate(800, 750) rotate(-30) scale(0.45)">
+    <ellipse cx="0" cy="-22" rx="10" ry="20" fill="#FBCFE8" opacity="0.55"/>
+    <ellipse cx="21" cy="-7" rx="10" ry="20" fill="#F9A8D4" opacity="0.55" transform="rotate(72)"/>
+    <ellipse cx="13" cy="18" rx="10" ry="20" fill="#FBCFE8" opacity="0.5" transform="rotate(144)"/>
+    <ellipse cx="-13" cy="18" rx="10" ry="20" fill="#F9A8D4" opacity="0.55" transform="rotate(216)"/>
+    <ellipse cx="-21" cy="-7" rx="10" ry="20" fill="#FBCFE8" opacity="0.5" transform="rotate(288)"/>
+    <circle cx="0" cy="0" r="6" fill="#FDE68A"/>
+  </g>
+
+  <!-- Dot sparkles -->
+  <circle cx="760" cy="310" r="5" fill="#FBCFE8" opacity="0.7"/>
+  <circle cx="780" cy="270" r="3" fill="#E9D5FF" opacity="0.6"/>
+  <circle cx="700" cy="180" r="4" fill="#FBCFE8" opacity="0.5"/>
+  <circle cx="210" cy="680" r="4" fill="#E9D5FF" opacity="0.5"/>
+  <circle cx="820" cy="680" r="3" fill="#FBCFE8" opacity="0.45"/>
+</svg>

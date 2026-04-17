@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <!-- Transparent background -->
+
+  <!-- Brush stroke mark (same style as icon, centered) -->
+  <g transform="translate(400, 320)">
+    <!-- Main vertical stroke -->
+    <path d="M -80 -160 C -90 -80 -95 20 -80 130 C -65 220 -40 280 0 340"
+          stroke="white" stroke-width="56" stroke-linecap="round" fill="none" opacity="0.95"/>
+    <!-- Horizontal crossbar -->
+    <path d="M -190 -10 C -120 -25 -20 -32 110 -22 C 170 -17 220 -10 250 2"
+          stroke="white" stroke-width="44" stroke-linecap="round" fill="none" opacity="0.9"/>
+    <!-- Top hat stroke -->
+    <path d="M -140 -160 C -80 -172 20 -178 120 -165"
+          stroke="white" stroke-width="36" stroke-linecap="round" fill="none" opacity="0.85"/>
+    <!-- Right descending stroke -->
+    <path d="M 160 -130 C 170 -50 172 50 150 150 C 130 230 100 290 65 338"
+          stroke="white" stroke-width="48" stroke-linecap="round" fill="none" opacity="0.88"/>
+  </g>
+
+  <!-- Cherry blossom top right -->
+  <g transform="translate(630, 175) rotate(20) scale(1.2)">
+    <ellipse cx="0" cy="-22" rx="10" ry="20" fill="#FBCFE8" opacity="0.9"/>
+    <ellipse cx="21" cy="-7" rx="10" ry="20" fill="#FBCFE8" opacity="0.9" transform="rotate(72)"/>
+    <ellipse cx="13" cy="18" rx="10" ry="20" fill="#F9A8D4" opacity="0.85" transform="rotate(144)"/>
+    <ellipse cx="-13" cy="18" rx="10" ry="20" fill="#FBCFE8" opacity="0.9" transform="rotate(216)"/>
+    <ellipse cx="-21" cy="-7" rx="10" ry="20" fill="#F9A8D4" opacity="0.85" transform="rotate(288)"/>
+    <circle cx="0" cy="0" r="6" fill="#FDE68A"/>
+  </g>
+
+  <!-- Cherry blossom bottom left -->
+  <g transform="translate(175, 580) rotate(-15) scale(0.9)">
+    <ellipse cx="0" cy="-22" rx="10" ry="20" fill="#FBCFE8" opacity="0.75"/>
+    <ellipse cx="21" cy="-7" rx="10" ry="20" fill="#F9A8D4" opacity="0.75" transform="rotate(72)"/>
+    <ellipse cx="13" cy="18" rx="10" ry="20" fill="#FBCFE8" opacity="0.7" transform="rotate(144)"/>
+    <ellipse cx="-13" cy="18" rx="10" ry="20" fill="#F9A8D4" opacity="0.75" transform="rotate(216)"/>
+    <ellipse cx="-21" cy="-7" rx="10" ry="20" fill="#FBCFE8" opacity="0.7" transform="rotate(288)"/>
+    <circle cx="0" cy="0" r="6" fill="#FDE68A"/>
+  </g>
+
+  <!-- Sparkle dots -->
+  <circle cx="655" cy="260" r="5" fill="#FBCFE8" opacity="0.7"/>
+  <circle cx="670" cy="225" r="3" fill="#E9D5FF" opacity="0.6"/>
+  <circle cx="595" cy="155" r="4" fill="#FBCFE8" opacity="0.5"/>
+  <circle cx="160" cy="500" r="4" fill="#E9D5FF" opacity="0.5"/>
+
+  <!-- App name -->
+  <text x="400" y="720"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="62" font-weight="bold"
+        fill="white" text-anchor="middle" opacity="0.95"
+        letter-spacing="2">Nihongo Manabi</text>
+  <text x="400" y="770"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="26"
+        fill="white" text-anchor="middle" opacity="0.6"
+        letter-spacing="4">日本語まなび</text>
+</svg>

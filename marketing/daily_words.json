@@ -1,0 +1,272 @@
+[
+  {
+    "japanese": "白",
+    "reading": "しろ",
+    "chinese": "白色",
+    "english": "white",
+    "example": "白いシャツを着ています。",
+    "exampleChinese": "穿著白色的襯衫。",
+    "level": "N5"
+  },
+  {
+    "japanese": "空港",
+    "reading": "くうこう",
+    "chinese": "機場",
+    "english": "airport",
+    "example": "空港まで何時間かかりますか？",
+    "exampleChinese": "到機場需要幾小時？",
+    "level": "N4"
+  },
+  {
+    "japanese": "泣く",
+    "reading": "なく",
+    "chinese": "哭泣",
+    "english": "to cry",
+    "example": "映画を見て泣きました。",
+    "exampleChinese": "看電影哭了。",
+    "level": "N3"
+  },
+  {
+    "japanese": "体",
+    "reading": "からだ",
+    "chinese": "身體",
+    "english": "body",
+    "example": "体に気をつけてください。",
+    "exampleChinese": "請保重身體。",
+    "level": "N5"
+  },
+  {
+    "japanese": "自由",
+    "reading": "じゆう",
+    "chinese": "自由的（な形）",
+    "english": "free / freedom",
+    "example": "自由な時間に好きなことをします。",
+    "exampleChinese": "在自由的時間做自己喜歡的事。",
+    "level": "N4"
+  },
+  {
+    "japanese": "社会",
+    "reading": "しゃかい",
+    "chinese": "社會",
+    "english": "society",
+    "example": "社会に貢献したいです。",
+    "exampleChinese": "想對社會有所貢獻。",
+    "level": "N3"
+  },
+  {
+    "japanese": "広い",
+    "reading": "ひろい",
+    "chinese": "寬廣的",
+    "english": "wide / spacious",
+    "example": "広い公園で遊びます。",
+    "exampleChinese": "在寬廣的公園玩。",
+    "level": "N5"
+  },
+  {
+    "japanese": "近い",
+    "reading": "ちかい",
+    "chinese": "近的（い形）",
+    "english": "near / close",
+    "example": "学校から近いところに住んでいます。",
+    "exampleChinese": "住在離學校很近的地方。",
+    "level": "N4"
+  },
+  {
+    "japanese": "解決",
+    "reading": "かいけつ",
+    "chinese": "解決",
+    "english": "resolution; solution",
+    "example": "問題の解決に時間がかかった。",
+    "exampleChinese": "解決問題花了一些時間。",
+    "level": "N3"
+  },
+  {
+    "japanese": "背中",
+    "reading": "せなか",
+    "chinese": "背部",
+    "english": "back",
+    "example": "背中が痛いです。",
+    "exampleChinese": "背部很痛。",
+    "level": "N5"
+  },
+  {
+    "japanese": "季節",
+    "reading": "きせつ",
+    "chinese": "季節",
+    "english": "season",
+    "example": "好きな季節はいつですか？",
+    "exampleChinese": "你喜歡哪個季節？",
+    "level": "N4"
+  },
+  {
+    "japanese": "法律",
+    "reading": "ほうりつ",
+    "chinese": "法律",
+    "english": "law",
+    "example": "法律を守ることは市民の義務だ。",
+    "exampleChinese": "遵守法律是公民的義務。",
+    "level": "N3"
+  },
+  {
+    "japanese": "歯",
+    "reading": "は",
+    "chinese": "牙齒",
+    "english": "tooth/teeth",
+    "example": "歯を磨いてください。",
+    "exampleChinese": "請刷牙。",
+    "level": "N5"
+  },
+  {
+    "japanese": "理由",
+    "reading": "りゆう",
+    "chinese": "理由",
+    "english": "reason",
+    "example": "遅れた理由を教えてください。",
+    "exampleChinese": "請告訴我遲到的理由。",
+    "level": "N4"
+  },
+  {
+    "japanese": "決定する",
+    "reading": "けっていする",
+    "chinese": "決定",
+    "english": "to decide; to determine",
+    "example": "会議で新しい方針を決定した。",
+    "exampleChinese": "在會議上決定了新方針。",
+    "level": "N3"
+  },
+  {
+    "japanese": "手",
+    "reading": "て",
+    "chinese": "手",
+    "english": "hand",
+    "example": "手を洗ってください。",
+    "exampleChinese": "請洗手。",
+    "level": "N5"
+  },
+  {
+    "japanese": "遅い",
+    "reading": "おそい",
+    "chinese": "慢的／遲的（い形）",
+    "english": "slow / late",
+    "example": "今日はバスが遅いですね。",
+    "exampleChinese": "今天公車好慢呢。",
+    "level": "N4"
+  },
+  {
+    "japanese": "そのため",
+    "reading": "そのため",
+    "chinese": "因此",
+    "english": "therefore / for that reason",
+    "example": "雨が降った。そのため試合は中止です。",
+    "exampleChinese": "下雨了。因此比賽取消。",
+    "level": "N3"
+  },
+  {
+    "japanese": "書く",
+    "reading": "かく",
+    "chinese": "寫",
+    "english": "to write",
+    "example": "日本語で手紙を書きます。",
+    "exampleChinese": "用日文寫信。",
+    "level": "N5"
+  },
+  {
+    "japanese": "古い",
+    "reading": "ふるい",
+    "chinese": "舊的（い形）",
+    "english": "old",
+    "example": "この建物はとても古いです。",
+    "exampleChinese": "這棟建築物非常老舊。",
+    "level": "N4"
+  },
+  {
+    "japanese": "準備",
+    "reading": "じゅんび",
+    "chinese": "準備",
+    "english": "preparation",
+    "example": "旅行の準備ができました。",
+    "exampleChinese": "旅行的準備好了。",
+    "level": "N3"
+  },
+  {
+    "japanese": "オレンジ",
+    "reading": "オレンジ",
+    "chinese": "橘色",
+    "english": "orange",
+    "example": "オレンジ色のTシャツを買いました。",
+    "exampleChinese": "買了橘色的T恤。",
+    "level": "N5"
+  },
+  {
+    "japanese": "気をつける",
+    "reading": "きをつける",
+    "chinese": "注意／小心",
+    "english": "to be careful",
+    "example": "道を渡るとき、気をつけてください。",
+    "exampleChinese": "過馬路時請小心。",
+    "level": "N4"
+  },
+  {
+    "japanese": "比べる",
+    "reading": "くらべる",
+    "chinese": "比較",
+    "english": "to compare",
+    "example": "去年と比べてどうですか？",
+    "exampleChinese": "和去年比較如何？",
+    "level": "N3"
+  },
+  {
+    "japanese": "行く",
+    "reading": "いく",
+    "chinese": "去",
+    "english": "to go",
+    "example": "学校に行きます。",
+    "exampleChinese": "去學校。",
+    "level": "N5"
+  },
+  {
+    "japanese": "子供",
+    "reading": "こども",
+    "chinese": "孩子",
+    "english": "child",
+    "example": "子供が公園で遊んでいます。",
+    "exampleChinese": "孩子在公園玩。",
+    "level": "N4"
+  },
+  {
+    "japanese": "応じる",
+    "reading": "おうじる",
+    "chinese": "應對；回應",
+    "english": "to respond; to comply with",
+    "example": "相手の要求に応じることにした。",
+    "exampleChinese": "決定回應對方的要求。",
+    "level": "N3"
+  },
+  {
+    "japanese": "首",
+    "reading": "くび",
+    "chinese": "脖子",
+    "english": "neck",
+    "example": "首が痛いです。",
+    "exampleChinese": "脖子很痛。",
+    "level": "N5"
+  },
+  {
+    "japanese": "夕食",
+    "reading": "ゆうしょく",
+    "chinese": "晚餐",
+    "english": "dinner",
+    "example": "夕食の用意ができました。",
+    "exampleChinese": "晚餐準備好了。",
+    "level": "N4"
+  },
+  {
+    "japanese": "意外な",
+    "reading": "いがいな",
+    "chinese": "意外的；出乎意料的（な形）",
+    "english": "unexpected; surprising",
+    "example": "意外な結果に驚いた。",
+    "exampleChinese": "對意外的結果感到驚訝。",
+    "level": "N3"
+  }
+]

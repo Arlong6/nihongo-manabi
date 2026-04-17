@@ -1,0 +1,52 @@
+================================================================
+App Store 截圖文案（建議 5-6 張）
+================================================================
+
+每張截圖上方加標題文字 + 下方放手機畫面
+建議用深色模式截圖（視覺更有質感）
+
+
+【截圖 1 — 首頁】
+標題：你的日語學習夥伴
+副標：每日進度一目瞭然，10 分鐘養成習慣
+EN: Your Japanese Study Companion
+    Track your progress. Build your habit.
+
+【截圖 2 — 單字學習】
+標題：800+ 單字 · SRS 智慧複習
+副標：翻卡學習，自動安排最佳複習時間
+EN: 800+ Words · Smart SRS Review
+    Flip cards with perfectly timed repetition.
+
+【截圖 3 — 聽力練習】
+標題：用耳朵學日語
+副標：聽音選字，N5 到 N1 五種難度
+EN: Train Your Ear
+    Listen and pick the correct form.
+
+【截圖 4 — JLPT 模擬考】
+標題：JLPT 模擬考 N5–N1
+副標：混合單字文法，考完即時解析
+EN: JLPT Mock Exams N5–N1
+    Mixed vocab & grammar with instant review.
+
+【截圖 5 — 學習進度】
+標題：看見你的成長
+副標：連續天數、分類掌握度、每週活動
+EN: See Your Growth
+    Streaks, mastery bars, and weekly charts.
+
+【截圖 6 — 特色總覽】（純文字設計，不放手機畫面）
+標題：NT$30 買斷，就這麼簡單
+內容：
+  ✓ 無訂閱、無廣告
+  ✓ 深色模式
+  ✓ 繁中 / English / 한국어
+  ✓ 離線可用
+  ✓ 持續免費更新
+EN: $0.99 one-time. That's it.
+  ✓ No subscriptions, no ads
+  ✓ Dark mode
+  ✓ 3 UI languages
+  ✓ Works offline
+  ✓ Free updates forever
