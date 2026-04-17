@@ -2,6 +2,7 @@ import { AbsoluteFill, Audio, interpolate, staticFile, useCurrentFrame } from "r
 import { crimeTheme } from "../theme";
 import { CrimeTape } from "../CrimeTape";
 import { PhotoLayer } from "../PhotoLayer";
+import { TextReveal } from "../TextReveal";
 import type { Case } from "../data";
 
 export const CrimeHook: React.FC<{ c: Case; duration: number }> = ({ c, duration }) => {
@@ -10,8 +11,6 @@ export const CrimeHook: React.FC<{ c: Case; duration: number }> = ({ c, duration
   const dateOpacity = interpolate(frame, [10, 30], [0, 1], { extrapolateRight: "clamp" });
   const stampScale = interpolate(frame, [20, 40], [2, 1], { extrapolateRight: "clamp" });
   const stampOpacity = interpolate(frame, [20, 40], [0, 1], { extrapolateRight: "clamp" });
-  const hookChars = Array.from(c.hook);
-  const charsPerFrame = 3; // slower typewriter
 
   return (
     <AbsoluteFill>
@@ -62,7 +61,10 @@ export const CrimeHook: React.FC<{ c: Case; duration: number }> = ({ c, duration
           {c.status === "unsolved" ? "UNSOLVED" : "SOLVED"}
         </div>
 
-        <div
+        <TextReveal
+          text={c.hook}
+          audioDur={c.timings.hook}
+          delayFrames={45}
           style={{
             color: crimeTheme.text,
             fontFamily: crimeTheme.fontZh,
@@ -73,20 +75,9 @@ export const CrimeHook: React.FC<{ c: Case; duration: number }> = ({ c, duration
             marginTop: 20,
             maxWidth: 920,
             textShadow: "0 4px 16px rgba(0,0,0,0.9)",
+            display: "inline-block",
           }}
-        >
-          {hookChars.map((ch, i) => {
-            const appearAt = 45 + i * charsPerFrame;
-            const opacity = interpolate(frame, [appearAt, appearAt + 3], [0, 1], {
-              extrapolateRight: "clamp",
-            });
-            return (
-              <span key={i} style={{ opacity }}>
-                {ch}
-              </span>
-            );
-          })}
-        </div>
+        />
       </AbsoluteFill>
     </AbsoluteFill>
   );

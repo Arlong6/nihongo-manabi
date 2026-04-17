@@ -1,6 +1,7 @@
-import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { crimeTheme } from "../theme";
 import { PhotoLayer } from "../PhotoLayer";
+import { TextReveal } from "../TextReveal";
 import type { Case } from "../data";
 
 export const CrimeSetup: React.FC<{ c: Case; duration: number }> = ({ c, duration }) => {
@@ -8,8 +9,6 @@ export const CrimeSetup: React.FC<{ c: Case; duration: number }> = ({ c, duratio
   const { fps } = useVideoConfig();
 
   const cardScale = spring({ frame, fps, config: { damping: 14, stiffness: 90 } });
-  const bodyOpacity = interpolate(frame, [30, 60], [0, 1], { extrapolateRight: "clamp" });
-  const bodyY = interpolate(frame, [30, 60], [30, 0], { extrapolateRight: "clamp" });
 
   return (
     <AbsoluteFill>
@@ -71,17 +70,17 @@ export const CrimeSetup: React.FC<{ c: Case; duration: number }> = ({ c, duratio
           >
             {c.titleZh}
           </div>
-          <div
+          <TextReveal
+            text={c.setup}
+            audioDur={c.timings.setup}
+            delayFrames={30}
             style={{
               fontFamily: crimeTheme.fontZh,
               fontSize: 40,
               lineHeight: 1.55,
-              opacity: bodyOpacity,
-              transform: `translateY(${bodyY}px)`,
+              display: "inline-block",
             }}
-          >
-            {c.setup}
-          </div>
+          />
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

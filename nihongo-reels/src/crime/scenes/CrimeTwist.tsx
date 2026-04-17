@@ -1,6 +1,7 @@
 import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { crimeTheme } from "../theme";
 import { PhotoLayer } from "../PhotoLayer";
+import { TextReveal } from "../TextReveal";
 import type { Case } from "../data";
 
 export const CrimeTwist: React.FC<{ c: Case; duration: number }> = ({ c, duration }) => {
@@ -9,9 +10,6 @@ export const CrimeTwist: React.FC<{ c: Case; duration: number }> = ({ c, duratio
 
   const stampScale = spring({ frame, fps, config: { damping: 10, stiffness: 80 } });
   const flashOpacity = interpolate(frame, [0, 8, 20], [0, 0.55, 0], { extrapolateRight: "clamp" });
-  const chars = Array.from(c.twist);
-  const startAt = 50;
-  const cpf = 2.5;
 
   return (
     <AbsoluteFill>
@@ -48,7 +46,10 @@ export const CrimeTwist: React.FC<{ c: Case; duration: number }> = ({ c, duratio
           真 相
         </div>
 
-        <div
+        <TextReveal
+          text={c.twist}
+          audioDur={c.timings.twist}
+          delayFrames={50}
           style={{
             color: crimeTheme.text,
             fontFamily: crimeTheme.fontZh,
@@ -58,20 +59,9 @@ export const CrimeTwist: React.FC<{ c: Case; duration: number }> = ({ c, duratio
             textAlign: "center",
             maxWidth: 920,
             textShadow: "0 4px 16px rgba(0,0,0,0.9)",
+            display: "inline-block",
           }}
-        >
-          {chars.map((ch, i) => {
-            const appearAt = startAt + i * cpf;
-            const opacity = interpolate(frame, [appearAt, appearAt + 4], [0, 1], {
-              extrapolateRight: "clamp",
-            });
-            return (
-              <span key={i} style={{ opacity }}>
-                {ch}
-              </span>
-            );
-          })}
-        </div>
+        />
       </AbsoluteFill>
     </AbsoluteFill>
   );

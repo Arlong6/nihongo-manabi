@@ -1,20 +1,21 @@
-import { AbsoluteFill, Audio, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { crimeTheme } from "../theme";
 import { PhotoLayer } from "../PhotoLayer";
+import { TextReveal } from "../TextReveal";
 import type { Case, CrimeEvent } from "../data";
 
-const EventCard: React.FC<{ caseId: string; idx: number; total: number; ev: CrimeEvent; duration: number }> = ({
-  caseId,
-  idx,
-  total,
-  ev,
-  duration,
-}) => {
+const EventCard: React.FC<{
+  caseId: string;
+  idx: number;
+  total: number;
+  ev: CrimeEvent;
+  duration: number;
+  audioDur: number;
+}> = ({ caseId, idx, total, ev, duration, audioDur }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const enter = spring({ frame, fps, config: { damping: 14, stiffness: 100 } });
-  const textOpacity = interpolate(frame, [15, 35], [0, 1], { extrapolateRight: "clamp" });
 
   return (
     <AbsoluteFill>
@@ -52,18 +53,23 @@ const EventCard: React.FC<{ caseId: string; idx: number; total: number; ev: Crim
             background: "rgba(0,0,0,0.75)",
             borderLeft: `8px solid ${crimeTheme.accent}`,
             padding: "28px 40px",
-            color: crimeTheme.text,
-            fontFamily: crimeTheme.fontZh,
-            fontSize: 58,
-            fontWeight: 700,
-            lineHeight: 1.5,
-            textAlign: "left",
             maxWidth: 940,
-            opacity: textOpacity,
-            transform: `translateX(${(1 - textOpacity) * -30}px)`,
           }}
         >
-          {ev.text}
+          <TextReveal
+            text={ev.text}
+            audioDur={audioDur}
+            delayFrames={15}
+            style={{
+              color: crimeTheme.text,
+              fontFamily: crimeTheme.fontZh,
+              fontSize: 58,
+              fontWeight: 700,
+              lineHeight: 1.5,
+              textAlign: "left",
+              display: "inline-block",
+            }}
+          />
         </div>
       </AbsoluteFill>
 
@@ -101,7 +107,14 @@ export const CrimeEvents: React.FC<{ c: Case; beats: number[] }> = ({ c, beats }
         return (
           <Sequence key={i} from={from} durationInFrames={beats[i]}>
             <Audio src={staticFile(`crime/${c.id}/event-${i + 1}.mp3`)} />
-            <EventCard caseId={c.id} idx={i} total={c.events.length} ev={ev} duration={beats[i]} />
+            <EventCard
+              caseId={c.id}
+              idx={i}
+              total={c.events.length}
+              ev={ev}
+              duration={beats[i]}
+              audioDur={c.timings.events[i]}
+            />
           </Sequence>
         );
       })}

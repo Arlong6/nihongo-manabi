@@ -1,15 +1,13 @@
 import { AbsoluteFill, Audio, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { crimeTheme } from "../theme";
 import { PhotoLayer } from "../PhotoLayer";
+import { TextReveal } from "../TextReveal";
 import type { Case } from "../data";
 
 export const CrimeAftermath: React.FC<{ c: Case; duration: number }> = ({ c, duration }) => {
   const frame = useCurrentFrame();
 
   const labelOpacity = interpolate(frame, [10, 30], [0, 1], { extrapolateRight: "clamp" });
-  const chars = Array.from(c.aftermath);
-  const startAt = 40;
-  const cpf = 2.2;
 
   return (
     <AbsoluteFill>
@@ -48,7 +46,10 @@ export const CrimeAftermath: React.FC<{ c: Case; duration: number }> = ({ c, dur
           AFTERMATH · 後續
         </div>
 
-        <div
+        <TextReveal
+          text={c.aftermath}
+          audioDur={c.timings.aftermath}
+          delayFrames={40}
           style={{
             color: crimeTheme.text,
             fontFamily: crimeTheme.fontZh,
@@ -58,20 +59,9 @@ export const CrimeAftermath: React.FC<{ c: Case; duration: number }> = ({ c, dur
             textAlign: "center",
             maxWidth: 920,
             textShadow: "0 4px 16px rgba(0,0,0,0.9)",
+            display: "inline-block",
           }}
-        >
-          {chars.map((ch, i) => {
-            const appearAt = startAt + i * cpf;
-            const opacity = interpolate(frame, [appearAt, appearAt + 4], [0, 1], {
-              extrapolateRight: "clamp",
-            });
-            return (
-              <span key={i} style={{ opacity }}>
-                {ch}
-              </span>
-            );
-          })}
-        </div>
+        />
       </AbsoluteFill>
     </AbsoluteFill>
   );

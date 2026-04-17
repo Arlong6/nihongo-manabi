@@ -1,5 +1,6 @@
 import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { crimeTheme } from "../theme";
+import { TextReveal } from "../TextReveal";
 import type { Case } from "../data";
 
 export const CrimeCTA: React.FC<{ c: Case }> = ({ c }) => {
@@ -33,7 +34,10 @@ export const CrimeCTA: React.FC<{ c: Case }> = ({ c }) => {
         ▶ FOLLOW
       </div>
 
-      <div
+      <TextReveal
+        text={c.cta}
+        audioDur={c.timings.cta}
+        delayFrames={10}
         style={{
           color: crimeTheme.text,
           fontFamily: crimeTheme.fontZh,
@@ -41,10 +45,9 @@ export const CrimeCTA: React.FC<{ c: Case }> = ({ c }) => {
           fontWeight: 900,
           textAlign: "center",
           transform: `scale(${scale})`,
+          display: "inline-block",
         }}
-      >
-        {c.cta}
-      </div>
+      />
 
       {c.credits && (
         <div
