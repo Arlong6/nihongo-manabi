@@ -6,6 +6,8 @@ import { CrimeEvents } from "./scenes/CrimeEvents";
 import { CrimeTwist } from "./scenes/CrimeTwist";
 import { CrimeAftermath } from "./scenes/CrimeAftermath";
 import { CrimeCTA } from "./scenes/CrimeCTA";
+import { LocationBadge } from "./LocationBadge";
+import { ProgressBar } from "./ProgressBar";
 import type { Case } from "./data";
 
 export type CrimeReelProps = { c: Case };
@@ -52,6 +54,14 @@ export const CrimeReel: React.FC<CrimeReelProps> = ({ c }) => {
           return baseVol * envelope;
         }}
       />
+      {/* Location badge spans Hook + Setup scenes */}
+      <Sequence from={0} durationInFrames={s.hook + s.setup}>
+        <LocationBadge location={c.location} date={c.date} delayFrames={20} />
+      </Sequence>
+
+      {/* Progress bar spans entire video */}
+      <ProgressBar totalFrames={total} />
+
       <Sequence from={at(s.hook)} durationInFrames={s.hook}>
         <CrimeHook c={c} duration={s.hook} />
       </Sequence>
