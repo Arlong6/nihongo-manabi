@@ -162,6 +162,25 @@ export const CrimeCTA: React.FC<{ c: Case }> = ({ c }) => {
         />
       )}
 
+      {c.has_longform && (
+        <div
+          style={{
+            marginTop: binary ? 10 : 30,
+            color: crimeTheme.tape,
+            fontFamily: crimeTheme.fontZh,
+            fontSize: 44,
+            fontWeight: 800,
+            letterSpacing: 1,
+            background: "rgba(0,0,0,0.55)",
+            padding: "14px 40px",
+            borderRadius: 12,
+            opacity: interpolate(frame, [40, 70], [0, 1], { extrapolateRight: "clamp" }),
+          }}
+        >
+          🔗 主頁看完整版
+        </div>
+      )}
+
       {c.credits && (
         <div
           style={{

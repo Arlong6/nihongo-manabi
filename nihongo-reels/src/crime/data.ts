@@ -29,6 +29,7 @@ export type Case = {
   aftermath: string;
   aftermathImage?: string;
   cta: string;
+  has_longform?: boolean;
   credits?: string;
   timings: CaseTimings;
 };
