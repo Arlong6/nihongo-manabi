@@ -60,32 +60,33 @@ def send_telegram(msg: str):
 
 
 def get_client():
-    """Login to IG with session caching."""
+    """Login to IG via cached session or sessionid cookie."""
     from instagrapi import Client
-
-    username = os.environ.get("IG_USERNAME")
-    password = os.environ.get("IG_PASSWORD")
-    if not username or not password:
-        print("ERROR: IG_USERNAME and IG_PASSWORD must be set in .env")
-        sys.exit(1)
+    from urllib.parse import unquote
 
     cl = Client()
     cl.delay_range = [2, 5]
-
     SESSION_DIR.mkdir(parents=True, exist_ok=True)
+
     if SESSION_FILE.exists():
         try:
             cl.load_settings(SESSION_FILE)
-            cl.login(username, password)
-            cl.get_timeline_feed()
+            cl.private_request("accounts/current_user/?edit=true")
             print("  ✓ Session restored")
             return cl
         except Exception:
-            print("  Session expired, re-logging in...")
+            print("  Session cache invalid, fresh login...")
+            cl = Client()
+            cl.delay_range = [2, 5]
 
-    cl.login(username, password)
+    sessionid = os.environ.get("IG_SESSION_ID", "")
+    if not sessionid:
+        print("ERROR: No valid session. Set IG_SESSION_ID in .env")
+        sys.exit(1)
+
+    cl.login_by_sessionid(sessionid)
     cl.dump_settings(SESSION_FILE)
-    print("  ✓ Logged in fresh")
+    print("  ✓ Logged in via sessionid")
     return cl
 
 
