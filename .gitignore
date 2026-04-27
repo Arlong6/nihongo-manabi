@@ -48,3 +48,5 @@ appstore_screenshots/
 nihongo-reels/.env
 nihongo-reels/.env.swp
 *.env
+nihongo-reels/upload_queue.json
+nihongo-reels/.host-repo/
