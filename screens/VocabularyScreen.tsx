@@ -10,7 +10,7 @@ import { allVocabulary, categoryInfo, getVocabularyByCategory } from '../data/vo
 import { loadProgress, markWordLearned, updateSRSCard, recordDailyActivity, loadFavorites, saveFavorites } from '../lib/storage'
 import { createSRSCard, updateSRSCard as computeNextSRS, getDueCards } from '../lib/srs'
 import type { Vocabulary, SRSRating, UserProgress } from '../types'
-import { useTheme } from '../lib/theme'
+import { useTheme, fonts } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 
 function FlashCard({
@@ -348,38 +348,39 @@ function createStyles(colors: ThemeColors) {
 function createFCStyles(colors: ThemeColors) {
   return StyleSheet.create({
     container: { flex: 1, padding: 20 },
-    progress: { textAlign: 'center', color: colors.subtext, fontSize: 13, marginBottom: 16 },
+    progress: { textAlign: 'center', color: colors.subtext, fontSize: 13, marginBottom: 16, letterSpacing: 0.3 },
     favoriteBtn: { position: 'absolute', top: 0, right: 0, zIndex: 10, padding: 8 },
     favoriteIcon: { fontSize: 22 },
     card: {
-      backgroundColor: colors.card, borderRadius: 24, padding: 28, minHeight: 240,
+      backgroundColor: colors.card, borderRadius: 28, padding: 32, minHeight: 260,
       alignItems: 'center', justifyContent: 'center',
-      shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 16, elevation: 4,
+      shadowColor: '#1A1614', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 4,
+      borderWidth: 1, borderColor: colors.border,
       backfaceVisibility: 'hidden',
     },
-    cardBack: { backgroundColor: '#EEF2FF', position: 'absolute', top: 0, left: 0, right: 0 },
+    cardBack: { backgroundColor: colors.cardSoft, borderWidth: 1, borderColor: colors.primarySoft, position: 'absolute', top: 0, left: 0, right: 0 },
     visible: { zIndex: 1 },
-    categoryLabel: { fontSize: 11, color: colors.subtext, textTransform: 'uppercase', marginBottom: 12 },
-    japanese: { fontSize: 40, fontWeight: 'bold', color: colors.text, marginBottom: 8 },
-    reading: { fontSize: 16, color: colors.subtext, marginBottom: 8 },
-    flipHint: { fontSize: 13, color: colors.subtext, marginTop: 8 },
+    categoryLabel: { fontSize: 11, color: colors.subtext, textTransform: 'uppercase', marginBottom: 12, letterSpacing: 1 },
+    japanese: { fontSize: 44, fontWeight: '500', color: colors.text, marginBottom: 8, fontFamily: fonts.jpSerif, letterSpacing: 1 },
+    reading: { fontSize: 16, color: colors.subtext, marginBottom: 8, fontFamily: fonts.jpSerif, letterSpacing: 0.5 },
+    flipHint: { fontSize: 12, color: colors.mutedText, marginTop: 12, letterSpacing: 0.3 },
     speakBtn: { marginTop: 12, alignSelf: 'center', padding: 8 },
     speakIcon: { fontSize: 24 },
-    meanings: { flexDirection: 'row', gap: 12, marginBottom: 16, marginTop: 8 },
-    chinese: { fontSize: 24, fontWeight: '600', color: colors.primary },
-    english: { fontSize: 18, color: colors.subtext, alignSelf: 'flex-end' },
+    meanings: { flexDirection: 'row', gap: 12, marginBottom: 16, marginTop: 12, alignItems: 'flex-end' },
+    chinese: { fontSize: 22, fontWeight: '600', color: colors.primary, letterSpacing: -0.3 },
+    english: { fontSize: 16, color: colors.subtext, alignSelf: 'flex-end' },
     exampleBox: {
-      backgroundColor: '#fff', borderRadius: 12, padding: 12, width: '100%',
-      borderWidth: 1, borderColor: '#C7D2FE',
+      backgroundColor: colors.card, borderRadius: 16, padding: 14, width: '100%',
+      borderWidth: 1, borderColor: colors.border,
     },
-    example: { fontSize: 14, color: '#374151', marginBottom: 4 },
-    exampleChinese: { fontSize: 12, color: '#6B7280' },
+    example: { fontSize: 14, color: colors.text, marginBottom: 4, fontFamily: fonts.jpSerif, letterSpacing: 0.3 },
+    exampleChinese: { fontSize: 12, color: colors.subtext, lineHeight: 18 },
     ratings: { marginTop: 20 },
-    ratingHint: { textAlign: 'center', color: colors.subtext, fontSize: 13, marginBottom: 10 },
+    ratingHint: { textAlign: 'center', color: colors.subtext, fontSize: 13, marginBottom: 10, letterSpacing: 0.3 },
     ratingRow: { flexDirection: 'row', gap: 8 },
-    ratingBtn: { flex: 1, borderRadius: 12, padding: 10, alignItems: 'center' },
+    ratingBtn: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center' },
     ratingLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
-    ratingNext: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+    ratingNext: { fontSize: 11, color: '#6B7280', marginTop: 2, letterSpacing: 0.2 },
     skipBtn: { alignItems: 'center', marginTop: 16 },
     skipText: { color: colors.subtext, fontSize: 14 },
   })

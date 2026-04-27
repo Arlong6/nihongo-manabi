@@ -16,6 +16,7 @@ import GrammarScreen from './screens/GrammarScreen'
 import JLPTScreen from './screens/JLPTScreen'
 import ListeningScreen from './screens/ListeningScreen'
 import KanjiScreen from './screens/KanjiScreen'
+import AIConversationScreen from './screens/AIConversationScreen'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
 import { getNotificationSettings, scheduleDaily } from './lib/notifications'
 import { loadProgress } from './lib/storage'
@@ -128,6 +129,7 @@ function AppInner() {
         <Stack.Screen name="Grammar" component={GrammarScreen} />
         <Stack.Screen name="JLPT" component={JLPTScreen} />
         <Stack.Screen name="Kanji" component={KanjiScreen} />
+        <Stack.Screen name="AIChat" component={AIConversationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   )

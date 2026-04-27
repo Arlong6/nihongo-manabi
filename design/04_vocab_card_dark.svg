@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <rect width="390" height="844" fill="#000"/>
+  <rect width="390" height="844" fill="#1A1614"/>
+    <defs>
+      <pattern id="washi" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+        <circle cx="10" cy="15" r="0.4" fill="#F2EDE5" opacity="0.04"/>
+        <circle cx="35" cy="40" r="0.3" fill="#F2EDE5" opacity="0.04"/>
+        <circle cx="50" cy="10" r="0.3" fill="#F2EDE5" opacity="0.04"/>
+        <circle cx="20" cy="50" r="0.3" fill="#F2EDE5" opacity="0.04"/>
+      </pattern>
+    </defs>
+    <rect x="0" y="0" width="390" height="844" fill="url(#washi)"/>
+    <defs>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1A1614" flood-opacity="0.0"/>
+    </filter>
+    </defs>
+    <g>
+      <text x="32" y="28" fill="#F2EDE5" font-family="'Noto Sans CJK SC', sans-serif" font-size="15" font-weight="600">9:41</text>
+      <g transform="translate(330, 16)" fill="#F2EDE5">
+        <!-- signal -->
+        <rect x="0" y="9" width="3" height="4" rx="0.5"/>
+        <rect x="5" y="7" width="3" height="6" rx="0.5"/>
+        <rect x="10" y="4" width="3" height="9" rx="0.5"/>
+        <rect x="15" y="1" width="3" height="12" rx="0.5"/>
+        <!-- wifi -->
+        <path d="M28 7 q5 -5 11 0" stroke="#F2EDE5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M30.5 9.5 q3 -3 6 0" stroke="#F2EDE5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="33.5" cy="12" r="1"/>
+        <!-- battery -->
+        <rect x="44" y="3" width="22" height="11" rx="3" fill="none" stroke="#F2EDE5" stroke-width="1" opacity="0.5"/>
+        <rect x="46" y="5" width="16" height="7" rx="1.5" fill="#F2EDE5"/>
+        <rect x="67" y="6" width="1.5" height="5" rx="0.5" fill="#F2EDE5" opacity="0.5"/>
+      </g>
+    </g>
+    <text x="20" y="80" fill="#E89BA1" font-family="'Noto Sans CJK SC', sans-serif" font-size="22" font-weight="400">‹</text><text x="195" y="82" fill="#F2EDE5" font-family="'Noto Sans CJK SC', sans-serif" font-size="15" font-weight="600" text-anchor="middle">N4・第 3 組</text><text x="370" y="82" fill="#E89BA1" font-family="'Noto Sans CJK SC', sans-serif" font-size="13" font-weight="500" text-anchor="end">7 / 20</text><rect x="20" y="100" width="350" height="3" rx="1.5" fill="#1F1B19"/><rect x="20" y="100" width="122" height="3" rx="1.5" fill="#E89BA1"/><rect x="20" y="140" width="350" height="440" rx="28" fill="#25201E" filter="url(#cardShadow)"/><ellipse cx="60" cy="166.6" rx="5.6000000000000005" ry="9.799999999999999" fill="#E89BA1" opacity="0.18" transform="rotate(0 60 175)"/>
+<ellipse cx="60" cy="166.6" rx="5.6000000000000005" ry="9.799999999999999" fill="#E89BA1" opacity="0.18" transform="rotate(72 60 175)"/>
+<ellipse cx="60" cy="166.6" rx="5.6000000000000005" ry="9.799999999999999" fill="#E89BA1" opacity="0.18" transform="rotate(144 60 175)"/>
+<ellipse cx="60" cy="166.6" rx="5.6000000000000005" ry="9.799999999999999" fill="#E89BA1" opacity="0.18" transform="rotate(216 60 175)"/>
+<ellipse cx="60" cy="166.6" rx="5.6000000000000005" ry="9.799999999999999" fill="#E89BA1" opacity="0.18" transform="rotate(288 60 175)"/><circle cx="60" cy="175" r="2.52" fill="#E89BA1" opacity="0.252"/><ellipse cx="330" cy="525.4" rx="6.4" ry="11.2" fill="#E89BA1" opacity="0.15" transform="rotate(0 330 535)"/>
+<ellipse cx="330" cy="525.4" rx="6.4" ry="11.2" fill="#E89BA1" opacity="0.15" transform="rotate(72 330 535)"/>
+<ellipse cx="330" cy="525.4" rx="6.4" ry="11.2" fill="#E89BA1" opacity="0.15" transform="rotate(144 330 535)"/>
+<ellipse cx="330" cy="525.4" rx="6.4" ry="11.2" fill="#E89BA1" opacity="0.15" transform="rotate(216 330 535)"/>
+<ellipse cx="330" cy="525.4" rx="6.4" ry="11.2" fill="#E89BA1" opacity="0.15" transform="rotate(288 330 535)"/><circle cx="330" cy="535" r="2.88" fill="#E89BA1" opacity="0.21"/><rect x="40" y="164" width="56" height="22" rx="11" fill="#3D2A2C"/><text x="68" y="179" fill="#F4B5B9" font-family="'Noto Sans CJK SC', sans-serif" font-size="11" font-weight="600" text-anchor="middle">名詞</text><circle cx="338" cy="174" r="20" fill="#1F1B19"/><path d="M331 168 h4 l5 -4 v20 l-5 -4 h-4 z M344 170 q3 4 0 8" fill="none" stroke="#E89BA1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="195" y="248" fill="#A8A097" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="14" letter-spacing="2" text-anchor="middle">さくら</text><text x="195" y="310" fill="#F2EDE5" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="56" font-weight="500" letter-spacing="4" text-anchor="middle">桜</text><line x1="120" y1="340" x2="270" y2="340" stroke="#3A332F" stroke-width="0.5"/><text x="195" y="368" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="11" font-weight="600" letter-spacing="1.5" text-anchor="middle">中文</text><text x="195" y="394" fill="#F2EDE5" font-family="'Noto Sans CJK SC', sans-serif" font-size="22" font-weight="600" letter-spacing="-0.3" text-anchor="middle">櫻花</text><rect x="40" y="426" width="310" height="120" rx="16" fill="#1F1B19"/><text x="56" y="452" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="11" font-weight="600" letter-spacing="1.5">例文</text><text x="56" y="482" fill="#F2EDE5" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="500" letter-spacing="0.5">桜が満開ですね。</text><text x="56" y="504" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="12" letter-spacing="0.5">さくらがまんかいですね。</text><text x="56" y="526" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="12">櫻花盛開了呢。</text><rect x="20" y="612" width="166" height="56" rx="20" fill="#25201E" stroke="#3A332F" stroke-width="1"/><text x="103" y="646" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="14" font-weight="600" text-anchor="middle">再看一次</text><rect x="204" y="612" width="166" height="56" rx="20" fill="#E89BA1"/><text x="287" y="646" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="14" font-weight="600" text-anchor="middle">記住了</text><rect x="0" y="761" width="390" height="83" fill="#1A1614" />
+<line x1="0" y1="761" x2="390" y2="761" stroke="#3A332F" stroke-width="0.5"/>
+<g transform="translate(27.0, 771)">
+<path d="M3 11 L12 3 L21 11 V20 a1 1 0 0 1 -1 1 H4 a1 1 0 0 1 -1 -1 Z" fill="none" stroke="#A8A097" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="39.0" y="811" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">首頁</text>
+<g transform="translate(105.0, 771)">
+<path d="M4 5 a2 2 0 0 1 2 -2 h12 a2 2 0 0 1 2 2 v14 a2 2 0 0 1 -2 2 H6 a2 2 0 0 1 -2 -2 Z M8 7 H16 M8 11 H16 M8 15 H13" fill="none" stroke="#A8A097" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="117.0" y="811" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">學習</text>
+<g transform="translate(183.0, 771)">
+<path d="M12 2 a4 4 0 0 1 4 4 v2 h2 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 H6 a3 3 0 0 1 -3 -3 v-6 a3 3 0 0 1 3 -3 h2 V6 a4 4 0 0 1 4 -4 z M9 13 a1 1 0 1 1 0 0.1 z M15 13 a1 1 0 1 1 0 0.1 z" fill="none" stroke="#A8A097" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="195.0" y="811" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">AI 老師</text>
+<g transform="translate(261.0, 771)">
+<path d="M5 4 h11 a3 3 0 0 1 3 3 v13 H8 a3 3 0 0 1 -3 -3 Z M5 17 a3 3 0 0 1 3 -3 h11" fill="none" stroke="#E89BA1" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="273.0" y="811" fill="#E89BA1" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">單字</text>
+<g transform="translate(339.0, 771)">
+<path d="M12 12 a4 4 0 1 0 0 -8 a4 4 0 0 0 0 8 z M4 21 c0 -4 4 -7 8 -7 s8 3 8 7" fill="none" stroke="#A8A097" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="351.0" y="811" fill="#A8A097" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">我</text>
+<rect x="128.0" y="836" width="134" height="5" rx="2.5" fill="#F2EDE5" opacity="0.6"/>
+</svg>

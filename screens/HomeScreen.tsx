@@ -9,7 +9,7 @@ import { USER_LEVEL_KEY, UserLevel } from './OnboardingScreen'
 import TourGuide from '../components/TourGuide'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { UserProgress } from '../types'
-import { useTheme } from '../lib/theme'
+import { useTheme, fonts } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 
 export default function HomeScreen() {
@@ -79,16 +79,16 @@ export default function HomeScreen() {
       {/* Today stats */}
       {today && (
         <View style={styles.statsRow}>
-          <View style={[styles.statBox, { backgroundColor: '#EEF2FF' }]}>
-            <Text style={[styles.statNum, { color: '#4F46E5' }]}>{today.newWordsLearned}</Text>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNum, { color: colors.primary }]}>{today.newWordsLearned}</Text>
             <Text style={styles.statLabel}>{t('home.todayNew')}</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: '#F0FDF4' }]}>
-            <Text style={[styles.statNum, { color: '#16A34A' }]}>{today.wordsReviewed}</Text>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNum, { color: colors.success }]}>{today.wordsReviewed}</Text>
             <Text style={styles.statLabel}>{t('home.todayReview')}</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: '#FFF7ED' }]}>
-            <Text style={[styles.statNum, { color: '#EA580C' }]}>{totalLearned}</Text>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNum, { color: colors.warning }]}>{totalLearned}</Text>
             <Text style={styles.statLabel}>{t('home.totalWords')}</Text>
           </View>
         </View>
@@ -97,17 +97,19 @@ export default function HomeScreen() {
       {/* Quick Actions */}
       <View style={styles.grid}>
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#4F46E5' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('Katakana')}
+          activeOpacity={0.85}
         >
-          <Text style={styles.cardEmoji}>あ</Text>
+          <Text style={[styles.cardEmoji, { fontFamily: fonts.jpSerif }]}>あ</Text>
           <Text style={styles.cardTitle}>{t('home.kanaCard')}</Text>
           <Text style={styles.cardSub}>{t('home.kanaSub')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#059669' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('Vocabulary')}
+          activeOpacity={0.85}
         >
           <Text style={styles.cardEmoji}>📚</Text>
           <Text style={styles.cardTitle}>{t('home.vocabCard')}</Text>
@@ -115,8 +117,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#DC2626' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('Phrases')}
+          activeOpacity={0.85}
         >
           <Text style={styles.cardEmoji}>💬</Text>
           <Text style={styles.cardTitle}>{t('home.phrasesCard')}</Text>
@@ -124,8 +127,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#0284C7' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('Progress')}
+          activeOpacity={0.85}
         >
           <Text style={styles.cardEmoji}>📊</Text>
           <Text style={styles.cardTitle}>{t('home.progressCard')}</Text>
@@ -133,8 +137,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#7C3AED' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('Grammar')}
+          activeOpacity={0.85}
         >
           <Text style={styles.cardEmoji}>✏️</Text>
           <Text style={styles.cardTitle}>{t('home.grammarCard')}</Text>
@@ -142,8 +147,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#B45309' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('JLPT')}
+          activeOpacity={0.85}
         >
           <Text style={styles.cardEmoji}>🎓</Text>
           <Text style={styles.cardTitle}>{t('home.jlptCard')}</Text>
@@ -151,12 +157,23 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#0891B2' }]}
+          style={styles.card}
           onPress={() => navigation.navigate('Kanji')}
+          activeOpacity={0.85}
         >
-          <Text style={styles.cardEmoji}>漢</Text>
+          <Text style={[styles.cardEmoji, { fontFamily: fonts.jpSerif }]}>漢</Text>
           <Text style={styles.cardTitle}>{t('home.kanjiCard')}</Text>
           <Text style={styles.cardSub}>{t('home.kanjiSub')}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}
+          onPress={() => navigation.navigate('AIChat')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.cardEmoji, { fontFamily: fonts.jpSerif, color: colors.primary }]}>先</Text>
+          <Text style={[styles.cardTitle, { color: colors.primaryDeep }]}>{t('home.aiChatCard')}</Text>
+          <Text style={[styles.cardSub, { color: colors.primaryDeep }]}>{t('home.aiChatSub')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -206,49 +223,59 @@ export default function HomeScreen() {
 }
 
 function createStyles(colors: ThemeColors) {
+  const cardShadow = {
+    shadowColor: '#1A1614',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  }
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
     content: { padding: 20, paddingBottom: 40 },
-    title: { fontSize: 28, fontWeight: 'bold', color: colors.text, marginBottom: 4 },
-    subtitle: { fontSize: 16, color: colors.subtext, marginBottom: 20 },
+    title: { fontSize: 28, fontWeight: '700', color: colors.text, marginBottom: 4, letterSpacing: -0.5 },
+    subtitle: { fontSize: 15, color: colors.subtext, marginBottom: 20 },
     streakCard: {
       flexDirection: 'row', alignItems: 'center', gap: 16,
-      backgroundColor: colors.card, borderRadius: 16, padding: 16,
-      marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.06,
-      shadowRadius: 8, elevation: 2,
+      backgroundColor: colors.card, borderRadius: 20, padding: 20,
+      marginBottom: 16, ...cardShadow,
     },
     streakEmoji: { fontSize: 36 },
-    streakNum: { fontSize: 20, fontWeight: 'bold', color: colors.text },
+    streakNum: { fontSize: 22, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
     streakSub: { fontSize: 13, color: colors.subtext, marginTop: 2 },
-    statsRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
-    statBox: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
-    statNum: { fontSize: 22, fontWeight: 'bold' },
-    statLabel: { fontSize: 11, color: colors.subtext, marginTop: 2 },
+    statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
+    statBox: {
+      flex: 1, borderRadius: 16, padding: 14, alignItems: 'center',
+      backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
+    },
+    statNum: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3 },
+    statLabel: { fontSize: 11, color: colors.subtext, marginTop: 2, letterSpacing: 0.2 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
     card: {
-      width: '47%', borderRadius: 16, padding: 16,
-      shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3,
+      width: '47%', borderRadius: 20, padding: 18,
+      backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
+      ...cardShadow,
     },
-    cardEmoji: { fontSize: 28, marginBottom: 8 },
-    cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
-    cardSub: { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
-    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: colors.text, marginBottom: 12 },
+    cardEmoji: { fontSize: 28, marginBottom: 10 },
+    cardTitle: { fontSize: 15, fontWeight: '600', color: colors.text, marginBottom: 4, letterSpacing: -0.2 },
+    cardSub: { fontSize: 12, color: colors.subtext, lineHeight: 16 },
+    sectionTitle: { fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 12, letterSpacing: -0.3 },
     categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     categoryCard: {
-      width: '30%', backgroundColor: colors.card, borderRadius: 12,
-      padding: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.border,
+      width: '30%', backgroundColor: colors.card, borderRadius: 16,
+      padding: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.border,
     },
     dailySection: { marginBottom: 24 },
     dailyCard: {
       flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-      backgroundColor: colors.card, borderRadius: 12, padding: 14, marginBottom: 8,
+      backgroundColor: colors.card, borderRadius: 16, padding: 16, marginBottom: 8,
       borderWidth: 1, borderColor: colors.border,
     },
-    dailyJP: { fontSize: 18, fontWeight: '700', color: colors.text },
-    dailyReading: { fontSize: 12, color: colors.subtext, marginTop: 2 },
+    dailyJP: { fontSize: 22, fontWeight: '500', color: colors.text, fontFamily: fonts.jpSerif, letterSpacing: 0.5 },
+    dailyReading: { fontSize: 12, color: colors.subtext, marginTop: 4 },
     dailyRight: { alignItems: 'flex-end' },
     dailyCN: { fontSize: 15, fontWeight: '600', color: colors.primary },
-    dailyLevel: { fontSize: 10, color: colors.subtext, marginTop: 2 },
+    dailyLevel: { fontSize: 10, color: colors.subtext, marginTop: 2, letterSpacing: 0.3 },
     categoryEmoji: { fontSize: 24, marginBottom: 4 },
     categoryLabel: { fontSize: 12, fontWeight: '600', color: colors.text },
     categoryCount: { fontSize: 11, color: colors.subtext, marginTop: 2 },

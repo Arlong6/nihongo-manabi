@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <rect width="390" height="844" fill="#000"/>
+  <rect width="390" height="844" fill="#FAF7F2"/><defs>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1A1614" flood-opacity="0.06"/>
+    </filter>
+    </defs>
+    <g>
+      <text x="32" y="28" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="15" font-weight="600">9:41</text>
+      <g transform="translate(330, 16)" fill="#1A1614">
+        <!-- signal -->
+        <rect x="0" y="9" width="3" height="4" rx="0.5"/>
+        <rect x="5" y="7" width="3" height="6" rx="0.5"/>
+        <rect x="10" y="4" width="3" height="9" rx="0.5"/>
+        <rect x="15" y="1" width="3" height="12" rx="0.5"/>
+        <!-- wifi -->
+        <path d="M28 7 q5 -5 11 0" stroke="#1A1614" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M30.5 9.5 q3 -3 6 0" stroke="#1A1614" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="33.5" cy="12" r="1"/>
+        <!-- battery -->
+        <rect x="44" y="3" width="22" height="11" rx="3" fill="none" stroke="#1A1614" stroke-width="1" opacity="0.5"/>
+        <rect x="46" y="5" width="16" height="7" rx="1.5" fill="#1A1614"/>
+        <rect x="67" y="6" width="1.5" height="5" rx="0.5" fill="#1A1614" opacity="0.5"/>
+      </g>
+    </g>
+    <rect x="0" y="44" width="390" height="68" fill="#FAF7F2"/><line x1="0" y1="112" x2="390" y2="112" stroke="#E8E2D6" stroke-width="0.5" opacity="0.6"/><text x="20" y="80" fill="#C8767D" font-family="'Noto Sans CJK SC', sans-serif" font-size="22" font-weight="400">‹</text><circle cx="195" cy="78" r="18" fill="#E2E5F2"/><text x="195" y="84" fill="#5B6BB8" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="600" text-anchor="middle">先</text><text x="195" y="106" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="13" font-weight="600" text-anchor="middle">咲先生</text><circle cx="358" cy="78" r="14" fill="#F4EFE5"/><text x="358" y="84" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="14" font-weight="600" text-anchor="middle">⋯</text><rect x="100" y="130" width="190" height="28" rx="14" fill="#F4EFE5"/><text x="195" y="148" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="12" font-weight="500" text-anchor="middle">カフェでの注文 ・ N5</text><circle cx="34" cy="202" r="14" fill="#E2E5F2"/><text x="34" y="207" fill="#5B6BB8" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="12" font-weight="600" text-anchor="middle">先</text><rect x="56" y="186" width="262" height="78" rx="18" fill="#FFFFFF" filter="url(#cardShadow)"/><text x="72" y="210" fill="#1A1614" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="500" letter-spacing="0.5">いらっしゃいませ。</text><text x="72" y="232" fill="#1A1614" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="500" letter-spacing="0.5">何になさいますか？</text><text x="72" y="248" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="11">歡迎光臨，您要點什麼呢？</text><rect x="92" y="286" width="226" height="60" rx="18" fill="#F4DDDF"/><text x="108" y="310" fill="#1A1614" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="500" letter-spacing="0.5">コーヒーをください。</text><text x="108" y="330" fill="#9C545B" font-family="'Noto Sans CJK SC', sans-serif" font-size="11">請給我一杯咖啡</text><circle cx="34" cy="386" r="14" fill="#E2E5F2"/><text x="34" y="391" fill="#5B6BB8" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="12" font-weight="600" text-anchor="middle">先</text><rect x="56" y="370" width="262" height="98" rx="18" fill="#FFFFFF" filter="url(#cardShadow)"/><text x="72" y="394" fill="#1A1614" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="500" letter-spacing="0.5">かしこまりました。</text><text x="72" y="416" fill="#1A1614" font-family="'Noto Serif CJK SC', 'Source Han Serif SC', serif" font-size="16" font-weight="500" letter-spacing="0.5">サイズはいかがですか？</text><rect x="72" y="428" width="120" height="22" rx="11" fill="#F5E8C8"/><circle cx="84" cy="439" r="3" fill="#D4A24C"/><text x="94" y="443" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="600">提示・敬語</text><rect x="20" y="492" width="68" height="32" rx="16" fill="transparent" stroke="#D4CCBE" stroke-width="1"/><text x="54.0" y="512" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="13" font-weight="500" text-anchor="middle">ホット</text><rect x="96" y="492" width="80" height="32" rx="16" fill="transparent" stroke="#D4CCBE" stroke-width="1"/><text x="136.0" y="512" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="13" font-weight="500" text-anchor="middle">アイスで</text><rect x="184" y="492" width="80" height="32" rx="16" fill="transparent" stroke="#D4CCBE" stroke-width="1"/><text x="224.0" y="512" fill="#1A1614" font-family="'Noto Sans CJK SC', sans-serif" font-size="13" font-weight="500" text-anchor="middle">Mサイズ</text><rect x="0" y="685" width="390" height="76" fill="#FAF7F2"/><line x1="0" y1="685" x2="390" y2="685" stroke="#E8E2D6" stroke-width="0.5" opacity="0.6"/><rect x="20" y="697" width="290" height="48" rx="24" fill="#F4EFE5" stroke="#E8E2D6" stroke-width="0.5"/><text x="40" y="727" fill="#9C9388" font-family="'Noto Sans CJK SC', sans-serif" font-size="14">日本語で書いてみて...</text><g transform="translate(255, 712)" fill="none" stroke="#6B6258" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="0" width="6" height="11" rx="3"/><path d="M2 9 v1 a5 5 0 0 0 10 0 v-1"/><line x1="7" y1="15" x2="7" y2="18"/></g><circle cx="346" cy="721" r="22" fill="#C8767D"/><path d="M340 715 L354 721 L340 727 Z" fill="#FFFFFF"/><rect x="0" y="761" width="390" height="83" fill="#FAF7F2" />
+<line x1="0" y1="761" x2="390" y2="761" stroke="#E8E2D6" stroke-width="0.5"/>
+<g transform="translate(27.0, 771)">
+<path d="M3 11 L12 3 L21 11 V20 a1 1 0 0 1 -1 1 H4 a1 1 0 0 1 -1 -1 Z" fill="none" stroke="#6B6258" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="39.0" y="811" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">首頁</text>
+<g transform="translate(105.0, 771)">
+<path d="M4 5 a2 2 0 0 1 2 -2 h12 a2 2 0 0 1 2 2 v14 a2 2 0 0 1 -2 2 H6 a2 2 0 0 1 -2 -2 Z M8 7 H16 M8 11 H16 M8 15 H13" fill="none" stroke="#6B6258" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="117.0" y="811" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">學習</text>
+<g transform="translate(183.0, 771)">
+<path d="M12 2 a4 4 0 0 1 4 4 v2 h2 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 H6 a3 3 0 0 1 -3 -3 v-6 a3 3 0 0 1 3 -3 h2 V6 a4 4 0 0 1 4 -4 z M9 13 a1 1 0 1 1 0 0.1 z M15 13 a1 1 0 1 1 0 0.1 z" fill="none" stroke="#C8767D" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="195.0" y="811" fill="#C8767D" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">AI 老師</text>
+<g transform="translate(261.0, 771)">
+<path d="M5 4 h11 a3 3 0 0 1 3 3 v13 H8 a3 3 0 0 1 -3 -3 Z M5 17 a3 3 0 0 1 3 -3 h11" fill="none" stroke="#6B6258" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="273.0" y="811" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">單字</text>
+<g transform="translate(339.0, 771)">
+<path d="M12 12 a4 4 0 1 0 0 -8 a4 4 0 0 0 0 8 z M4 21 c0 -4 4 -7 8 -7 s8 3 8 7" fill="none" stroke="#6B6258" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+<text x="351.0" y="811" fill="#6B6258" font-family="'Noto Sans CJK SC', sans-serif" font-size="10" font-weight="500" text-anchor="middle">我</text>
+<rect x="128.0" y="836" width="134" height="5" rx="2.5" fill="#1A1614" opacity="0.6"/>
+</svg>

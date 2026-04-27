@@ -5,6 +5,38 @@ const EXAM_HISTORY_KEY = 'jlpt_exam_history'
 const GRAMMAR_PROGRESS_KEY = 'grammar_progress'
 const LOCALE_KEY = 'app_locale'
 const FAVORITES_KEY = 'vocab_favorites'
+const AI_CHAT_USAGE_KEY = 'ai_chat_usage'
+
+export const AI_CHAT_DAILY_LIMIT = 3
+
+interface AIChatUsage {
+  date: string
+  count: number
+}
+
+export async function getAIChatUsage(): Promise<AIChatUsage> {
+  const today = getTodayString()
+  try {
+    const stored = await AsyncStorage.getItem(AI_CHAT_USAGE_KEY)
+    if (!stored) return { date: today, count: 0 }
+    const parsed = JSON.parse(stored) as AIChatUsage
+    if (parsed.date !== today) return { date: today, count: 0 }
+    return parsed
+  } catch {
+    return { date: today, count: 0 }
+  }
+}
+
+export async function incrementAIChatUsage(): Promise<AIChatUsage> {
+  const current = await getAIChatUsage()
+  const next: AIChatUsage = { date: current.date, count: current.count + 1 }
+  try {
+    await AsyncStorage.setItem(AI_CHAT_USAGE_KEY, JSON.stringify(next))
+  } catch {
+    console.error('Failed to save AI chat usage')
+  }
+  return next
+}
 
 export async function loadFavorites(): Promise<string[]> {
   try {
