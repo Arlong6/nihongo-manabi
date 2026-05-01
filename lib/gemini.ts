@@ -152,6 +152,80 @@ export async function startConversation(
   return parseAIResponse(text)
 }
 
+// ── Wrong-answer explanation ─────────────────────────────────────────────────
+
+export interface ExplainWrongInput {
+  prompt: string
+  subPrompt?: string
+  yourAnswer: string
+  correctAnswer: string
+  type: 'vocab' | 'grammar'
+  point: string
+}
+
+function buildExplainWrongPrompt(input: ExplainWrongInput, uiLang: string): string {
+  const langMap: Record<string, string> = {
+    'zh-TW': '繁體中文',
+    'en': 'English',
+    'ko': '한국어',
+  }
+  const transLang = langMap[uiLang] || 'English'
+  const typeLabel = input.type === 'vocab' ? 'JLPT vocabulary' : 'JLPT grammar'
+  const userAnswer = input.yourAnswer || '(no answer given)'
+
+  return `You are a friendly Japanese tutor. Explain why a learner got a ${typeLabel} question wrong.
+
+Question type: ${input.point}
+Question: ${input.prompt}${input.subPrompt ? '\nHint: ' + input.subPrompt : ''}
+Their answer: ${userAnswer}
+Correct answer: ${input.correctAnswer}
+
+Write the explanation in ${transLang}. Cover three things, in this order:
+1. Why the correct answer is right (the rule, meaning, or reading)
+2. Why their answer is wrong, or how it differs from the correct one
+3. A short memory tip or related grammar/vocabulary pattern they can carry forward
+
+Tone: encouraging, conversational tutor — not formal or condescending.
+Length: 3-4 short paragraphs total. Use line breaks between paragraphs.
+Output: plain text in ${transLang} only. No markdown headers, no JSON, no English meta-commentary, no bullet points unless natural.`
+}
+
+export async function explainWrongAnswer(
+  input: ExplainWrongInput,
+  uiLang: string
+): Promise<string> {
+  const response = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: buildExplainWrongPrompt(input, uiLang) }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 800,
+        thinkingConfig: { thinkingBudget: 0 },
+      },
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.status}`)
+  }
+
+  const data = await response.json()
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) throw new Error('Empty response from Gemini')
+
+  return text
+    .trim()
+    .replace(/^```(?:\w+)?\s*/, '')
+    .replace(/\s*```$/, '')
+    .trim()
+}
+
+export function aiExplainCacheKey(input: ExplainWrongInput, uiLang: string): string {
+  return [uiLang, input.type, input.prompt, input.yourAnswer, input.correctAnswer].join('::')
+}
+
 export async function sendMessage(
   userText: string,
   history: ChatMessage[],

@@ -8,7 +8,12 @@ import { useTranslation } from 'react-i18next'
 import i18n from '../lib/i18n'
 import { allVocabulary } from '../data/vocabulary'
 import { grammarQuestions, GrammarQuestion } from '../data/grammar'
-import { saveExamRecord, loadExamHistory, clearExamHistory } from '../lib/storage'
+import {
+  saveExamRecord, loadExamHistory, clearExamHistory,
+  getAIExplainCached, setAIExplainCached,
+} from '../lib/storage'
+import { explainWrongAnswer, aiExplainCacheKey } from '../lib/gemini'
+import type { ExplainWrongInput } from '../lib/gemini'
 import type { Vocabulary, ExamRecord, ExamWrongItem } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
@@ -150,6 +155,68 @@ function buildExam(level: ExamLevel): ExamQuestion[] {
   return shuffle([...vocabQs, ...grammarQs])
 }
 
+// ── AI 解題講解區段 ────────────────────────────────────────────────────────────
+function AIExplainSection({ input }: { input: ExplainWrongInput }) {
+  const { t, i18n: i18nInst } = useTranslation()
+  const { colors } = useTheme()
+  const s = useMemo(() => createStyles(colors), [colors])
+  const [aiText, setAiText] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const cacheKey = useMemo(
+    () => aiExplainCacheKey(input, i18nInst.language),
+    [input.prompt, input.yourAnswer, input.correctAnswer, input.type, i18nInst.language],
+  )
+
+  useEffect(() => {
+    let mounted = true
+    getAIExplainCached(cacheKey).then(cached => {
+      if (mounted && cached) setAiText(cached)
+    })
+    return () => { mounted = false }
+  }, [cacheKey])
+
+  const handleAsk = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const text = await explainWrongAnswer(input, i18nInst.language)
+      setAiText(text)
+      await setAIExplainCached(cacheKey, text)
+    } catch {
+      setError(t('jlpt.aiExplainError'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (aiText) {
+    return (
+      <View style={s.aiBox}>
+        <Text style={s.aiTitle}>{t('jlpt.aiExplainTitle')}</Text>
+        <Text style={s.aiText}>{aiText}</Text>
+      </View>
+    )
+  }
+
+  return (
+    <View style={{ marginTop: 8 }}>
+      <TouchableOpacity
+        style={[s.aiBtn, loading && { opacity: 0.6 }]}
+        onPress={handleAsk}
+        disabled={loading}
+        activeOpacity={0.7}
+      >
+        <Text style={s.aiBtnText}>
+          {loading ? t('jlpt.aiExplaining') : t('jlpt.aiExplain')}
+        </Text>
+      </TouchableOpacity>
+      {error && <Text style={s.aiErrorText}>{error}</Text>}
+    </View>
+  )
+}
+
 // ── 歷史紀錄：錯題卡片 ────────────────────────────────────────────────────────
 function WrongItemCard({ item }: { item: ExamWrongItem }) {
   const { t } = useTranslation()
@@ -183,6 +250,14 @@ function WrongItemCard({ item }: { item: ExamWrongItem }) {
         <View style={s.explainBox}>
           <Text style={s.explainPoint}>{item.point}</Text>
           <Text style={s.explainText}>{item.explanation}</Text>
+          <AIExplainSection input={{
+            prompt: item.prompt,
+            subPrompt: item.subPrompt,
+            yourAnswer: item.yourAnswer,
+            correctAnswer: item.correctAnswer,
+            type: item.type,
+            point: item.point,
+          }} />
         </View>
       )}
     </TouchableOpacity>
@@ -333,6 +408,14 @@ function ResultScreen({
                 <View style={s.explainBox}>
                   <Text style={s.explainPoint}>{q.point}</Text>
                   <Text style={s.explainText}>{q.explanation}</Text>
+                  <AIExplainSection input={{
+                    prompt: q.prompt,
+                    subPrompt: q.subPrompt,
+                    yourAnswer: answers[q.id] || '',
+                    correctAnswer: q.answer,
+                    type: q.type,
+                    point: q.point,
+                  }} />
                 </View>
               )}
             </TouchableOpacity>
@@ -745,6 +828,19 @@ function createStyles(colors: ThemeColors) {
     explainBox: { marginTop: 10, backgroundColor: colors.card, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: colors.border },
     explainPoint: { fontSize: 12, fontWeight: '700', color: colors.primary, marginBottom: 6 },
     explainText: { fontSize: 13, color: colors.text, lineHeight: 20 },
+
+    aiBtn: {
+      backgroundColor: '#EEF2FF', borderRadius: 10, paddingVertical: 9, paddingHorizontal: 14,
+      alignItems: 'center', borderWidth: 1, borderColor: colors.primary,
+    },
+    aiBtnText: { color: colors.primary, fontSize: 13, fontWeight: '700' },
+    aiErrorText: { fontSize: 11, color: '#DC2626', marginTop: 6, textAlign: 'center' },
+    aiBox: {
+      marginTop: 10, backgroundColor: '#EEF2FF', borderRadius: 10, padding: 12,
+      borderWidth: 1, borderColor: colors.primary,
+    },
+    aiTitle: { fontSize: 12, fontWeight: '700', color: colors.primary, marginBottom: 8 },
+    aiText: { fontSize: 13, color: colors.text, lineHeight: 22 },
 
     retryBtn: { backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginBottom: 10 },
     retryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },

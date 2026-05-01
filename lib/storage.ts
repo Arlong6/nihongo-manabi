@@ -6,6 +6,8 @@ const GRAMMAR_PROGRESS_KEY = 'grammar_progress'
 const LOCALE_KEY = 'app_locale'
 const FAVORITES_KEY = 'vocab_favorites'
 const AI_CHAT_USAGE_KEY = 'ai_chat_usage'
+const AI_EXPLAIN_CACHE_KEY = 'ai_explain_cache'
+const AI_EXPLAIN_CACHE_MAX = 200
 
 export const AI_CHAT_DAILY_LIMIT = 3
 
@@ -36,6 +38,36 @@ export async function incrementAIChatUsage(): Promise<AIChatUsage> {
     console.error('Failed to save AI chat usage')
   }
   return next
+}
+
+export async function getAIExplainCached(key: string): Promise<string | null> {
+  try {
+    const stored = await AsyncStorage.getItem(AI_EXPLAIN_CACHE_KEY)
+    if (!stored) return null
+    const cache = JSON.parse(stored) as Record<string, string>
+    return cache[key] ?? null
+  } catch {
+    return null
+  }
+}
+
+export async function setAIExplainCached(key: string, value: string): Promise<void> {
+  try {
+    const stored = await AsyncStorage.getItem(AI_EXPLAIN_CACHE_KEY)
+    const cache: Record<string, string> = stored ? JSON.parse(stored) : {}
+    cache[key] = value
+    const keys = Object.keys(cache)
+    if (keys.length > AI_EXPLAIN_CACHE_MAX) {
+      // FIFO eviction: drop oldest entries
+      const trimmed: Record<string, string> = {}
+      keys.slice(-AI_EXPLAIN_CACHE_MAX).forEach(k => { trimmed[k] = cache[k] })
+      await AsyncStorage.setItem(AI_EXPLAIN_CACHE_KEY, JSON.stringify(trimmed))
+    } else {
+      await AsyncStorage.setItem(AI_EXPLAIN_CACHE_KEY, JSON.stringify(cache))
+    }
+  } catch (e) {
+    console.error('Failed to cache AI explain', e)
+  }
 }
 
 export async function loadFavorites(): Promise<string[]> {
