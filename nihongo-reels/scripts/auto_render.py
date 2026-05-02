@@ -17,9 +17,9 @@ Usage:
 
 Composition universe (auto-skipped if mp4 already exists):
   - Reel-15..30   (vocab; 04-14 skipped to avoid duplicating earlier IG posts)
-  - Kana-04..10
-  - Grammar-04..10
-  - Travel-04..10
+  - Kana-04..14
+  - Grammar-04..13
+  - Travel-04..13
 """
 import argparse
 import json
@@ -44,11 +44,11 @@ DEFAULT_BATCH = 5
 ROTATION = []
 for n in range(15, 31):
     ROTATION.append(("Reel", f"{n:02d}"))
-for n in range(4, 11):
+for n in range(4, 15):
     ROTATION.append(("Kana", f"{n:02d}"))
-for n in range(4, 11):
+for n in range(4, 14):
     ROTATION.append(("Grammar", f"{n:02d}"))
-for n in range(4, 11):
+for n in range(4, 14):
     ROTATION.append(("Travel", f"{n:02d}"))
 
 # Interleave so each batch is varied (Reel, Kana, Grammar, Travel, Reel, ...)

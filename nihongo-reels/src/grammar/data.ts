@@ -31,6 +31,9 @@ import g07 from "./timings/07.json";
 import g08 from "./timings/08.json";
 import g09 from "./timings/09.json";
 import g10 from "./timings/10.json";
+import g11 from "./timings/11.json";
+import g12 from "./timings/12.json";
+import g13 from "./timings/13.json";
 
 export const grammarPoints: GrammarPoint[] = [
   {
@@ -122,5 +125,32 @@ export const grammarPoints: GrammarPoint[] = [
     correct: { ja: "勉強したのにテストで落ちた。", zh: "明明讀書了卻考不好。" },
     mistakeExplain: "「のに」要直接接在前句末尾，不能斷句。",
     timings: g10,
+  },
+  {
+    id: "11", pattern: "〜たり〜たり", meaning: "做了…又做了…", level: "N4",
+    example1: { ja: "週末は本を読んだり映画を見たりする。", zh: "週末讀書、看電影。" },
+    example2: { ja: "雨が降ったり止んだりしている。", zh: "雨一下下、一下停。" },
+    wrong: { ja: "週末は本を読んで映画を見たりする。", zh: "（前後不一致）" },
+    correct: { ja: "週末は本を読んだり映画を見たりする。", zh: "週末讀書、看電影。" },
+    mistakeExplain: "「〜たり」要成對使用，不能跟「て形」混用。",
+    timings: g11,
+  },
+  {
+    id: "12", pattern: "〜ば（條件）", meaning: "如果…就", level: "N4",
+    example1: { ja: "雨が降れば家にいる。", zh: "下雨就待在家。" },
+    example2: { ja: "安ければ買う。", zh: "便宜的話就買。" },
+    wrong: { ja: "雨が降るば家にいる。", zh: "（活用錯）" },
+    correct: { ja: "雨が降れば家にいる。", zh: "下雨就待在家。" },
+    mistakeExplain: "動詞要變成「ば形」（降る → 降れば）才對。",
+    timings: g12,
+  },
+  {
+    id: "13", pattern: "〜と思う", meaning: "我覺得／我認為", level: "N4",
+    example1: { ja: "明日は雨だと思う。", zh: "我覺得明天會下雨。" },
+    example2: { ja: "彼は来ないと思います。", zh: "我覺得他不會來。" },
+    wrong: { ja: "明日は雨と思う。", zh: "（漏だ）" },
+    correct: { ja: "明日は雨だと思う。", zh: "我覺得明天會下雨。" },
+    mistakeExplain: "名詞 + と思う 要先加「だ」；普通形動詞才直接接。",
+    timings: g13,
   },
 ];

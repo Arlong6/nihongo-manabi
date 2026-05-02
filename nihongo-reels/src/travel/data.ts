@@ -28,6 +28,9 @@ import tv07 from "./timings/07.json";
 import tv08 from "./timings/08.json";
 import tv09 from "./timings/09.json";
 import tv10 from "./timings/10.json";
+import tv11 from "./timings/11.json";
+import tv12 from "./timings/12.json";
+import tv13 from "./timings/13.json";
 
 export const travelPhrases: TravelPhrase[] = [
   {
@@ -99,5 +102,26 @@ export const travelPhrases: TravelPhrase[] = [
     breakdown: [{ word: "予約", role: "預約" }, { word: "しました", role: "做過（完成形）" }],
     response: { ja: "お名前をお願いします。", reading: "おなまえを おねがいします", zh: "請告訴我您的姓名。" },
     tip: "先講這句，接著對方會問名字，流程很順。", timings: tv10,
+  },
+  {
+    id: "11", situation: "結帳要收據", emoji: "🧾",
+    phrase: "領収書をください。", reading: "りょうしゅうしょを ください", meaning: "請給我收據。",
+    breakdown: [{ word: "領収書", role: "收據" }, { word: "を", role: "助詞" }, { word: "ください", role: "請給" }],
+    response: { ja: "宛名はどうしますか？", reading: "あてなは どう しますか", zh: "抬頭怎麼開？" },
+    tip: "出差報帳必備。對方會問抬頭，講「上で」就是空白。", timings: tv11,
+  },
+  {
+    id: "12", situation: "問營業時間", emoji: "🕒",
+    phrase: "何時まで開いていますか？", reading: "なんじまで あいて いますか", meaning: "開到幾點？",
+    breakdown: [{ word: "何時まで", role: "到幾點" }, { word: "開いて", role: "開著" }, { word: "いますか", role: "嗎" }],
+    response: { ja: "夜九時までです。", reading: "よる くじまで です", zh: "到晚上九點。" },
+    tip: "「〜まで」= 截止點。改成「何時から」就是「從幾點開始」。", timings: tv12,
+  },
+  {
+    id: "13", situation: "點餐告知過敏", emoji: "🥜",
+    phrase: "アレルギーがあります。", reading: "アレルギーが あります", meaning: "我有過敏。",
+    breakdown: [{ word: "アレルギー", role: "過敏" }, { word: "が", role: "助詞" }, { word: "あります", role: "有" }],
+    response: { ja: "何のアレルギーですか？", reading: "なんの アレルギーですか", zh: "對什麼過敏？" },
+    tip: "後接物名「〇〇のアレルギー」，例：そばのアレルギー。救命關鍵句。", timings: tv13,
   },
 ];

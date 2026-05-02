@@ -30,6 +30,10 @@ import t07 from "./timings/07.json";
 import t08 from "./timings/08.json";
 import t09 from "./timings/09.json";
 import t10 from "./timings/10.json";
+import t11 from "./timings/11.json";
+import t12 from "./timings/12.json";
+import t13 from "./timings/13.json";
+import t14 from "./timings/14.json";
 
 export const kanaPairs: KanaPair[] = [
   {
@@ -101,5 +105,33 @@ export const kanaPairs: KanaPair[] = [
     right: { char: "み", word: "みず", reading: "みず", meaning: "水" },
     mnemonic: "ふ 像波浪、み 像蛇的圈。",
     quizWhich: "right", timings: t10,
+  },
+  {
+    id: "11", kind: "hiragana",
+    left: { char: "ね", word: "ねこ", reading: "ねこ", meaning: "貓" },
+    right: { char: "れ", word: "れんしゅう", reading: "れんしゅう", meaning: "練習" },
+    mnemonic: "ね 右下有圈、れ 右下沒圈直接收。",
+    quizWhich: "left", timings: t11,
+  },
+  {
+    id: "12", kind: "hiragana",
+    left: { char: "ま", word: "まど", reading: "まど", meaning: "窗戶" },
+    right: { char: "も", word: "もも", reading: "もも", meaning: "桃子" },
+    mnemonic: "ま 中間有圈、も 中間是橫穿。",
+    quizWhich: "right", timings: t12,
+  },
+  {
+    id: "13", kind: "hiragana",
+    left: { char: "ち", word: "ちず", reading: "ちず", meaning: "地圖" },
+    right: { char: "ら", word: "らいねん", reading: "らいねん", meaning: "明年" },
+    mnemonic: "ち 上面是 7、ら 上面是一撇。",
+    quizWhich: "left", timings: t13,
+  },
+  {
+    id: "14", kind: "katakana",
+    left: { char: "ヌ", word: "ヌードル", reading: "ぬーどる", meaning: "麵類" },
+    right: { char: "ス", word: "スープ", reading: "すーぷ", meaning: "湯" },
+    mnemonic: "ヌ 多一撇、ス 是 J 形。",
+    quizWhich: "right", timings: t14,
   },
 ];
