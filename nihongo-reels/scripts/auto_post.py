@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Auto-post next pending Reel via Make.com webhook.
+"""Auto-post next pending Reel via Make.com webhook(s).
 
 Flow:
   1. Pick first `pending` entry from upload_queue.json
   2. Push mp4 to Arlong6/nihongo-reels-host repo (raw.githubusercontent.com host)
-  3. POST { video_url, caption, filename } to Make.com webhook
-  4. Mark status=uploaded with timestamp
+  3. POST { video_url, caption, filename } to Make.com webhook (IG)
+  4. If MAKE_TIKTOK_WEBHOOK_URL set, also POST to TikTok webhook with platform-tagged caption
+  5. Mark status=uploaded with timestamp (TikTok failure does NOT block IG success)
 
 Required .env:
   MAKE_WEBHOOK_URL=https://hook.us2.make.com/xxx
-  IG_HOST_REPO=Arlong6/nihongo-reels-host    (optional, has default)
-  TELEGRAM_BOT_TOKEN                          (optional)
-  TELEGRAM_CHAT_ID                            (optional)
+  IG_HOST_REPO=Arlong6/nihongo-reels-host        (optional, has default)
+  MAKE_TIKTOK_WEBHOOK_URL=https://hook.us2.make.com/yyy   (optional, enables cross-post)
+  REDIRECT_BASE_URL=https://nihongo-manabi-proxy.vercel.app/r   (optional, enables attribution)
+  TELEGRAM_BOT_TOKEN                              (optional)
+  TELEGRAM_CHAT_ID                                (optional)
 
 Usage:
   python scripts/auto_post.py --schedule    # post next pending
@@ -102,6 +105,27 @@ def pick_caption(filename: str, fallback: str) -> str:
     return fallback
 
 
+# Marker line in CAPTION_VARIANTS that gets replaced with an attributable
+# redirect URL when REDIRECT_BASE_URL is set. The original wording is kept as a
+# fallback so existing behavior is unchanged when the env var is missing.
+SEARCH_LINE = "App Store 搜尋 Nihongo Manabi"
+
+
+def inject_redirect(caption: str, stem: str, platform: str) -> str:
+    """Replace the App Store search line with a per-post tracked URL.
+
+    Caption appears as text on IG Reels (not clickable) but is clickable on
+    TikTok — the redirect endpoint logs every click either way (manual paste
+    on IG still hits it).
+    """
+    base = os.environ.get("REDIRECT_BASE_URL")
+    if not base:
+        return caption
+    base = base.rstrip("/")
+    url = f"{base}/{stem}?p={platform}"
+    return caption.replace(SEARCH_LINE, f"📲 {url}")
+
+
 def load_queue() -> list[dict]:
     return json.loads(QUEUE_FILE.read_text())
 
@@ -179,6 +203,7 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
     if not webhook:
         print("ERROR: MAKE_WEBHOOK_URL not set in .env", file=sys.stderr)
         sys.exit(1)
+    tiktok_webhook = os.environ.get("MAKE_TIKTOK_WEBHOOK_URL")
     repo = os.environ.get("IG_HOST_REPO", DEFAULT_HOST_REPO)
 
     queue = load_queue()
@@ -200,29 +225,48 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
         print(f"ERROR: {mp4_path} not found", file=sys.stderr)
         sys.exit(1)
 
-    caption = pick_caption(mp4_path.name, entry.get("caption", ""))
+    base_caption = pick_caption(mp4_path.name, entry.get("caption", ""))
+    stem = mp4_path.stem
+    ig_caption = inject_redirect(base_caption, stem, "ig")
+    tt_caption = inject_redirect(base_caption, stem, "tt")
     print(f"[post] {mp4_path.name}")
-    print(f"[post] caption: {caption[:60]}...")
+    print(f"[post] caption: {ig_caption[:60]}...")
 
     print("[post] pushing to host repo...")
     video_url = push_to_host_repo(mp4_path, repo)
     print(f"[post] hosted at {video_url}")
 
-    print("[post] firing webhook...")
-    payload = {"video_url": video_url, "caption": caption, "filename": mp4_path.name}
-    response = fire_webhook(webhook, payload)
-    print(f"[post] webhook: {response}")
+    print("[post] firing IG webhook...")
+    ig_payload = {"video_url": video_url, "caption": ig_caption, "filename": mp4_path.name}
+    response = fire_webhook(webhook, ig_payload)
+    print(f"[post] IG webhook: {response}")
+
+    tiktok_response = None
+    if tiktok_webhook:
+        print("[post] firing TikTok webhook...")
+        tt_payload = {"video_url": video_url, "caption": tt_caption, "filename": mp4_path.name}
+        try:
+            tiktok_response = fire_webhook(tiktok_webhook, tt_payload)
+            print(f"[post] TikTok webhook: {tiktok_response}")
+        except Exception as e:
+            tiktok_response = f"ERROR: {e}"
+            print(f"[post] TikTok webhook FAILED (IG already succeeded): {e}", file=sys.stderr)
 
     if queue_entry is not None:
         queue_entry["status"] = "uploaded"
         queue_entry["uploaded_at"] = datetime.now(timezone.utc).astimezone().isoformat()
         queue_entry["uploaded_via"] = "make.com"
-        queue_entry["caption_used"] = caption
+        queue_entry["caption_used"] = ig_caption
+        if tiktok_webhook:
+            queue_entry["tiktok_response"] = tiktok_response
         save_queue(queue)
         print(f"[post] marked {mp4_path.name} as uploaded")
 
     remaining = sum(1 for e in queue if e["status"] == "pending")
-    msg = f"✅ Posted: <code>{mp4_path.name}</code>\nRemaining: {remaining}"
+    cross = " + TT" if tiktok_webhook and tiktok_response and not str(tiktok_response).startswith("ERROR") else ""
+    msg = f"✅ Posted{cross}: <code>{mp4_path.name}</code>\nRemaining: {remaining}"
+    if tiktok_webhook and tiktok_response and str(tiktok_response).startswith("ERROR"):
+        msg += f"\n⚠️ TikTok 失敗: {tiktok_response}"
     if remaining <= 3:
         msg += "\n⚠️ 素材剩 ≤ 3 支,該渲染新內容了"
     telegram(msg)
