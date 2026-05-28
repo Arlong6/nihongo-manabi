@@ -5,3 +5,5 @@ output/
 *.mp4
 public/crime/*/
 !public/crime/300m-yen/
+__pycache__/
+*.pyc

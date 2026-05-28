@@ -17,10 +17,23 @@ cd "$PROJECT_DIR"
 # filter blocking, expired IG token in Make connection).
 $PYTHON scripts/pipeline_health.py --quiet >> "$LOG" 2>&1 || echo "[schedule] pipeline_health flagged issue" >> "$LOG"
 
+# Refresh IG Graph token if <20d remaining (self-throttles, safe to call daily).
+# Only relevant if you're on the direct Graph API path (ig_graph_uploader.py);
+# the Make.com webhook path manages its own token inside Make.
+if grep -q "^IG_GRAPH_TOKEN=" "$PROJECT_DIR/.env" 2>/dev/null; then
+    $PYTHON scripts/ig_token_refresh.py >> "$LOG" 2>&1 || echo "[schedule] ig_token_refresh exited non-zero" >> "$LOG"
+fi
+
 # Refill queue if pending < threshold (renders new mp4s as needed).
 $PYTHON scripts/auto_render.py >> "$LOG" 2>&1 || echo "[schedule] auto_render exited non-zero" >> "$LOG"
 
 # Post next pending reel via Make.com webhook.
 $PYTHON scripts/auto_post.py --schedule >> "$LOG" 2>&1
+
+# Archive uploaded mp4s older than 7d to external drive (no-op if NIHONGO_ARCHIVE_DIR
+# unset or drive unmounted — keeps disk clean without blocking today's post).
+if grep -q "^NIHONGO_ARCHIVE_DIR=" "$PROJECT_DIR/.env" 2>/dev/null; then
+    $PYTHON scripts/archive_uploaded.py >> "$LOG" 2>&1 || echo "[schedule] archive_uploaded exited non-zero" >> "$LOG"
+fi
 
 echo "Done at $(date)" >> "$LOG"
