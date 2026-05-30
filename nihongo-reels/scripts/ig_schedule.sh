@@ -30,6 +30,10 @@ $PYTHON scripts/auto_render.py >> "$LOG" 2>&1 || echo "[schedule] auto_render ex
 # Post next pending reel via Make.com webhook.
 $PYTHON scripts/auto_post.py --schedule >> "$LOG" 2>&1
 
+# Telegram nudge with today's bio link URL (manual 30s paste in IG App).
+# Half-auto fallback because IG profile-edit endpoints are anti-bot locked.
+$PYTHON scripts/ig_bio_nudge.py >> "$LOG" 2>&1 || echo "[schedule] ig_bio_nudge exited non-zero" >> "$LOG"
+
 # Archive uploaded mp4s older than 7d to external drive (no-op if NIHONGO_ARCHIVE_DIR
 # unset or drive unmounted — keeps disk clean without blocking today's post).
 if grep -q "^NIHONGO_ARCHIVE_DIR=" "$PROJECT_DIR/.env" 2>/dev/null; then
