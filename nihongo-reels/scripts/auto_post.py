@@ -64,6 +64,16 @@ CAPTION_VARIANTS = {
         "日本旅行救命金句 🗾\n用得到記下來\n\n#日語學習 #日本語 #日本旅遊 #旅遊日文 #nihongo #日本自由行\nApp Store 搜尋 Nihongo Manabi",
         "出國前先背 🍱\n日本旅遊實用句\n\n#日語學習 #日本語 #旅遊日文 #日本自由行 #nihongo #日本旅遊\nApp Store 搜尋 Nihongo Manabi",
     ],
+    "Anime": [
+        "動漫經典台詞拆解 🎬\n這句你一定聽過 但你懂文法嗎\n\n#日語學習 #日本語 #動漫日文 #anime #nihongo #JLPT #動漫經典台詞\nApp Store 搜尋 Nihongo Manabi",
+        "從動漫學日文 ⚔️\n一句台詞學一個文法點\n\n#日語學習 #日本語 #anime #nihongo #learnjapanese #動漫學日文 #日文文法\nApp Store 搜尋 Nihongo Manabi",
+        "動漫迷的日文課 🔥\n你最愛那句台詞的真正意思\n\n#日語學習 #日本語 #動漫 #anime #JLPT #nihongo #日文台詞\nApp Store 搜尋 Nihongo Manabi",
+    ],
+    "Oops": [
+        "觀光客容易踩雷的日文 ⚠️\n你是不是也這樣說\n\n#日語學習 #日本語 #日本旅遊 #旅遊日文 #nihongo #日本自由行 #觀光客\nApp Store 搜尋 Nihongo Manabi",
+        "去日本前先學會 🍱\n這句說錯店員臉色會變\n\n#日語學習 #日本語 #日本旅遊 #旅遊日文 #日本自由行 #nihongo #日文文化\nApp Store 搜尋 Nihongo Manabi",
+        "別再用「大丈夫」隨便回 ❌\n日本人的真實反應你知道嗎\n\n#日語學習 #日本語 #日本旅遊 #旅遊日文 #nihongo #日本文化 #踩雷\nApp Store 搜尋 Nihongo Manabi",
+    ],
 }
 
 

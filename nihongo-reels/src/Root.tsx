@@ -14,6 +14,12 @@ import { GRAMMAR_FPS, GRAMMAR_HEIGHT, GRAMMAR_WIDTH, grammarTotal } from "./gram
 import { TravelReel } from "./travel/TravelReel";
 import { travelPhrases } from "./travel/data";
 import { TRAVEL_FPS, TRAVEL_HEIGHT, TRAVEL_WIDTH, travelTotal } from "./travel/theme";
+import { AnimeReel } from "./anime/AnimeReel";
+import { animeQuotes } from "./anime/data";
+import { ANIME_FPS, ANIME_HEIGHT, ANIME_WIDTH, animeTotal } from "./anime/theme";
+import { OopsReel } from "./oops/OopsReel";
+import { oopsCases } from "./oops/data";
+import { OOPS_FPS, OOPS_HEIGHT, OOPS_WIDTH, oopsTotal } from "./oops/theme";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -97,6 +103,30 @@ export const RemotionRoot: React.FC = () => {
           height={TRAVEL_HEIGHT}
           durationInFrames={travelTotal(p.timings)}
           defaultProps={{ p }}
+        />
+      ))}
+      {animeQuotes.map((q) => (
+        <Composition
+          key={q.id}
+          id={`Anime-${q.id}`}
+          component={AnimeReel}
+          fps={ANIME_FPS}
+          width={ANIME_WIDTH}
+          height={ANIME_HEIGHT}
+          durationInFrames={animeTotal(q.timings)}
+          defaultProps={{ q }}
+        />
+      ))}
+      {oopsCases.map((o) => (
+        <Composition
+          key={o.id}
+          id={`Oops-${o.id}`}
+          component={OopsReel}
+          fps={OOPS_FPS}
+          width={OOPS_WIDTH}
+          height={OOPS_HEIGHT}
+          durationInFrames={oopsTotal(o.timings)}
+          defaultProps={{ o }}
         />
       ))}
     </>

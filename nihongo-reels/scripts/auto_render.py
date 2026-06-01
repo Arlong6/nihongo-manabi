@@ -20,6 +20,8 @@ Composition universe (auto-skipped if mp4 already exists):
   - Kana-04..14
   - Grammar-04..13
   - Travel-04..13
+  - Anime-01..17  (動漫經典台詞 — 2026-06 上線)
+  - Oops-01..20   (觀光客踩雷 — 2026-06 上線)
 """
 import argparse
 import json
@@ -50,13 +52,17 @@ for n in range(4, 14):
     ROTATION.append(("Grammar", f"{n:02d}"))
 for n in range(4, 14):
     ROTATION.append(("Travel", f"{n:02d}"))
+for n in range(1, 18):
+    ROTATION.append(("Anime", f"{n:02d}"))
+for n in range(1, 21):
+    ROTATION.append(("Oops", f"{n:02d}"))
 
-# Interleave so each batch is varied (Reel, Kana, Grammar, Travel, Reel, ...)
+# Interleave so each batch is varied (Reel, Kana, Grammar, Travel, Anime, Oops, ...)
 def interleaved_rotation():
     buckets = {}
     for tpl, n in ROTATION:
         buckets.setdefault(tpl, []).append((tpl, n))
-    order = ["Reel", "Kana", "Grammar", "Travel"]
+    order = ["Reel", "Kana", "Grammar", "Travel", "Anime", "Oops"]
     out = []
     while any(buckets.get(t) for t in order):
         for t in order:
