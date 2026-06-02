@@ -1,13 +1,23 @@
 import React, { useState, useMemo } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import * as Haptics from 'expo-haptics'
 import { phrases, phraseCategoryInfo } from '../data/phrases'
 import type { Phrase } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { requestPermission, recognizeJapanese, scoreTranscript, type Score } from '../lib/pronunciation'
 
 type ScreenMode = 'browse' | 'quiz'
+
+// Colour ladder for pronunciation grade chip. Keeps A/B feeling rewarding and
+// D/F clearly bad without resorting to red-only for everything sub-A.
+const GRADE_COLORS: Record<string, string> = {
+  A: '#10B981', B: '#3B82F6', C: '#F59E0B', D: '#EF4444', F: '#991B1B',
+}
+function gradeColor(g: string): string {
+  return GRADE_COLORS[g] || '#6B7280'
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -126,6 +136,35 @@ export default function PhrasesScreen() {
   const [screenMode, setScreenMode] = useState<ScreenMode>('browse')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  // Pronunciation practice state — only one card can be active at a time so we
+  // don't fight expo-speech-recognition's single-session constraint.
+  const [activePronounceId, setActivePronounceId] = useState<string | null>(null)
+  const [lastScore, setLastScore] = useState<Score | null>(null)
+
+  const handlePronounce = async (phrase: Phrase) => {
+    if (activePronounceId) return  // already listening
+    const granted = await requestPermission()
+    if (!granted) {
+      Alert.alert('需要權限', '請到 設定 → Nihongo Manabi 開啟麥克風跟語音辨識權限')
+      return
+    }
+    setActivePronounceId(phrase.id)
+    setLastScore(null)
+    try {
+      const heard = await recognizeJapanese({ timeoutMs: 6000 })
+      const score = scoreTranscript(heard, phrase.japanese)
+      setLastScore(score)
+      Haptics.notificationAsync(
+        score.grade === 'A' || score.grade === 'B'
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Warning,
+      )
+    } catch (e: any) {
+      Alert.alert('辨識失敗', e?.message ?? '請再試一次')
+    } finally {
+      setActivePronounceId(null)
+    }
+  }
 
   const filtered = selectedCategory === 'all'
     ? phrases
@@ -205,6 +244,34 @@ export default function PhrasesScreen() {
                   <Text style={s.situationLabel}>{t('phrases.situationLabel')}</Text>
                   <Text style={s.situationText}>{phrase.situation}</Text>
                 </View>
+                <TouchableOpacity
+                  style={[
+                    s.pronounceBtn,
+                    activePronounceId === phrase.id && s.pronounceBtnActive,
+                    { backgroundColor: activePronounceId === phrase.id ? '#EF4444' : colors.primary },
+                  ]}
+                  onPress={() => handlePronounce(phrase)}
+                  disabled={!!activePronounceId && activePronounceId !== phrase.id}
+                >
+                  <Text style={s.pronounceBtnText}>
+                    {activePronounceId === phrase.id ? '🔴 聽取中...' : '🎤 練習發音'}
+                  </Text>
+                </TouchableOpacity>
+                {lastScore && expandedId === phrase.id && lastScore.target === phrase.japanese && (
+                  <View style={[s.scoreCard, { borderColor: gradeColor(lastScore.grade) }]}>
+                    <View style={s.scoreRow}>
+                      <Text style={[s.scoreGrade, { color: gradeColor(lastScore.grade) }]}>
+                        {lastScore.grade}
+                      </Text>
+                      <View style={{ flex: 1, marginLeft: 16 }}>
+                        <Text style={s.scorePct}>{lastScore.percent} / 100</Text>
+                        <Text style={s.scoreHeard} numberOfLines={2}>
+                          你說的：{lastScore.heard || '(沒聽到)'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -271,6 +338,20 @@ function createStyles(colors: ThemeColors) {
     tipBox: { backgroundColor: '#FFFBEB', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#FDE68A', marginTop: 8 },
     tipTitle: { fontWeight: 'bold', color: '#92400E', marginBottom: 8 },
     tipText: { color: '#78350F', fontSize: 13, marginBottom: 4 },
+    pronounceBtn: {
+      marginTop: 12, paddingVertical: 12, borderRadius: 12,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    pronounceBtnActive: { transform: [{ scale: 0.97 }] },
+    pronounceBtnText: { color: '#fff', fontSize: 15, fontWeight: '700', letterSpacing: 0.3 },
+    scoreCard: {
+      marginTop: 12, padding: 14, borderRadius: 12, borderWidth: 2,
+      backgroundColor: colors.card,
+    },
+    scoreRow: { flexDirection: 'row', alignItems: 'center' },
+    scoreGrade: { fontSize: 44, fontWeight: '900', letterSpacing: -1, minWidth: 50, textAlign: 'center' },
+    scorePct: { fontSize: 16, fontWeight: '700', color: colors.text },
+    scoreHeard: { fontSize: 12, color: colors.subtext, marginTop: 4 },
   })
 }
 
