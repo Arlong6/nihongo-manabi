@@ -7,6 +7,7 @@ import { allVocabulary, categoryInfo } from '../data/vocabulary'
 import { getDueCards } from '../lib/srs'
 import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../lib/notifications'
 import type { UserProgress } from '../types'
+import { STREAK_BADGES } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors, ThemeMode } from '../lib/theme'
 
@@ -103,6 +104,38 @@ export default function ProgressScreen() {
           ))}
         </View>
 
+        {/* Streak badges */}
+        <View style={styles.section}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+            <Text style={styles.sectionTitle}>🔥 連勝勳章</Text>
+            <Text style={{ fontSize: 12, color: colors.subtext }}>
+              {progress.earnedBadges?.length ?? 0}/{STREAK_BADGES.length} · 最佳 {progress.longestStreak ?? 0} 天
+            </Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+            {STREAK_BADGES.map(days => {
+              const earned = progress.earnedBadges?.includes(days)
+              return (
+                <View
+                  key={days}
+                  style={[
+                    styles.badge,
+                    earned ? styles.badgeEarned : styles.badgeLocked,
+                    { borderColor: earned ? '#EA580C' : colors.border },
+                  ]}
+                >
+                  <Text style={[styles.badgeNum, { color: earned ? '#EA580C' : colors.subtext }]}>
+                    {earned ? days : '·'}
+                  </Text>
+                  <Text style={[styles.badgeLabel, { color: earned ? colors.text : colors.subtext }]}>
+                    {earned ? `${days} 日` : `${days} 日`}
+                  </Text>
+                </View>
+              )
+            })}
+          </ScrollView>
+        </View>
+
         {/* Category Progress */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('progress.categorySection')}</Text>
@@ -187,7 +220,11 @@ export default function ProgressScreen() {
                   await cancelNotifications()
                   setNotifEnabled(false)
                 } else {
-                  await scheduleDaily(notifHour)
+                  await scheduleDaily(notifHour, 0, {
+                    dueCount: dueCards.length,
+                    currentStreak: progress.streak,
+                    longestStreak: progress.longestStreak,
+                  })
                   setNotifEnabled(true)
                 }
               }}
@@ -205,7 +242,11 @@ export default function ProgressScreen() {
                     style={[styles.hourBtn, notifHour === h && styles.hourBtnActive]}
                     onPress={async () => {
                       setNotifHour(h)
-                      await scheduleDaily(h)
+                      await scheduleDaily(h, 0, {
+                        dueCount: dueCards.length,
+                        currentStreak: progress.streak,
+                        longestStreak: progress.longestStreak,
+                      })
                     }}
                   >
                     <Text style={[styles.hourText, notifHour === h && styles.hourTextActive]}>
@@ -283,6 +324,14 @@ function createStyles(colors: ThemeColors) {
       marginBottom: 16, borderWidth: 1, borderColor: colors.border,
     },
     sectionTitle: { fontSize: 16, fontWeight: 'bold', color: colors.text, marginBottom: 14 },
+    badge: {
+      width: 84, paddingVertical: 12, paddingHorizontal: 8,
+      borderRadius: 14, borderWidth: 2, alignItems: 'center', gap: 4,
+    },
+    badgeEarned: { backgroundColor: '#FFF4ED' },
+    badgeLocked: { backgroundColor: colors.bg },
+    badgeNum: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
+    badgeLabel: { fontSize: 11, fontWeight: '600' },
     chartRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
     chartCol: { alignItems: 'center', flex: 1 },
     chartNum: { fontSize: 10, color: colors.primary, fontWeight: '600', marginBottom: 4, height: 14 },

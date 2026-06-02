@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { UserProgress, DailyProgress, SRSCard, ExamRecord } from '../types'
+import { STREAK_BADGES } from '../types'
 
 const EXAM_HISTORY_KEY = 'jlpt_exam_history'
 const GRAMMAR_PROGRESS_KEY = 'grammar_progress'
@@ -156,12 +157,14 @@ const STORAGE_KEY = 'japanese_learner_progress'
 
 const defaultProgress: UserProgress = {
   streak: 0,
+  longestStreak: 0,
   lastStudyDate: '',
   totalWordsLearned: 0,
   categoryProgress: {},
   dailyHistory: [],
   srsCards: [],
   learnedIds: [],
+  earnedBadges: [],
 }
 
 export async function loadProgress(): Promise<UserProgress> {
@@ -232,12 +235,32 @@ export async function recordDailyActivity(
   await saveProgress(progress)
 }
 
-export function updateStreak(progress: UserProgress): void {
+export interface StreakUpdateResult {
+  /** Day-count thresholds the user just crossed this update (may be empty). */
+  newBadges: number[]
+  /** True when current streak set a new personal record. */
+  newRecord: boolean
+}
+
+export function updateStreak(progress: UserProgress): StreakUpdateResult {
   const today = getTodayString()
-  if (progress.lastStudyDate === today) return
+  if (progress.lastStudyDate === today) return { newBadges: [], newRecord: false }
   const yesterday = getYesterdayString()
   progress.streak = progress.lastStudyDate === yesterday ? progress.streak + 1 : 1
   progress.lastStudyDate = today
+  // Defensive default for users upgrading from older schema.
+  if (typeof progress.longestStreak !== 'number') progress.longestStreak = 0
+  if (!Array.isArray(progress.earnedBadges)) progress.earnedBadges = []
+  const newRecord = progress.streak > progress.longestStreak
+  if (newRecord) progress.longestStreak = progress.streak
+  const newBadges: number[] = []
+  for (const threshold of STREAK_BADGES) {
+    if (progress.streak >= threshold && !progress.earnedBadges.includes(threshold)) {
+      progress.earnedBadges.push(threshold)
+      newBadges.push(threshold)
+    }
+  }
+  return { newBadges, newRecord }
 }
 
 export async function resetProgress(): Promise<void> {

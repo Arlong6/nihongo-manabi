@@ -48,10 +48,19 @@ export default function HomeScreen() {
   }, [])
 
   const streak = progress?.streak ?? 0
+  const longestStreak = progress?.longestStreak ?? 0
+  const earnedBadges = progress?.earnedBadges ?? []
   const totalLearned = progress?.totalWordsLearned ?? 0
   const today = progress?.dailyHistory.find(
     d => d.date === new Date().toISOString().split('T')[0]
   )
+
+  // Highest-tier badge earned, surfaced as a single decorative chip on Home.
+  // Full gallery lives in ProgressScreen so Home stays scannable.
+  const topBadge = earnedBadges.length > 0 ? Math.max(...earnedBadges) : 0
+  // What comes next? Used to nudge "再 X 天解鎖 Y 日勳章".
+  const nextBadge = [3, 7, 14, 30, 60, 100, 200, 365].find(b => streak < b)
+  const remainingToNext = nextBadge ? nextBadge - streak : 0
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -68,12 +77,25 @@ export default function HomeScreen() {
       {/* Streak */}
       <View style={styles.streakCard}>
         <Text style={styles.streakEmoji}>🔥</Text>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.streakNum}>{t('home.streak', { count: streak })}</Text>
           <Text style={styles.streakSub}>
-            {streak === 0 ? t('home.streakStart') : t('home.streakKeepGoing')}
+            {streak === 0
+              ? t('home.streakStart')
+              : nextBadge
+                ? `再 ${remainingToNext} 天解鎖 ${nextBadge} 日勳章`
+                : t('home.streakKeepGoing')}
           </Text>
+          {longestStreak > streak && (
+            <Text style={[styles.streakSub, { marginTop: 2 }]}>🏆 最佳紀錄 {longestStreak} 天</Text>
+          )}
         </View>
+        {topBadge > 0 && (
+          <View style={styles.badgeChip}>
+            <Text style={styles.badgeChipNum}>{topBadge}</Text>
+            <Text style={styles.badgeChipLabel}>日勳章</Text>
+          </View>
+        )}
       </View>
 
       {/* Today stats */}
@@ -243,6 +265,12 @@ function createStyles(colors: ThemeColors) {
     streakEmoji: { fontSize: 36 },
     streakNum: { fontSize: 22, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
     streakSub: { fontSize: 13, color: colors.subtext, marginTop: 2 },
+    badgeChip: {
+      backgroundColor: colors.primarySoft, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
+      alignItems: 'center', minWidth: 64,
+    },
+    badgeChipNum: { fontSize: 22, fontWeight: '800', color: colors.primaryDeep, letterSpacing: -0.5 },
+    badgeChipLabel: { fontSize: 11, color: colors.primaryDeep, fontWeight: '600', marginTop: 2 },
     statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
     statBox: {
       flex: 1, borderRadius: 16, padding: 14, alignItems: 'center',

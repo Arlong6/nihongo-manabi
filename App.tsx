@@ -149,7 +149,11 @@ export default function App() {
         ])
         if (settings.enabled) {
           const dueCount = getDueCards(progress.srsCards).length
-          await scheduleDaily(settings.hour, 0, dueCount)
+          await scheduleDaily(settings.hour, 0, {
+            dueCount,
+            currentStreak: progress.streak,
+            longestStreak: progress.longestStreak,
+          })
         }
       } catch {
         // Notifications are best-effort; ignore errors

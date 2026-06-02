@@ -78,10 +78,17 @@ export interface DailyProgress {
 
 export interface UserProgress {
   streak: number
+  longestStreak: number
   lastStudyDate: string
   totalWordsLearned: number
   categoryProgress: Record<string, { learned: number; total: number }>
   dailyHistory: DailyProgress[]
   srsCards: SRSCard[]
   learnedIds: string[]
+  // Sorted list of milestone day-counts the user has reached at least once.
+  // Used for badge gallery — once earned, never lost.
+  earnedBadges: number[]
 }
+
+// Milestone thresholds that unlock a badge when current streak first hits them.
+export const STREAK_BADGES = [3, 7, 14, 30, 60, 100, 200, 365] as const
