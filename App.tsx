@@ -18,6 +18,7 @@ import ListeningScreen from './screens/ListeningScreen'
 import KanjiScreen from './screens/KanjiScreen'
 import AIConversationScreen from './screens/AIConversationScreen'
 import WatchScreen from './screens/WatchScreen'
+import CameraScreen from './screens/CameraScreen'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
 import { getNotificationSettings, scheduleDaily } from './lib/notifications'
 import { loadProgress } from './lib/storage'
@@ -134,6 +135,11 @@ function AppInner() {
         <Stack.Screen
           name="Watch"
           component={WatchScreen}
+          options={{ headerShown: false, animation: 'fade' }}
+        />
+        <Stack.Screen
+          name="Camera"
+          component={CameraScreen}
           options={{ headerShown: false, animation: 'fade' }}
         />
       </Stack.Navigator>

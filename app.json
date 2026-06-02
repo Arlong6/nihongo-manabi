@@ -18,7 +18,9 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "需要麥克風來練習日文發音",
-        "NSSpeechRecognitionUsageDescription": "需要語音辨識來評估你的日文發音"
+        "NSSpeechRecognitionUsageDescription": "需要語音辨識來評估你的日文發音",
+        "NSCameraUsageDescription": "需要相機來拍攝日文招牌、菜單即時翻譯",
+        "NSPhotoLibraryUsageDescription": "從相簿挑選含日文的照片來辨識翻譯"
       }
     },
     "android": {
@@ -43,7 +45,9 @@
     "plugins": [
       "expo-localization",
       "expo-video",
-      "expo-speech-recognition"
+      "expo-speech-recognition",
+      "expo-camera",
+      "expo-image-picker"
     ]
   }
 }

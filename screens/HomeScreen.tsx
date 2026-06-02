@@ -207,6 +207,16 @@ export default function HomeScreen() {
           <Text style={styles.cardTitle}>看 Reel 學日文</Text>
           <Text style={styles.cardSub}>每日新影片直接在 App 看</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('Camera')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.cardEmoji}>📸</Text>
+          <Text style={styles.cardTitle}>拍照翻譯</Text>
+          <Text style={styles.cardSub}>對著日文招牌、菜單直接翻</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Daily recommendation */}

@@ -58,7 +58,10 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   const body = await req.text()
-  if (body.length > 50_000) return jsonError(413, 'Payload too large')
+  // Bumped from 50KB to 5MB so the in-app camera OCR can send a compressed JPEG
+  // base64. The app downsamples to ~1000px wide JPEG q=0.5 before sending; that
+  // typically lands at 150–400KB before base64 (≈ 200–550KB after) — well inside.
+  if (body.length > 5_000_000) return jsonError(413, 'Payload too large')
 
   const upstream = await fetch(
     `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`,
