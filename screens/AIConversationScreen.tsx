@@ -4,12 +4,14 @@ import {
   TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useNavigation } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
 import { speakJapanese } from '../lib/speech'
 import { useTheme, fonts } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { startConversation, sendMessage, type AIResponse, type ChatMessage } from '../lib/gemini'
 import { recordDailyActivity, getAIChatUsage, incrementAIChatUsage, AI_CHAT_DAILY_LIMIT } from '../lib/storage'
+import { isPro } from '../lib/iap'
 
 type ScreenMode = 'menu' | 'chat' | 'result'
 type Level = 'N5' | 'N4' | 'N3'
@@ -45,6 +47,7 @@ interface BubbleMessage {
 export default function AIConversationScreen() {
   const { t, i18n } = useTranslation()
   const { colors } = useTheme()
+  const navigation = useNavigation<any>()
   const styles = useMemo(() => createStyles(colors), [colors])
 
   const [mode, setMode] = useState<ScreenMode>('menu')
@@ -58,20 +61,33 @@ export default function AIConversationScreen() {
   const [corrections, setCorrections] = useState(0)
   const [showReading, setShowReading] = useState(true)
   const [usageCount, setUsageCount] = useState(0)
+  const [pro, setPro] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
   const inputRef = useRef<TextInput>(null)
   const msgIdRef = useRef(0)
 
   useEffect(() => {
     getAIChatUsage().then(u => setUsageCount(u.count))
+    isPro().then(setPro)
   }, [mode])
 
   const nextId = () => ++msgIdRef.current
 
   const handleStartChat = async (scene: Scene) => {
     const usage = await getAIChatUsage()
-    if (usage.count >= AI_CHAT_DAILY_LIMIT) {
-      Alert.alert(t('aiChat.limitTitle'), t('aiChat.limitMessage', { limit: AI_CHAT_DAILY_LIMIT }))
+    // Pro entitlement bypasses the daily limit entirely. The check is recomputed
+    // here (not just trusted from the initial state) so users who buy Pro mid-
+    // session don't need to relaunch the screen.
+    const currentlyPro = pro || await isPro()
+    if (!currentlyPro && usage.count >= AI_CHAT_DAILY_LIMIT) {
+      Alert.alert(
+        t('aiChat.limitTitle'),
+        t('aiChat.limitMessage', { limit: AI_CHAT_DAILY_LIMIT }),
+        [
+          { text: '取消', style: 'cancel' },
+          { text: '升級 Pro 解鎖', onPress: () => navigation.navigate('Paywall' as never) },
+        ],
+      )
       return
     }
 

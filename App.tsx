@@ -19,6 +19,8 @@ import KanjiScreen from './screens/KanjiScreen'
 import AIConversationScreen from './screens/AIConversationScreen'
 import WatchScreen from './screens/WatchScreen'
 import CameraScreen from './screens/CameraScreen'
+import PaywallScreen from './screens/PaywallScreen'
+import { initPurchases } from './lib/iap'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
 import { getNotificationSettings, scheduleDaily } from './lib/notifications'
 import { loadProgress } from './lib/storage'
@@ -142,6 +144,16 @@ function AppInner() {
           component={CameraScreen}
           options={{ headerShown: false, animation: 'fade' }}
         />
+        <Stack.Screen
+          name="Paywall"
+          component={PaywallScreen}
+          options={{
+            headerShown: false,
+            // Modal feel — slides up so the rest of the app stays in user's mind.
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )
@@ -153,6 +165,9 @@ export default function App() {
   useEffect(() => {
     initI18n().then(async () => {
       setI18nReady(true)
+      // RevenueCat init — runs early so getOfferings() is warm by the time
+      // the user lands on the paywall. Tolerates missing keys (no-op in that case).
+      initPurchases().catch(() => { /* silent */ })
       // Reschedule notification with today's due SRS count
       try {
         const [settings, progress] = await Promise.all([

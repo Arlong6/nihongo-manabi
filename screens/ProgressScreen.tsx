@@ -8,6 +8,8 @@ import { getDueCards } from '../lib/srs'
 import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../lib/notifications'
 import type { UserProgress } from '../types'
 import { STREAK_BADGES } from '../types'
+import { useNavigation } from '@react-navigation/native'
+import { isPro } from '../lib/iap'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors, ThemeMode } from '../lib/theme'
 
@@ -44,6 +46,8 @@ export default function ProgressScreen() {
   const [progress, setProgress] = useState<UserProgress | null>(null)
   const [notifEnabled, setNotifEnabled] = useState(false)
   const [notifHour, setNotifHour] = useState(9)
+  const [pro, setPro] = useState(false)
+  const navigation = useNavigation<any>()
 
   useEffect(() => {
     loadProgress().then(setProgress)
@@ -51,6 +55,7 @@ export default function ProgressScreen() {
       setNotifEnabled(s.enabled)
       setNotifHour(s.hour)
     })
+    isPro().then(setPro)
   }, [])
 
   if (!progress) return null
@@ -103,6 +108,28 @@ export default function ProgressScreen() {
             </View>
           ))}
         </View>
+
+        {/* Pro upgrade card */}
+        <TouchableOpacity
+          style={{
+            backgroundColor: pro ? '#10B981' : colors.primary,
+            padding: 18, borderRadius: 16, marginBottom: 16,
+            flexDirection: 'row', alignItems: 'center', gap: 14,
+          }}
+          onPress={() => navigation.navigate('Paywall')}
+          activeOpacity={0.85}
+        >
+          <Text style={{ fontSize: 32 }}>{pro ? '✅' : '✨'}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
+              {pro ? 'Nihongo Pro · 已啟用' : '升級 Nihongo Pro'}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>
+              {pro ? '感謝支持，所有功能已解鎖' : 'AI 對話無限 + N1/N2 + 拍照翻譯 + 無廣告'}
+            </Text>
+          </View>
+          <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
+        </TouchableOpacity>
 
         {/* Streak badges */}
         <View style={styles.section}>
