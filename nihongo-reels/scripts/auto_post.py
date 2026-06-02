@@ -196,6 +196,47 @@ def fire_webhook(url: str, payload: dict) -> str:
         return r.read().decode("utf-8", errors="replace").strip()
 
 
+def push_feed_manifest(queue: list[dict]):
+    """Push a slim manifest of uploaded entries to Upstash KV for /api/feed.
+
+    Only sends the fields the App Watch screen actually needs (filename, when
+    posted, the caption used). Limits to last 100 uploads so the KV payload
+    stays small. Skips quietly when KV env vars aren't set (e.g. dev box)."""
+    kv_url = os.environ.get("UPSTASH_REDIS_REST_URL") or os.environ.get("KV_REST_API_URL")
+    kv_token = os.environ.get("UPSTASH_REDIS_REST_TOKEN") or os.environ.get("KV_REST_API_TOKEN")
+    if not kv_url or not kv_token:
+        return  # not configured locally; that's fine
+
+    uploaded = [
+        {
+            "filename": Path(e["video"]).name,
+            "uploaded_at": e["uploaded_at"],
+            "caption_used": e.get("caption_used") or e.get("caption", ""),
+        }
+        for e in queue
+        if e.get("status") == "uploaded" and e.get("uploaded_at")
+    ]
+    uploaded.sort(key=lambda e: e["uploaded_at"], reverse=True)
+    manifest = uploaded[:100]
+
+    # Upstash REST SET expects the raw value as the request body. The @upstash/redis
+    # SDK on the read side JSON.parse's the stored string, so we double-encode here:
+    # outer body is the JSON string; that string itself is a JSON array.
+    body = json.dumps(manifest, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        f"{kv_url.rstrip('/')}/set/feed:manifest",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {kv_token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=10) as r:
+        r.read()
+    print(f"[post] feed manifest pushed ({len(manifest)} entries)")
+
+
 def cmd_status():
     q = load_queue()
     pending = [e for e in q if e["status"] == "pending"]
@@ -271,6 +312,12 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
             queue_entry["tiktok_response"] = tiktok_response
         save_queue(queue)
         print(f"[post] marked {mp4_path.name} as uploaded")
+        # Refresh in-app Watch feed manifest so users see today's reel.
+        # Failure here must not block the post: log + move on.
+        try:
+            push_feed_manifest(queue)
+        except Exception as e:
+            print(f"[post] feed manifest push failed (non-fatal): {e}", file=sys.stderr)
 
     remaining = sum(1 for e in queue if e["status"] == "pending")
     cross = " + TT" if tiktok_webhook and tiktok_response and not str(tiktok_response).startswith("ERROR") else ""

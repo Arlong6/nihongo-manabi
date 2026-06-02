@@ -197,6 +197,16 @@ export default function HomeScreen() {
           <Text style={[styles.cardTitle, { color: colors.primaryDeep }]}>{t('home.aiChatCard')}</Text>
           <Text style={[styles.cardSub, { color: colors.primaryDeep }]}>{t('home.aiChatSub')}</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('Watch')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.cardEmoji}>🎬</Text>
+          <Text style={styles.cardTitle}>看 Reel 學日文</Text>
+          <Text style={styles.cardSub}>每日新影片直接在 App 看</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Daily recommendation */}
