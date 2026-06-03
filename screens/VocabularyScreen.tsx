@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  SafeAreaView, Animated
+  SafeAreaView, Animated, Alert,
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +12,7 @@ import { createSRSCard, updateSRSCard as computeNextSRS, getDueCards } from '../
 import type { Vocabulary, SRSRating, UserProgress } from '../types'
 import { useTheme, fonts } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { requestPermission as requestSpeechPermission, recognizeJapanese, scoreTranscript, type Score } from '../lib/pronunciation'
 
 function FlashCard({
   card, onRate, onSkip, progress: progressStr, isFavorite, onToggleFavorite
@@ -35,6 +36,36 @@ function FlashCard({
 
   const [flipped, setFlipped] = useState(false)
   const flip = useRef(new Animated.Value(0)).current
+  const [listening, setListening] = useState(false)
+  const [score, setScore] = useState<Score | null>(null)
+
+  // Reset score whenever the card changes so old grades don't bleed into the next word.
+  useEffect(() => { setScore(null); setListening(false) }, [card.id])
+
+  const handlePronounce = async () => {
+    if (listening) return
+    const ok = await requestSpeechPermission()
+    if (!ok) {
+      Alert.alert('需要權限', '請到 設定 → Nihongo Manabi 開啟麥克風跟語音辨識權限')
+      return
+    }
+    setListening(true)
+    setScore(null)
+    try {
+      const heard = await recognizeJapanese({ timeoutMs: 5000 })
+      const s = scoreTranscript(heard, card.japanese)
+      setScore(s)
+      Haptics.notificationAsync(
+        s.grade === 'A' || s.grade === 'B'
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Warning,
+      )
+    } catch (e: any) {
+      Alert.alert('辨識失敗', e?.message ?? '請再試一次')
+    } finally {
+      setListening(false)
+    }
+  }
 
   const handleFlip = () => {
     Animated.spring(flip, {
@@ -88,6 +119,29 @@ function FlashCard({
             <View style={styles.exampleBox}>
               <Text style={styles.example}>{card.example}</Text>
               {card.exampleChinese && <Text style={styles.exampleChinese}>{card.exampleChinese}</Text>}
+            </View>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.pronounceBtn,
+              { backgroundColor: listening ? '#EF4444' : colors.primary },
+            ]}
+            onPress={e => { e.stopPropagation?.(); handlePronounce() }}
+            disabled={listening}
+          >
+            <Text style={styles.pronounceBtnText}>
+              {listening ? '🔴 聽取中...' : '🎤 練習發音'}
+            </Text>
+          </TouchableOpacity>
+          {score && (
+            <View style={[styles.scoreCard, { borderColor: gradeColor(score.grade) }]}>
+              <Text style={[styles.scoreGrade, { color: gradeColor(score.grade) }]}>{score.grade}</Text>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.scorePct}>{score.percent} / 100</Text>
+                <Text style={styles.scoreHeard} numberOfLines={1}>
+                  你說：{score.heard || '(沒聽到)'}
+                </Text>
+              </View>
             </View>
           )}
         </Animated.View>
@@ -383,5 +437,25 @@ function createFCStyles(colors: ThemeColors) {
     ratingNext: { fontSize: 11, color: '#6B7280', marginTop: 2, letterSpacing: 0.2 },
     skipBtn: { alignItems: 'center', marginTop: 16 },
     skipText: { color: colors.subtext, fontSize: 14 },
+    pronounceBtn: {
+      marginTop: 14, paddingVertical: 12, paddingHorizontal: 24,
+      borderRadius: 999, alignSelf: 'center',
+    },
+    pronounceBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+    scoreCard: {
+      flexDirection: 'row', alignItems: 'center',
+      marginTop: 12, padding: 12, borderRadius: 12, borderWidth: 2,
+      backgroundColor: colors.card, width: '100%',
+    },
+    scoreGrade: { fontSize: 36, fontWeight: '900', letterSpacing: -1, minWidth: 44, textAlign: 'center' },
+    scorePct: { fontSize: 15, fontWeight: '700', color: colors.text },
+    scoreHeard: { fontSize: 11, color: colors.subtext, marginTop: 2 },
   })
+}
+
+const VOCAB_GRADE_COLORS: Record<string, string> = {
+  A: '#10B981', B: '#3B82F6', C: '#F59E0B', D: '#EF4444', F: '#991B1B',
+}
+function gradeColor(g: string): string {
+  return VOCAB_GRADE_COLORS[g] || '#6B7280'
 }
