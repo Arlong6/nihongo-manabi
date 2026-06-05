@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nihongomanabi.app",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "需要麥克風來練習日文發音",
@@ -31,7 +31,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 7
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -47,7 +47,14 @@
       "expo-video",
       "expo-speech-recognition",
       "expo-camera",
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "ios": { "deploymentTarget": "16.4" }
+        }
+      ]
     ]
   }
 }

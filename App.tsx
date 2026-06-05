@@ -1,7 +1,29 @@
 import React, { useEffect, useState } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Text } from 'react-native'
+import { Text, LogBox } from 'react-native'
+
+// expo-notifications eagerly tries to register an APNS push token at module
+// init. In simulator + local debug builds we don't have the aps-environment
+// entitlement, so the SDK raises an "Uncaught (in promise) Keychain access
+// failed" warning. It's cosmetic — scheduleNotificationAsync (the local
+// notification path we actually use for streak reminders) still works fine.
+// Hide both the warning ribbon and the red-box exception in dev.
+LogBox.ignoreLogs([
+  /getRegistrationInfoAsync/,
+  /Keychain access failed/,
+  /A required entitlement isn't present/,
+])
+// @ts-ignore — ErrorUtils is a React Native global without a public type
+const _origHandler = global.ErrorUtils?.getGlobalHandler?.()
+// @ts-ignore
+global.ErrorUtils?.setGlobalHandler?.((err: any, isFatal: boolean) => {
+  const msg = String(err?.message || err || '')
+  if (msg.includes('getRegistrationInfoAsync') || msg.includes('Keychain access failed')) {
+    return  // swallow the dev-only entitlement noise
+  }
+  _origHandler?.(err, isFatal)
+})
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { I18nextProvider, useTranslation } from 'react-i18next'
