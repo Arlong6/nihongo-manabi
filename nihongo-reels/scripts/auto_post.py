@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""Auto-post next pending Reel via Make.com webhook(s).
+"""Auto-post next pending Reel via Make.com webhook (IG) + Publer API (TikTok).
 
 Flow:
   1. Pick first `pending` entry from upload_queue.json
   2. Push mp4 to Arlong6/nihongo-reels-host repo (raw.githubusercontent.com host)
   3. POST { video_url, caption, filename } to Make.com webhook (IG)
-  4. If MAKE_TIKTOK_WEBHOOK_URL set, also POST to TikTok webhook with platform-tagged caption
+  4. If PUBLER_* env set: upload mp4 to Publer + schedule TikTok post (preferred).
+     Else if MAKE_TIKTOK_WEBHOOK_URL set: legacy Make.com webhook fallback.
   5. Mark status=uploaded with timestamp (TikTok failure does NOT block IG success)
 
 Required .env:
   MAKE_WEBHOOK_URL=https://hook.us2.make.com/xxx
   IG_HOST_REPO=Arlong6/nihongo-reels-host        (optional, has default)
-  MAKE_TIKTOK_WEBHOOK_URL=https://hook.us2.make.com/yyy   (optional, enables cross-post)
+  PUBLER_API_KEY                                  (preferred TT path)
+  PUBLER_WORKSPACE_ID                             (preferred TT path)
+  PUBLER_TIKTOK_ACCOUNT_ID                        (preferred TT path)
+  MAKE_TIKTOK_WEBHOOK_URL                         (legacy TT fallback, optional)
   REDIRECT_BASE_URL=https://nihongo-manabi-proxy.vercel.app/r   (optional, enables attribution)
   TELEGRAM_BOT_TOKEN                              (optional)
   TELEGRAM_CHAT_ID                                (optional)
@@ -325,6 +329,11 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
         print("ERROR: MAKE_WEBHOOK_URL not set in .env", file=sys.stderr)
         sys.exit(1)
     tiktok_webhook = os.environ.get("MAKE_TIKTOK_WEBHOOK_URL")
+    publer_enabled = bool(
+        os.environ.get("PUBLER_API_KEY")
+        and os.environ.get("PUBLER_WORKSPACE_ID")
+        and os.environ.get("PUBLER_TIKTOK_ACCOUNT_ID")
+    )
     repo = os.environ.get("IG_HOST_REPO", DEFAULT_HOST_REPO)
 
     queue = load_queue()
@@ -366,8 +375,18 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
     print(f"[post] IG webhook: {response}")
 
     tiktok_response = None
-    if tiktok_webhook:
-        print("[post] firing TikTok webhook...")
+    if publer_enabled:
+        print("[post] uploading + scheduling via Publer API...")
+        try:
+            from publer_client import post_video_to_tiktok
+            result = post_video_to_tiktok(mp4_path, tt_caption)
+            tiktok_response = f"publer:job={result.get('schedule_response', {}).get('job_id')}"
+            print(f"[post] Publer scheduled: {tiktok_response}")
+        except Exception as e:
+            tiktok_response = f"ERROR: {e}"
+            print(f"[post] Publer FAILED (IG already succeeded): {e}", file=sys.stderr)
+    elif tiktok_webhook:
+        print("[post] firing TikTok webhook (legacy)...")
         tt_payload = {"video_url": video_url, "caption": tt_caption, "filename": mp4_path.name}
         try:
             tiktok_response = fire_webhook(tiktok_webhook, tt_payload)
@@ -381,7 +400,7 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
         queue_entry["uploaded_at"] = datetime.now(timezone.utc).astimezone().isoformat()
         queue_entry["uploaded_via"] = "make.com"
         queue_entry["caption_used"] = ig_caption
-        if tiktok_webhook:
+        if publer_enabled or tiktok_webhook:
             queue_entry["tiktok_response"] = tiktok_response
         save_queue(queue)
         print(f"[post] marked {mp4_path.name} as uploaded")
@@ -393,9 +412,10 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
             print(f"[post] feed manifest push failed (non-fatal): {e}", file=sys.stderr)
 
     remaining = sum(1 for e in queue if e["status"] == "pending")
-    cross = " + TT" if tiktok_webhook and tiktok_response and not str(tiktok_response).startswith("ERROR") else ""
+    tt_attempted = publer_enabled or bool(tiktok_webhook)
+    cross = " + TT" if tt_attempted and tiktok_response and not str(tiktok_response).startswith("ERROR") else ""
     msg = f"✅ Posted{cross}: <code>{mp4_path.name}</code>\nRemaining: {remaining}"
-    if tiktok_webhook and tiktok_response and str(tiktok_response).startswith("ERROR"):
+    if tt_attempted and tiktok_response and str(tiktok_response).startswith("ERROR"):
         msg += f"\n⚠️ TikTok 失敗: {tiktok_response}"
     if remaining <= 3:
         msg += "\n⚠️ 素材剩 ≤ 3 支,該渲染新內容了"
