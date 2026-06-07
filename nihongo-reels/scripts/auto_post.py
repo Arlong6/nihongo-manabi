@@ -41,9 +41,14 @@ HOST_REPO_CLONE = ROOT / ".host-repo"
 DEFAULT_HOST_REPO = "Arlong6/nihongo-reels-host"
 RAW_URL_TMPL = "https://raw.githubusercontent.com/{repo}/main/{filename}"
 
-# Caption variants — one randomly chosen per upload to add variety.
-# Theme is detected by filename prefix (Reel / Kana / Grammar / Travel).
-CAPTION_VARIANTS = {
+# Caption variants — platform-specific. Same video gets a different caption
+# depending on which webhook fires.
+#
+# IG style: longer, more polished, hashtags grouped, App Store CTA on its own line.
+# TT style: punchy first-line hook in TikTok native voice (curiosity gap, "you
+#           don't know X"), shorter, hashtags blasted at end including #fyp.
+# Theme is detected by filename prefix (Reel / Kana / Grammar / Travel / Anime / Oops).
+CAPTION_VARIANTS_IG = {
     "Reel": [
         "每天一個日文單字 📚\n學日文從單字開始 ✨\n\n#日語學習 #日本語 #JLPT #nihongo #learnjapanese #每日一字\nApp Store 搜尋 Nihongo Manabi",
         "今天的日文單字 🌸\n你學會了嗎？\n\n#日語學習 #日本語 #JLPT #nihongo #learnjapanese #日文單字\nApp Store 搜尋 Nihongo Manabi",
@@ -76,6 +81,46 @@ CAPTION_VARIANTS = {
     ],
 }
 
+# TikTok variants — first-line curiosity hook is sacred (decides retention).
+# Hashtag stack stays short, ends with #fyp / #台灣 for algorithm + region targeting.
+# Avoid "App Store 搜尋" wording at the very end since it tanks completion rate;
+# we leave a softer CTA and let the bio link handle conversion.
+CAPTION_VARIANTS_TT = {
+    "Reel": [
+        "你每天都在說 但不知道日文怎麼講的單字 👇\n\n#日文 #日本語 #日語學習 #JLPT #學日文 #每日一字 #fyp #台灣",
+        "30 秒記一個高頻日文 ⏱️\n#日文 #日本語 #JLPT #日語學習 #學日文 #日文單字 #fyp",
+        "通勤滑這個 一週後敢開口講日文 ✨\n#日文 #日本語 #JLPT #學日文 #日文自學 #日語入門 #fyp #台灣",
+    ],
+    "Kana": [
+        "97% 的人會搞錯這 2 個假名 🫠\n#日文 #五十音 #平假名 #片假名 #日文初學 #日語學習 #fyp #台灣",
+        "5 秒看你會不會分這 2 個 👀\n#日文 #日本語 #五十音 #假名 #日語入門 #日文自學 #fyp",
+        "看動漫但分不出平假名片假名？這支治好你 🔤\n#日文 #五十音 #日語學習 #JLPT #學日文 #日文入門 #fyp",
+    ],
+    "Grammar": [
+        "JLPT 必考但 90% 考生用錯的文法 ✏️\n#日文 #JLPT #日語學習 #N5 #N4 #N3 #日文文法 #fyp #台灣",
+        "這個文法錯了 日本人直接皺眉 😬\n#日文 #日本語 #日文文法 #JLPT #學日文 #N5 #fyp",
+        "60 秒搞懂這個句型 馬上用得到 ⚡\n#日文 #JLPT #日文會話 #日語學習 #學日文 #日文自學 #fyp",
+    ],
+    "Travel": [
+        "去日本不會這句 直接被當怪人 ✈️\n#日本旅遊 #日文 #旅遊日文 #日本自由行 #日語學習 #日本 #fyp #台灣",
+        "在日本便利商店這樣說 店員秒懂 🏪\n#日本旅遊 #日文 #旅遊日文 #日本自由行 #日本 #JLPT #fyp",
+        "日本人聽到這句會立刻臉色變 😱\n#日本旅遊 #日文 #旅遊日文 #日本自由行 #日本 #日語學習 #fyp #台灣",
+    ],
+    "Anime": [
+        "鳴人那句『だってばよ』到底什麼意思 🦊\n#火影忍者 #動漫 #日文 #anime #日語學習 #JLPT #動漫日文 #fyp #台灣",
+        "JOJO 的『無駄無駄無駄』為什麼經典 🧛\n#JOJO #動漫 #日文 #anime #動漫日文 #日語學習 #fyp",
+        "99% 動漫迷不知道這句台詞真正意思 🔥\n#動漫 #日文 #anime #動漫日文 #日語學習 #JLPT #日本動漫 #fyp #台灣",
+    ],
+    "Oops": [
+        "去日本千萬不要說『大丈夫』！這支救你 🚨\n#日本旅遊 #日文 #旅遊日文 #日本自由行 #日本 #踩雷 #fyp #台灣",
+        "便利商店店員為什麼皺眉？因為你說錯了這句 🏪\n#日本旅遊 #日文 #旅遊日文 #日本自由行 #日本 #日語學習 #fyp",
+        "台灣人最常說錯的這 1 句日文 👀\n#日本旅遊 #日文 #旅遊日文 #日本自由行 #日本 #日文文化 #fyp #台灣",
+    ],
+}
+
+# Legacy alias for any caller still importing CAPTION_VARIANTS without suffix.
+CAPTION_VARIANTS = CAPTION_VARIANTS_IG
+
 
 def load_env():
     if ENV_FILE.exists():
@@ -102,27 +147,40 @@ def telegram(msg: str):
 
 def detect_theme(filename: str) -> str | None:
     base = Path(filename).stem
-    for theme in CAPTION_VARIANTS:
+    for theme in CAPTION_VARIANTS_IG:
         if base.lower().startswith(theme.lower()):
             return theme
     return None
 
 
-def pick_caption(filename: str, fallback: str) -> str:
+def pick_caption(filename: str, fallback: str, platform: str = "ig") -> str:
+    """Pick a random caption variant for the given platform.
+
+    `platform`: "ig" or "tt". Falls back to IG variants if a TT bucket is
+    empty (so we never lose a post just because a theme's TT copy isn't
+    written yet)."""
+    bucket = CAPTION_VARIANTS_TT if platform == "tt" else CAPTION_VARIANTS_IG
     theme = detect_theme(filename)
-    if theme and CAPTION_VARIANTS.get(theme):
-        return random.choice(CAPTION_VARIANTS[theme])
+    if theme and bucket.get(theme):
+        return random.choice(bucket[theme])
+    # Defensive fallback to IG so we always have something.
+    if theme and CAPTION_VARIANTS_IG.get(theme):
+        return random.choice(CAPTION_VARIANTS_IG[theme])
     return fallback
 
 
-# Marker line in CAPTION_VARIANTS that gets replaced with an attributable
-# redirect URL when REDIRECT_BASE_URL is set. The original wording is kept as a
-# fallback so existing behavior is unchanged when the env var is missing.
+# Marker line in IG variants — gets swapped for the tracked /r/ URL at post time.
+# TT variants don't carry this marker (their hooks are tighter), so we splice
+# the URL in just above the hashtag block instead.
 SEARCH_LINE = "App Store 搜尋 Nihongo Manabi"
 
 
 def inject_redirect(caption: str, stem: str, platform: str) -> str:
-    """Replace the App Store search line with a per-post tracked URL.
+    """Embed a per-post tracked URL in the caption.
+
+    IG variants contain a literal "App Store 搜尋 Nihongo Manabi" marker which
+    gets replaced. TT variants don't — we insert a "📲 {url}" line just before
+    the first hashtag (or append at the end if no hashtags).
 
     Caption appears as text on IG Reels (not clickable) but is clickable on
     TikTok — the redirect endpoint logs every click either way (manual paste
@@ -133,7 +191,19 @@ def inject_redirect(caption: str, stem: str, platform: str) -> str:
         return caption
     base = base.rstrip("/")
     url = f"{base}/{stem}?p={platform}"
-    return caption.replace(SEARCH_LINE, f"📲 {url}")
+
+    # IG path: literal substitution.
+    if SEARCH_LINE in caption:
+        return caption.replace(SEARCH_LINE, f"📲 {url}")
+
+    # TT (or any caption without the marker): inject before the first hashtag
+    # line so the URL sits in the visible part of the caption — TT users see
+    # it before the hashtag wall and the URL is clickable.
+    lines = caption.split("\n")
+    insert_at = next((i for i, ln in enumerate(lines) if ln.strip().startswith("#")), len(lines))
+    lines.insert(insert_at, f"📲 {url}")
+    # Drop a stray blank line if we ended up double-blank.
+    return "\n".join(lines).replace("\n\n\n", "\n\n")
 
 
 def load_queue() -> list[dict]:
@@ -276,12 +346,15 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
         print(f"ERROR: {mp4_path} not found", file=sys.stderr)
         sys.exit(1)
 
-    base_caption = pick_caption(mp4_path.name, entry.get("caption", ""))
+    fallback = entry.get("caption", "")
     stem = mp4_path.stem
-    ig_caption = inject_redirect(base_caption, stem, "ig")
-    tt_caption = inject_redirect(base_caption, stem, "tt")
+    # Pick a separate variant per platform — TT gets its punchier hook bucket.
+    # inject_redirect then swaps the App Store line for the tracked /r/ URL.
+    ig_caption = inject_redirect(pick_caption(mp4_path.name, fallback, "ig"), stem, "ig")
+    tt_caption = inject_redirect(pick_caption(mp4_path.name, fallback, "tt"), stem, "tt")
     print(f"[post] {mp4_path.name}")
-    print(f"[post] caption: {ig_caption[:60]}...")
+    print(f"[post] IG caption: {ig_caption[:60]}...")
+    print(f"[post] TT caption: {tt_caption[:60]}...")
 
     print("[post] pushing to host repo...")
     video_url = push_to_host_repo(mp4_path, repo)
