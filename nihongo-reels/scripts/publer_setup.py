@@ -11,10 +11,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-# Load .env first
-from dotenv import load_dotenv  # type: ignore
+# Load .env (stdlib only — launchd env doesn't have python-dotenv)
+def _load_env(path: Path) -> None:
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        if "=" in line and not line.startswith("#"):
+            k, _, v = line.partition("=")
+            os.environ.setdefault(k.strip(), v.strip())
 
-load_dotenv(ROOT / ".env")
+
+_load_env(ROOT / ".env")
 
 from publer_client import list_accounts, list_workspaces  # noqa: E402
 
