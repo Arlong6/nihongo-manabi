@@ -16,6 +16,7 @@
  *      → Products: import both IAPs from App Store Connect
  *      → Entitlements: create "pro" and attach both products
  *      → Offerings: create "default" with monthly + yearly packages
+ *      → Mark "default" as the Current offering
  *      → Copy the public iOS SDK key
  *   3. Set EXPO_PUBLIC_REVENUECAT_IOS_KEY env in Expo project / .env
  *
@@ -28,26 +29,27 @@ import { Platform } from 'react-native'
 export const PRO_ENTITLEMENT = 'pro'
 
 let configured = false
+let configurePromise: Promise<void> | null = null
 
-export async function initPurchases(appUserId?: string): Promise<void> {
-  if (configured) return
-  // Public SDK keys are safe to ship in the app bundle (per RevenueCat docs).
-  const iosKey = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
-  const androidKey = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY
-  const apiKey = Platform.OS === 'ios' ? iosKey : androidKey
-  if (!apiKey) {
-    // Operate in degraded mode: isPro() will always be false, getOfferings()
-    // returns null. Don't throw — we want the rest of the app to keep working
-    // until the dashboard is wired up.
-    console.warn('[iap] RevenueCat key missing; running without IAP')
-    return
-  }
-  Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.WARN : LOG_LEVEL.ERROR)
-  await Purchases.configure({ apiKey, appUserID: appUserId ?? null })
-  configured = true
+export function initPurchases(appUserId?: string): Promise<void> {
+  if (configurePromise) return configurePromise
+  configurePromise = (async () => {
+    const iosKey = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
+    const androidKey = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY
+    const apiKey = Platform.OS === 'ios' ? iosKey : androidKey
+    if (!apiKey) {
+      console.warn('[iap] RevenueCat key missing; running without IAP')
+      return
+    }
+    Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.WARN : LOG_LEVEL.ERROR)
+    await Purchases.configure({ apiKey, appUserID: appUserId ?? null })
+    configured = true
+  })()
+  return configurePromise
 }
 
 export async function isPro(): Promise<boolean> {
+  await initPurchases()
   if (!configured) return false
   try {
     const info = await Purchases.getCustomerInfo()
@@ -57,14 +59,31 @@ export async function isPro(): Promise<boolean> {
   }
 }
 
-export async function getOfferings(): Promise<PurchasesOffering | null> {
-  if (!configured) return null
+export type OfferingsResult =
+  | { kind: 'ok'; offering: PurchasesOffering }
+  | { kind: 'no-key' }
+  | { kind: 'no-current-offering' }
+  | { kind: 'network'; error: string }
+
+// Callers should branch on kind to give the user an accurate message.
+// Apple's reviewer needs to see why Pro upgrade isn't working — a generic
+// "loading..." is what got us rejected last time.
+export async function fetchOfferings(): Promise<OfferingsResult> {
+  await initPurchases()
+  if (!configured) return { kind: 'no-key' }
   try {
     const o = await Purchases.getOfferings()
-    return o.current ?? null
-  } catch {
-    return null
+    if (!o.current) return { kind: 'no-current-offering' }
+    return { kind: 'ok', offering: o.current }
+  } catch (e: any) {
+    return { kind: 'network', error: e?.message ?? 'unknown' }
   }
+}
+
+// Backward-compat for callers that just want the offering or null.
+export async function getOfferings(): Promise<PurchasesOffering | null> {
+  const r = await fetchOfferings()
+  return r.kind === 'ok' ? r.offering : null
 }
 
 export async function purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo> {
