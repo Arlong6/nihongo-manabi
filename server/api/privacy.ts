@@ -30,7 +30,7 @@ const HTML = `<!DOCTYPE html>
 <ul>
 <li><strong>AI 對話內容</strong>：你輸入的對話文字會匿名傳送至我們的代理伺服器（Vercel）並轉發至 Google Gemini API 以生成回應。不附加任何身分識別資訊（無 user ID、無 device ID）。對話內容不被儲存。</li>
 <li><strong>拍照翻譯</strong>：你拍攝的圖片會壓縮後傳送至同一代理並由 Google Gemini Vision 處理，不被儲存於我們的伺服器，僅短暫存在於記憶體中。</li>
-<li><strong>發音評分</strong>：採用 iOS 裝置內 Speech Recognition（`requiresOnDeviceRecognition: true`），音檔不上傳。</li>
+<li><strong>發音評分</strong>：採用 iOS 裝置內 Speech Recognition（requiresOnDeviceRecognition: true），音檔不上傳。</li>
 </ul>
 
 <h2>3. 訂閱與付款</h2>
@@ -67,7 +67,7 @@ const HTML = `<!DOCTYPE html>
 <ul>
 <li><strong>AI conversations</strong>: Text you enter is forwarded anonymously through our proxy (Vercel) to Google Gemini API to generate replies. No user ID or device ID is attached. Conversation content is not stored.</li>
 <li><strong>Camera OCR</strong>: Photos you take are compressed and sent to the same proxy and processed by Google Gemini Vision. They are not stored on our servers; they exist only briefly in memory.</li>
-<li><strong>Pronunciation scoring</strong>: Uses iOS on-device Speech Recognition (<code>requiresOnDeviceRecognition: true</code>). Audio is never uploaded.</li>
+<li><strong>Pronunciation scoring</strong>: Uses iOS on-device Speech Recognition (requiresOnDeviceRecognition flag set on-device). Audio is never uploaded.</li>
 </ul>
 
 <h2>3. Subscription & Payments</h2>
