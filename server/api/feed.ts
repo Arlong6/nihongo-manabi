@@ -13,6 +13,7 @@ type ManifestEntry = {
   uploaded_at: string
   caption?: string
   caption_used?: string
+  video_url?: string
 }
 
 type FeedItem = {
@@ -77,7 +78,8 @@ export default async function handler(req: Request): Promise<Response> {
         filename: e.filename,
         stem,
         theme: themeFromStem(stem),
-        video_url: `${HOST_REPO_BASE}/${e.filename}`,
+        // Blob-hosted entries carry their full URL; legacy git entries fall back.
+        video_url: e.video_url || `${HOST_REPO_BASE}/${e.filename}`,
         caption: e.caption_used || e.caption || '',
         uploaded_at: e.uploaded_at,
         redirect_path: `/r/${stem}?p=app`,

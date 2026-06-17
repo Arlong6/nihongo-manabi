@@ -286,6 +286,9 @@ def push_feed_manifest(queue: list[dict]):
             "filename": Path(e["video"]).name,
             "uploaded_at": e["uploaded_at"],
             "caption_used": e.get("caption_used") or e.get("caption", ""),
+            # New Blob-hosted entries carry their full URL; older git-hosted
+            # entries omit it and /api/feed falls back to the raw.githubusercontent base.
+            **({"video_url": e["video_url"]} if e.get("video_url") else {}),
         }
         for e in queue
         if e.get("status") == "uploaded" and e.get("uploaded_at")
@@ -365,9 +368,22 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
     print(f"[post] IG caption: {ig_caption[:60]}...")
     print(f"[post] TT caption: {tt_caption[:60]}...")
 
-    print("[post] pushing to host repo...")
-    video_url = push_to_host_repo(mp4_path, repo)
-    print(f"[post] hosted at {video_url}")
+    # Host the mp4 for the IG webhook (Make.com fetches it by URL).
+    # Prefer Vercel Blob (git repo no longer grows); fall back to the legacy
+    # git host repo if Blob isn't configured or errors.
+    video_url = None
+    if os.environ.get("BLOB_READ_WRITE_TOKEN"):
+        try:
+            from blob_upload import upload_blob
+            print("[post] uploading to Vercel Blob...")
+            video_url = upload_blob(mp4_path)
+            print(f"[post] hosted at {video_url}")
+        except Exception as e:
+            print(f"[post] Blob upload failed, falling back to git host: {e}", file=sys.stderr)
+    if not video_url:
+        print("[post] pushing to host repo (git fallback)...")
+        video_url = push_to_host_repo(mp4_path, repo)
+        print(f"[post] hosted at {video_url}")
 
     print("[post] firing IG webhook...")
     ig_payload = {"video_url": video_url, "caption": ig_caption, "filename": mp4_path.name}
@@ -400,6 +416,7 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
         queue_entry["uploaded_at"] = datetime.now(timezone.utc).astimezone().isoformat()
         queue_entry["uploaded_via"] = "make.com"
         queue_entry["caption_used"] = ig_caption
+        queue_entry["video_url"] = video_url
         if publer_enabled or tiktok_webhook:
             queue_entry["tiktok_response"] = tiktok_response
         save_queue(queue)
