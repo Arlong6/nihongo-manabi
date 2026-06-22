@@ -34,6 +34,11 @@ $PYTHON scripts/auto_post.py --schedule >> "$LOG" 2>&1
 # Half-auto fallback because IG profile-edit endpoints are anti-bot locked.
 $PYTHON scripts/ig_bio_nudge.py >> "$LOG" 2>&1 || echo "[schedule] ig_bio_nudge exited non-zero" >> "$LOG"
 
+# Daily revenue snapshot to Telegram (no-op if RC_SECRET_KEY unset in .env).
+if grep -q "^RC_SECRET_KEY=" "$PROJECT_DIR/.env" 2>/dev/null; then
+    $PYTHON scripts/revenue_check.py --telegram >> "$LOG" 2>&1 || echo "[schedule] revenue_check exited non-zero" >> "$LOG"
+fi
+
 # Archive uploaded mp4s older than 7d to external drive (no-op if NIHONGO_ARCHIVE_DIR
 # unset or drive unmounted — keeps disk clean without blocking today's post).
 if grep -q "^NIHONGO_ARCHIVE_DIR=" "$PROJECT_DIR/.env" 2>/dev/null; then
