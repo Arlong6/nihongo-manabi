@@ -10,7 +10,7 @@ import { n4Vocabulary } from './n4'
 import { n3Vocabulary } from './n3'
 import { n2Vocabulary } from './n2'
 import { n1Vocabulary } from './n1'
-import type { Vocabulary } from '../types'
+import type { Vocabulary } from '../../types'
 
 export {
   foodVocabulary, transportVocabulary, shoppingVocabulary, dailyVocabulary,
