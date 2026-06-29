@@ -4,16 +4,19 @@
   },
   "build": {
     "development": {
+      "channel": "development",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
       "ios": {
         "simulator": true
       }
     },
     "production": {
+      "channel": "production",
       "environment": "production",
       "ios": {
         "buildConfiguration": "Release"

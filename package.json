@@ -1,6 +1,6 @@
 {
   "name": "japanese-learner",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -34,6 +34,7 @@
     "expo-speech": "~55.0.8",
     "expo-speech-recognition": "^56.0.0",
     "expo-status-bar": "~55.0.4",
+    "expo-updates": "~55.0.25",
     "expo-video": "~55.0.17",
     "i18next": "^25.8.18",
     "react": "19.2.0",
