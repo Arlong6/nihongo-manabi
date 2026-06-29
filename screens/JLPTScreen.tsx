@@ -17,6 +17,7 @@ import type { ExplainWrongInput } from '../lib/gemini'
 import type { Vocabulary, ExamRecord, ExamWrongItem } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { isPro } from '../lib/iap'
 
 // ── 型別 ────────────────────────────────────────────────────────────────────
 type ExamLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
@@ -554,9 +555,11 @@ export default function JLPTScreen() {
   const [questions, setQuestions] = useState<ExamQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [history, setHistory] = useState<ExamRecord[]>([])
+  const [pro, setPro] = useState(false)
 
   useEffect(() => {
     loadExamHistory().then(setHistory)
+    isPro().then(setPro)
   }, [])
 
   const startExam = (l: ExamLevel) => {
@@ -564,6 +567,26 @@ export default function JLPTScreen() {
     setQuestions(buildExam(l))
     setAnswers({})
     setMode('exam')
+  }
+
+  // N1/N2 are Pro-only (advertised on the paywall); free tier covers N5–N3.
+  // Recompute isPro() live so a mid-session upgrade unlocks without relaunch.
+  const handleSelectLevel = async (l: ExamLevel) => {
+    if (l === 'N2' || l === 'N1') {
+      const currentlyPro = pro || await isPro()
+      if (!currentlyPro) {
+        Alert.alert(
+          'N1 / N2 進階模考',
+          '高階文法與完整模擬考是 Pro 專屬，升級即可解鎖 N1・N2 模考。',
+          [
+            { text: '取消', style: 'cancel' },
+            { text: '升級 Pro 解鎖', onPress: () => (navigation as any).navigate('Paywall') },
+          ],
+        )
+        return
+      }
+    }
+    startExam(l)
   }
 
   const handleFinish = async (ans: Record<string, string>) => {
@@ -672,7 +695,7 @@ export default function JLPTScreen() {
             <TouchableOpacity
               key={l}
               style={[s.levelCard, { backgroundColor: bg, borderColor: border }]}
-              onPress={() => startExam(l)}
+              onPress={() => handleSelectLevel(l)}
             >
               <View style={[s.levelEmojiBg, { backgroundColor: color + '20' }]}>
                 <Text style={{ fontSize: 30 }}>{emoji}</Text>
@@ -683,6 +706,11 @@ export default function JLPTScreen() {
                   <View style={[s.questionCount, { backgroundColor: color + '20' }]}>
                     <Text style={[s.questionCountText, { color }]}>{total} 題</Text>
                   </View>
+                  {(l === 'N2' || l === 'N1') && !pro && (
+                    <View style={[s.questionCount, { backgroundColor: color + '20' }]}>
+                      <Text style={[s.questionCountText, { color }]}>🔒 Pro</Text>
+                    </View>
+                  )}
                   {best !== null && (
                     <Text style={[s.bestScore, { color }]}>最高 {best}%</Text>
                   )}

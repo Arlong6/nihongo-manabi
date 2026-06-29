@@ -41,6 +41,40 @@ export async function incrementAIChatUsage(): Promise<AIChatUsage> {
   return next
 }
 
+// ── 拍照翻譯每日用量（免費版限制；Pro 無限）────────────────────────────────────
+const CAMERA_USAGE_KEY = 'camera_usage'
+
+export const CAMERA_DAILY_LIMIT = 3
+
+interface CameraUsage {
+  date: string
+  count: number
+}
+
+export async function getCameraUsage(): Promise<CameraUsage> {
+  const today = getTodayString()
+  try {
+    const stored = await AsyncStorage.getItem(CAMERA_USAGE_KEY)
+    if (!stored) return { date: today, count: 0 }
+    const parsed = JSON.parse(stored) as CameraUsage
+    if (parsed.date !== today) return { date: today, count: 0 }
+    return parsed
+  } catch {
+    return { date: today, count: 0 }
+  }
+}
+
+export async function incrementCameraUsage(): Promise<CameraUsage> {
+  const current = await getCameraUsage()
+  const next: CameraUsage = { date: current.date, count: current.count + 1 }
+  try {
+    await AsyncStorage.setItem(CAMERA_USAGE_KEY, JSON.stringify(next))
+  } catch {
+    console.error('Failed to save camera usage')
+  }
+  return next
+}
+
 export async function getAIExplainCached(key: string): Promise<string | null> {
   try {
     const stored = await AsyncStorage.getItem(AI_EXPLAIN_CACHE_KEY)

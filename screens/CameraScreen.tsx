@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react'
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator,
   SafeAreaView, Image, Alert, Pressable,
@@ -10,6 +10,8 @@ import * as ImageManipulator from 'expo-image-manipulator'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { ocrAndTranslate, type OCRResult } from '../lib/gemini-vision'
+import { isPro } from '../lib/iap'
+import { getCameraUsage, incrementCameraUsage, CAMERA_DAILY_LIMIT } from '../lib/storage'
 
 type Phase = 'capture' | 'processing' | 'result'
 
@@ -23,10 +25,34 @@ export default function CameraScreen() {
   const [previewUri, setPreviewUri] = useState<string | null>(null)
   const [result, setResult] = useState<OCRResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pro, setPro] = useState(false)
+
+  useEffect(() => {
+    isPro().then(setPro)
+  }, [])
 
   // Downsample + compress on-device so the payload fits in the proxy's 5MB limit
   // (and so Gemini doesn't pay for processing huge images we don't need).
   const compressAndOCR = useCallback(async (uri: string) => {
+    // Pro unlocks unlimited photo translation; free tier gets CAMERA_DAILY_LIMIT/day.
+    // Recompute isPro() live so a mid-session upgrade takes effect without relaunch.
+    const currentlyPro = pro || await isPro()
+    if (!currentlyPro) {
+      const usage = await getCameraUsage()
+      if (usage.count >= CAMERA_DAILY_LIMIT) {
+        setPreviewUri(null)
+        setPhase('capture')
+        Alert.alert(
+          '今日拍照翻譯已用完',
+          `免費版每天可翻譯 ${CAMERA_DAILY_LIMIT} 次，升級 Pro 即可無限使用。`,
+          [
+            { text: '取消', style: 'cancel' },
+            { text: '升級 Pro 解鎖', onPress: () => navigation.navigate('Paywall') },
+          ],
+        )
+        return
+      }
+    }
     setPhase('processing')
     setError(null)
     try {
@@ -37,13 +63,15 @@ export default function CameraScreen() {
       )
       if (!manipulated.base64) throw new Error('failed to encode image')
       const r = await ocrAndTranslate(manipulated.base64, 'image/jpeg')
+      // Count only successful translations so a failed OCR doesn't burn the quota.
+      if (!currentlyPro) await incrementCameraUsage()
       setResult(r)
       setPhase('result')
     } catch (e: any) {
       setError(e?.message ?? '辨識失敗')
       setPhase('capture')
     }
-  }, [])
+  }, [pro, navigation])
 
   const takePhoto = async () => {
     if (!cameraRef.current) return
