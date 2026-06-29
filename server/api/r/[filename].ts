@@ -12,7 +12,7 @@ export const config = { runtime: 'edge' }
 
 const SAFE_FILENAME = /^[A-Za-z0-9_-]{1,64}$/
 const KNOWN_PLATFORMS = new Set(['ig', 'tt', 'yt', 'other'])
-const DEFAULT_APP_STORE_URL = 'https://apps.apple.com/search?term=Nihongo+Manabi'
+const DEFAULT_APP_STORE_URL = 'https://apps.apple.com/app/id6760352124'
 const EVENT_LIST_MAX = 1000
 
 function getRedis(): Redis | null {
@@ -38,12 +38,17 @@ export default async function handler(req: Request): Promise<Response> {
   const ipPrefix = ip.split('.').slice(0, 2).join('.')
   const ts = new Date().toISOString()
 
-  const event = { event: 'reel_click', filename, platform, ts, ua, ref, ip_prefix: ipPrefix }
+  // Link-preview crawlers (FB/Google/etc.) fetch every posted URL at post time and
+  // would otherwise dwarf the real human-click metric. Detect them, still redirect
+  // + log for forensics, but keep them out of the KV click counters.
+  const isBot = /facebookexternalhit|facebookcatalog|meta-externalagent|Googlebot|GoogleOther|AdsBot|bingbot|Slackbot|Twitterbot|WhatsApp|TelegramBot|LinkedInBot|Discordbot|Applebot|bot|crawler|spider|preview/i.test(ua)
+
+  const event = { event: 'reel_click', filename, platform, ts, ua, ref, ip_prefix: ipPrefix, bot: isBot }
   console.log(JSON.stringify(event))
 
-  // Persist to KV if configured. Failures here must not block the redirect.
+  // Persist to KV if configured (humans only). Failures here must not block the redirect.
   const redis = getRedis()
-  if (redis) {
+  if (redis && !isBot) {
     try {
       await Promise.all([
         redis.hincrby(`clicks:${platform}`, filename, 1),

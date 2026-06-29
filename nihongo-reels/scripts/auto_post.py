@@ -173,40 +173,43 @@ def pick_caption(filename: str, fallback: str, platform: str = "ig") -> str:
     return fallback
 
 
-# Marker line in IG variants — gets swapped for the tracked /r/ URL at post time.
-# TT variants don't carry this marker (their hooks are tighter), so we splice
-# the URL in just above the hashtag block instead.
+# Marker line in IG variants — gets swapped at post time. IG caption text isn't
+# clickable, so on IG we swap it for a "link in bio" CTA (not a dead raw URL).
+# TT variants don't carry this marker (their hooks are tighter).
 SEARCH_LINE = "App Store 搜尋 Nihongo Manabi"
+
+# IG: captions aren't clickable → drive conversion via the clickable profile bio
+# link (set the IG/TikTok bio to https://nihongo-manabi-proxy.vercel.app/r/bio?p=ig).
+BIO_CTA_IG = "👉 點個人檔案的連結，免費下載 App 一起學 📲"
+
+# TikTok: caption links ARE clickable — a one-line CTA placed just above the URL.
+TT_CTA = "免費下載 App 一起練日文 👇"
 
 
 def inject_redirect(caption: str, stem: str, platform: str) -> str:
-    """Embed a per-post tracked URL in the caption.
+    """Add the right call-to-action per platform.
 
-    IG variants contain a literal "App Store 搜尋 Nihongo Manabi" marker which
-    gets replaced. TT variants don't — we insert a "📲 {url}" line just before
-    the first hashtag (or append at the end if no hashtags).
-
-    Caption appears as text on IG Reels (not clickable) but is clickable on
-    TikTok — the redirect endpoint logs every click either way (manual paste
-    on IG still hits it).
+    IG: caption text is NOT clickable, so a raw /r/ URL is dead noise — swap the
+    search marker for an explicit "link in bio" CTA and let the (clickable)
+    profile bio link carry conversion. TT: caption links ARE clickable, so splice
+    a one-line CTA + the tracked /r/ URL just above the hashtag block.
     """
     base = os.environ.get("REDIRECT_BASE_URL")
+    base = base.rstrip("/") if base else None
+
+    if platform == "ig":
+        if SEARCH_LINE in caption:
+            return caption.replace(SEARCH_LINE, BIO_CTA_IG)
+        return caption.rstrip() + "\n" + BIO_CTA_IG
+
+    # TikTok (clickable). Strip any stray IG marker, then inject CTA + tracked URL.
+    caption = caption.replace(SEARCH_LINE, "").rstrip()
     if not base:
         return caption
-    base = base.rstrip("/")
     url = f"{base}/{stem}?p={platform}"
-
-    # IG path: literal substitution.
-    if SEARCH_LINE in caption:
-        return caption.replace(SEARCH_LINE, f"📲 {url}")
-
-    # TT (or any caption without the marker): inject before the first hashtag
-    # line so the URL sits in the visible part of the caption — TT users see
-    # it before the hashtag wall and the URL is clickable.
     lines = caption.split("\n")
     insert_at = next((i for i, ln in enumerate(lines) if ln.strip().startswith("#")), len(lines))
-    lines.insert(insert_at, f"📲 {url}")
-    # Drop a stray blank line if we ended up double-blank.
+    lines.insert(insert_at, f"{TT_CTA}\n📲 {url}")
     return "\n".join(lines).replace("\n\n\n", "\n\n")
 
 
