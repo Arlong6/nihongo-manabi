@@ -16,7 +16,7 @@ export const KanaReel: React.FC<{ p: KanaPair }> = ({ p }) => {
   return (
     <AbsoluteFill>
       <Audio
-        src={staticFile("music/bgm.mp3")}
+        src={staticFile("music/bgm-upbeat.mp3")}
         volume={(f) => {
           const fadeIn = Math.min(1, f / (KANA_FPS * 0.8));
           const fadeOut = Math.min(1, (total - f) / (KANA_FPS * 0.8));

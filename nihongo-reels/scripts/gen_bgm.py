@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Generate a cheerful lo-fi style BGM using numpy synthesis.
+"""Generate cheerful lo-fi style BGM tracks using numpy synthesis.
 
-Output: public/music/bgm.mp3 (60s, looping-friendly)
+Output: public/music/bgm.mp3, public/music/bgm-upbeat.mp3, public/music/bgm-warm.mp3
+        (each 60s, looping-friendly)
 Style: ukulele-like plucks + soft hi-hat + warm bass + lo-fi vinyl crackle
 """
 import subprocess
@@ -11,11 +12,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 44100
-DURATION = 60
-BPM = 95
-BEAT = 60 / BPM
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "public" / "music" / "bgm.mp3"
 
 
 def note_freq(name: str) -> float:
@@ -86,73 +83,7 @@ def mix_at(target: np.ndarray, source: np.ndarray, offset: int) -> None:
     target[offset : end] += source[: end - offset]
 
 
-def main():
-    try:
-        from scipy.signal import butter  # noqa: F401
-    except ImportError:
-        print("scipy not found, installing...")
-        subprocess.run(["pip", "install", "scipy"], check=True)
-
-    total_samples = SR * DURATION
-    track = np.zeros(total_samples)
-
-    # Chord progression: C - Am - F - G (happy / nostalgic)
-    progression = [
-        (["C4", "E4", "G4"], ["C3"]),      # C major
-        (["A3", "C4", "E4"], ["A2"]),       # A minor
-        (["F3", "A3", "C4"], ["F2"]),       # F major
-        (["G3", "B3", "D4"], ["G2"]),       # G major
-    ]
-
-    bar_dur = BEAT * 4  # 4 beats per bar
-    beats_total = int(DURATION / BEAT)
-
-    for beat_i in range(beats_total):
-        t_offset = int(beat_i * BEAT * SR)
-        bar_i = (beat_i // 4) % len(progression)
-        chord_notes, bass_notes = progression[bar_i]
-        beat_in_bar = beat_i % 4
-
-        # Pluck chords on beats 1, 2.5, 4
-        if beat_in_bar in (0, 2, 3):
-            for note in chord_notes:
-                mix_at(track, pluck(note_freq(note), BEAT * 1.5, vol=0.20), t_offset)
-
-        # Strum pattern: extra pluck on off-beat
-        if beat_in_bar == 1:
-            half_beat = int(BEAT * 0.5 * SR)
-            for note in chord_notes:
-                mix_at(track, pluck(note_freq(note), BEAT, vol=0.12), t_offset + half_beat)
-
-        # Bass on beat 1 and 3
-        if beat_in_bar in (0, 2):
-            for note in bass_notes:
-                mix_at(track, soft_pad(note_freq(note), BEAT * 2, vol=0.18), t_offset)
-
-        # Hi-hat on every beat + off-beats
-        mix_at(track, hihat(vol=0.06), t_offset)
-        mix_at(track, hihat(vol=0.03), t_offset + int(BEAT * 0.5 * SR))
-
-        # Soft kick on 1 and 3
-        if beat_in_bar in (0, 2):
-            mix_at(track, kick(vol=0.18), t_offset)
-
-    # Add vinyl crackle
-    track += vinyl_crackle(DURATION, vol=0.012)
-
-    # Lo-fi warmth: lowpass filter
-    track = lowpass(track, cutoff=4500)
-
-    # Fade in/out
-    fade_samples = int(SR * 2)
-    track[:fade_samples] *= np.linspace(0, 1, fade_samples)
-    track[-fade_samples:] *= np.linspace(1, 0, fade_samples)
-
-    # Normalize
-    peak = np.max(np.abs(track))
-    if peak > 0:
-        track = track / peak * 0.85
-
+def _write_mp3(track: np.ndarray, out_path: Path) -> None:
     # Write wav then convert to mp3
     track_16 = (track * 32767).astype(np.int16)
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
@@ -163,10 +94,74 @@ def main():
         w.setframerate(SR)
         w.writeframes(track_16.tobytes())
         w.close()
-        OUT.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run(["ffmpeg", "-y", "-i", f.name, "-b:a", "192k", str(OUT)], capture_output=True, check=True)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["ffmpeg", "-y", "-i", f.name, "-b:a", "192k", str(out_path)], capture_output=True, check=True)
 
-    print(f"✓ {OUT} ({DURATION}s, {BPM} BPM)")
+
+def build_track(bpm: float, progression: list, out_path: Path, *,
+                kick_beats=(0, 2), kick_vol=0.18,
+                hihat_off_vol=0.03, pluck_vol=0.20, pad_vol=0.18,
+                vinyl_vol=0.012, cutoff=4500, duration=60):
+    beat = 60 / bpm
+    total_samples = SR * duration
+    track = np.zeros(total_samples)
+    beats_total = int(duration / beat)
+    for beat_i in range(beats_total):
+        t_offset = int(beat_i * beat * SR)
+        bar_i = (beat_i // 4) % len(progression)
+        chord_notes, bass_notes = progression[bar_i]
+        beat_in_bar = beat_i % 4
+        if beat_in_bar in (0, 2, 3):
+            for note in chord_notes:
+                mix_at(track, pluck(note_freq(note), beat * 1.5, vol=pluck_vol), t_offset)
+        if beat_in_bar == 1:
+            half_beat = int(beat * 0.5 * SR)
+            for note in chord_notes:
+                mix_at(track, pluck(note_freq(note), beat, vol=pluck_vol * 0.6), t_offset + half_beat)
+        if beat_in_bar in (0, 2):
+            for note in bass_notes:
+                mix_at(track, soft_pad(note_freq(note), beat * 2, vol=pad_vol), t_offset)
+        mix_at(track, hihat(vol=0.06), t_offset)
+        mix_at(track, hihat(vol=hihat_off_vol), t_offset + int(beat * 0.5 * SR))
+        if beat_in_bar in kick_beats:
+            mix_at(track, kick(vol=kick_vol), t_offset)
+    if vinyl_vol > 0:
+        track += vinyl_crackle(duration, vol=vinyl_vol)
+    track = lowpass(track, cutoff=cutoff)
+    fade_samples = int(SR * 2)
+    track[:fade_samples] *= np.linspace(0, 1, fade_samples)
+    track[-fade_samples:] *= np.linspace(1, 0, fade_samples)
+    peak = np.max(np.abs(track))
+    if peak > 0:
+        track = track / peak * 0.85
+    _write_mp3(track, out_path)
+    print(f"✓ {out_path} ({duration}s, {bpm} BPM)")
+
+
+# Chord progressions (happy / nostalgic variants)
+PROG_ORIG = [(["C4", "E4", "G4"], ["C3"]), (["A3", "C4", "E4"], ["A2"]),
+             (["F3", "A3", "C4"], ["F2"]), (["G3", "B3", "D4"], ["G2"])]
+PROG_UPBEAT = [(["C4", "E4", "G4"], ["C3"]), (["G3", "B3", "D4"], ["G2"]),
+               (["A3", "C4", "E4"], ["A2"]), (["F3", "A3", "C4"], ["F2"])]
+PROG_WARM = [(["A3", "C4", "E4"], ["A2"]), (["F3", "A3", "C4"], ["F2"]),
+             (["C4", "E4", "G4"], ["C3"]), (["G3", "B3", "D4"], ["G2"])]
+
+
+def main():
+    try:
+        from scipy.signal import butter  # noqa: F401
+    except ImportError:
+        print("scipy not found, installing...")
+        subprocess.run(["pip", "install", "scipy"], check=True)
+
+    music = ROOT / "public" / "music"
+    build_track(95, PROG_ORIG, music / "bgm.mp3")  # original params, output equivalent to current
+    build_track(112, PROG_UPBEAT, music / "bgm-upbeat.mp3",
+                kick_beats=(0, 1, 2, 3), kick_vol=0.22, hihat_off_vol=0.06,
+                vinyl_vol=0.0, cutoff=6000)
+    build_track(82, PROG_WARM, music / "bgm-warm.mp3",
+                kick_vol=0.12, pluck_vol=0.12, pad_vol=0.26,
+                vinyl_vol=0.02, cutoff=3000)
 
 
 if __name__ == "__main__":

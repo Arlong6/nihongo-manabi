@@ -17,7 +17,7 @@ export const TravelReel: React.FC<{ p: TravelPhrase }> = ({ p }) => {
   return (
     <AbsoluteFill>
       <Audio
-        src={staticFile("music/bgm.mp3")}
+        src={staticFile("music/bgm-warm.mp3")}
         volume={(f) => {
           const fadeIn = Math.min(1, f / (TRAVEL_FPS * 0.8));
           const fadeOut = Math.min(1, (total - f) / (TRAVEL_FPS * 0.8));
