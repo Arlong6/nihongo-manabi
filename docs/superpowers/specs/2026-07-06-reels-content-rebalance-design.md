@@ -18,18 +18,21 @@
 
 ## 改動範圍
 
-1. **新增內容（各 +3 集）**
-   - `src/kana/data.ts`：15-17（沿用 KanaPair 格式，避開已用的假名對）
-   - `src/grammar/data.ts`：14-16（GrammarPoint 格式，N4-N3 常見誤用點，避開已用文法）
-   - `src/travel/data.ts`：14-16（TravelPhrase 格式，新情境，避開已用場景）
+1. **新增內容（各 +3 集，生活化取向）**
+   - `src/kana/data.ts`：15-17（沿用 KanaPair 格式，避開已用的假名對；例詞取日常生活場景——便利商店、通勤、外食等）
+   - `src/grammar/data.ts`：14-16（GrammarPoint 格式，N4-N3 常見誤用點，避開已用文法；例句用生活對話而非教科書句）
+   - `src/travel/data.ts`：14-16（TravelPhrase 格式，避開已用場景；往「在日生活」情境延伸——藥妝店、車站人身事故廣播、居酒屋點餐後續等）
+   - 內容原則：與已發集數零重複、貼近真實生活、切角有梗（呼應 Oops/Anime 系列的表現）
 2. **音訊 + timings**：跑現有 `gen_kana_audio.py` / `gen_grammar_audio.py` / `gen_travel_audio.py`（Edge TTS，免費）。
 3. **渲染**：`auto_render.py` 的 ROTATION 範圍擴充（Kana→15..17、Grammar→14..16、Travel→14..16），Root.tsx 動態 map data 無須改。用 `--force --batch 9` 一次渲染 9 支。
 4. **Queue 重排**：現有 25 支 pending + 新 9 支，交錯成 Kana → Reel → Grammar → Anime → Travel → Oops 循環（強主題每 2 天至少 1 支）。
-5. **順帶修復**：`archive_uploaded.py` 在 SSD 未掛載時靜默跳過（exit 0），停止每日報錯。
+5. **BGM 變化（arlong 2026-07-07 加入）**：目前 Kana / Grammar / Travel / Reel 四模板共用同一首 `music/bgm.mp3`。擴充 `gen_bgm.py` 產出 2 首新變奏（不同 BPM / 調性 / 音色，仍為 numpy 合成、無版權問題），三個強主題各配不同 BGM，打破千篇一律。
+6. **視覺力度（arlong 2026-07-07 加入）**：只動 theme.ts 與場景進場動畫參數、不重寫模板結構——背景改高對比深色或飽和漸層、標題字重與描邊加強、hook 場景加 punch-in 進場。每主題渲染 1 支樣片先給 arlong 過目再套用到 9 支。
+7. **順帶修復**：`archive_uploaded.py` 在 SSD 未掛載時靜默跳過（exit 0），停止每日報錯。
 
 ## 不做（本波）
 
-- 不改 Remotion 模板視覺、不改 caption 文案、不做 TikTok 客製。
+- 不重寫模板結構、不改 caption 文案、不做 TikTok 客製。
 - 不動 auto_post.py / webhook / Publer 邏輯。
 
 ## 驗收標準
