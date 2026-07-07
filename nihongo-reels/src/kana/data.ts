@@ -34,6 +34,9 @@ import t11 from "./timings/11.json";
 import t12 from "./timings/12.json";
 import t13 from "./timings/13.json";
 import t14 from "./timings/14.json";
+import t15 from "./timings/15.json";
+import t16 from "./timings/16.json";
+import t17 from "./timings/17.json";
 
 export const kanaPairs: KanaPair[] = [
   {
@@ -133,5 +136,26 @@ export const kanaPairs: KanaPair[] = [
     right: { char: "ス", word: "スープ", reading: "すーぷ", meaning: "湯" },
     mnemonic: "ヌ 多一撇、ス 是 J 形。",
     quizWhich: "right", timings: t14,
+  },
+  {
+    id: "15", kind: "katakana",
+    left: { char: "シ", word: "シャワー", reading: "しゃわー", meaning: "淋浴" },
+    right: { char: "ツ", word: "ツナ", reading: "つな", meaning: "鮪魚" },
+    mnemonic: "シ 的點橫著躺、ツ 的點站著排。",
+    quizWhich: "left", timings: t15,
+  },
+  {
+    id: "16", kind: "katakana",
+    left: { char: "ソ", word: "ソース", reading: "そーす", meaning: "醬汁" },
+    right: { char: "ン", word: "ラーメン", reading: "らーめん", meaning: "拉麵" },
+    mnemonic: "ソ 由上往下畫、ン 由下往上甩。",
+    quizWhich: "right", timings: t16,
+  },
+  {
+    id: "17", kind: "hiragana",
+    left: { char: "は", word: "はし", reading: "はし", meaning: "筷子" },
+    right: { char: "ほ", word: "ほし", reading: "ほし", meaning: "星星" },
+    mnemonic: "は 少一橫在吃飯、ほ 多一橫掛天上。",
+    quizWhich: "left", timings: t17,
   },
 ];
