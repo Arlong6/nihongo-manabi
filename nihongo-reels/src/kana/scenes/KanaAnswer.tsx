@@ -18,7 +18,7 @@ export const KanaAnswer: React.FC<{ p: KanaPair }> = ({ p }) => {
       <div style={{ color, fontFamily: kanaTheme.fontJa, fontSize: 400, fontWeight: 900, lineHeight: 1 }}>
         {which.char}
       </div>
-      <div style={{ opacity: mnOpacity, color: kanaTheme.text, fontFamily: kanaTheme.fontZh, fontSize: 48, fontWeight: 700, textAlign: "center", maxWidth: 900, lineHeight: 1.5, background: "rgba(255,255,255,0.7)", padding: "24px 40px", borderRadius: 24 }}>
+      <div style={{ opacity: mnOpacity, color: "#2a2a3e", fontFamily: kanaTheme.fontZh, fontSize: 48, fontWeight: 700, textAlign: "center", maxWidth: 900, lineHeight: 1.5, background: "rgba(255,255,255,0.7)", padding: "24px 40px", borderRadius: 24 }}>
         💡 {p.mnemonic}
       </div>
     </AbsoluteFill>
