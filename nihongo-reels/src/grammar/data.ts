@@ -34,6 +34,9 @@ import g10 from "./timings/10.json";
 import g11 from "./timings/11.json";
 import g12 from "./timings/12.json";
 import g13 from "./timings/13.json";
+import g14 from "./timings/14.json";
+import g15 from "./timings/15.json";
+import g16 from "./timings/16.json";
 
 export const grammarPoints: GrammarPoint[] = [
   {
@@ -152,5 +155,32 @@ export const grammarPoints: GrammarPoint[] = [
     correct: { ja: "明日は雨だと思う。", zh: "我覺得明天會下雨。" },
     mistakeExplain: "名詞 + と思う 要先加「だ」；普通形動詞才直接接。",
     timings: g13,
+  },
+  {
+    id: "14", pattern: "〜すぎる", meaning: "太…了", level: "N4",
+    example1: { ja: "昨日食べすぎて、お腹が痛いです。", zh: "昨天吃太多，肚子好痛。" },
+    example2: { ja: "この服はちょっと高すぎる。", zh: "這件衣服有點太貴了。" },
+    wrong: { ja: "高いすぎる", zh: "太貴了（✗）" },
+    correct: { ja: "高すぎる", zh: "太貴了（✓）" },
+    mistakeExplain: "い形容詞要先去掉「い」再接すぎる：高い→高すぎる，不是整個照抄。",
+    timings: g14,
+  },
+  {
+    id: "15", pattern: "〜ておく", meaning: "先做好準備", level: "N4",
+    example1: { ja: "ビール、冷蔵庫に入れておくね。", zh: "啤酒我先放冰箱囉。" },
+    example2: { ja: "旅行の前にホテルを予約しておきます。", zh: "旅行前先把飯店訂好。" },
+    wrong: { ja: "会議の資料を読んでいます", zh: "我在讀會議資料（想表達「先讀好」時 ✗）" },
+    correct: { ja: "会議の資料を読んでおきます", zh: "我先把會議資料讀好（✓）" },
+    mistakeExplain: "「ている」是正在做；要表達「為了之後先做好」用「ておく」。",
+    timings: g15,
+  },
+  {
+    id: "16", pattern: "〜かもしれない", meaning: "說不定", level: "N3",
+    example1: { ja: "午後は雨が降るかもしれない。", zh: "下午說不定會下雨。" },
+    example2: { ja: "彼はもう帰ったかもしれません。", zh: "他說不定已經回家了。" },
+    wrong: { ja: "明日は休みだかもしれない", zh: "明天說不定放假（✗）" },
+    correct: { ja: "明日は休みかもしれない", zh: "明天說不定放假（✓）" },
+    mistakeExplain: "名詞和な形容詞後面直接接かもしれない，不要多加「だ」。",
+    timings: g16,
   },
 ];
