@@ -41,6 +41,9 @@ def parse_phrases():
 
 async def main():
     for p in parse_phrases():
+        if (TIMINGS_DIR / f"{p['id']}.json").exists():
+            print(f"[travel {p['id']}] timings exist, skip")
+            continue
         d = OUT / p["id"]
         print(f"[travel {p['id']}] {p['phrase']}")
         await synth(p["phrase"], d / "phrase.mp3")

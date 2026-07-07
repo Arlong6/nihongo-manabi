@@ -54,6 +54,9 @@ def parse_pairs():
 async def main():
     pairs = parse_pairs()
     for p in pairs:
+        if (TIMINGS_DIR / f"{p['id']}.json").exists():
+            print(f"[kana {p['id']}] timings exist, skip")
+            continue
         d = OUT / p["id"]
         print(f"[kana {p['id']}] {p['leftChar']} vs {p['rightChar']}")
         # both chars, comma pause between

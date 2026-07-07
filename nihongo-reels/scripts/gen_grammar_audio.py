@@ -44,6 +44,9 @@ def parse_points():
 
 async def main():
     for p in parse_points():
+        if (TIMINGS_DIR / f"{p['id']}.json").exists():
+            print(f"[grammar {p['id']}] timings exist, skip")
+            continue
         d = OUT / p["id"]
         print(f"[grammar {p['id']}] {p['pattern']}")
         # strip tilde markers for TTS (〜 reads awkwardly)
