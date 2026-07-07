@@ -31,6 +31,9 @@ import tv10 from "./timings/10.json";
 import tv11 from "./timings/11.json";
 import tv12 from "./timings/12.json";
 import tv13 from "./timings/13.json";
+import tv14 from "./timings/14.json";
+import tv15 from "./timings/15.json";
+import tv16 from "./timings/16.json";
 
 export const travelPhrases: TravelPhrase[] = [
   {
@@ -123,5 +126,46 @@ export const travelPhrases: TravelPhrase[] = [
     breakdown: [{ word: "アレルギー", role: "過敏" }, { word: "が", role: "助詞" }, { word: "あります", role: "有" }],
     response: { ja: "何のアレルギーですか？", reading: "なんの アレルギーですか", zh: "對什麼過敏？" },
     tip: "後接物名「〇〇のアレルギー」，例：そばのアレルギー。救命關鍵句。", timings: tv13,
+  },
+  {
+    id: "14", situation: "便利商店買便當", emoji: "🍱",
+    phrase: "温めてもらえますか？",
+    reading: "あたためてもらえますか",
+    meaning: "可以幫我加熱嗎？",
+    breakdown: [
+      { word: "温めて", role: "加熱（て形）" },
+      { word: "もらえますか", role: "能幫我…嗎" },
+    ],
+    response: { ja: "はい、少々お待ちください。", reading: "はい、しょうしょうおまちください", zh: "好的，請稍等。" },
+    tip: "店員通常會先問「温めますか？」，聽到就回「お願いします」就好。",
+    timings: tv14,
+  },
+  {
+    id: "15", situation: "藥妝店找藥", emoji: "💊",
+    phrase: "頭痛に効く薬はありますか？",
+    reading: "ずつうにきくくすりはありますか",
+    meaning: "有治頭痛的藥嗎？",
+    breakdown: [
+      { word: "頭痛に", role: "對頭痛" },
+      { word: "効く", role: "有效" },
+      { word: "薬", role: "藥" },
+    ],
+    response: { ja: "こちらがおすすめです。", reading: "こちらがおすすめです", zh: "這款是我們推薦的。" },
+    tip: "有過敏或正在吃藥，把「アレルギー」寫在手機備忘給藥師看最保險。",
+    timings: tv15,
+  },
+  {
+    id: "16", situation: "月台上不確定搭哪班", emoji: "🚃",
+    phrase: "この電車は新宿に止まりますか？",
+    reading: "このでんしゃはしんじゅくにとまりますか",
+    meaning: "這班電車停新宿嗎？",
+    breakdown: [
+      { word: "この電車", role: "這班電車" },
+      { word: "新宿に", role: "在新宿" },
+      { word: "止まりますか", role: "停嗎" },
+    ],
+    response: { ja: "いいえ、快速は止まりません。", reading: "いいえ、かいそくはとまりません", zh: "不，快速列車不停。" },
+    tip: "「各駅停車」每站都停；「快速」「特急」會跳站，上車前先看月台電子看板。",
+    timings: tv16,
   },
 ];
