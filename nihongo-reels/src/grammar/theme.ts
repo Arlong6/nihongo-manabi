@@ -1,11 +1,11 @@
 import type { GrammarTimings } from "./data";
 
 export const grammarTheme = {
-  bg: "linear-gradient(180deg, #f0fff4 0%, #e0f5eb 100%)",
+  bg: "linear-gradient(180deg, #dcffe9 0%, #7dedb4 100%)",
   paper: "#ffffff",
   text: "#1f3a2a",
   muted: "#5a7a6a",
-  accent: "#2bb673",
+  accent: "#0d9e5a",
   wrong: "#e94560",
   right: "#2bb673",
   level: "#6c5ce7",

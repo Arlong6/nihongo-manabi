@@ -1,13 +1,13 @@
 import type { TravelTimings } from "./data";
 
 export const travelTheme = {
-  bg: "linear-gradient(180deg, #fff5e5 0%, #ffe5c5 60%, #c5e5ff 100%)",
+  bg: "linear-gradient(180deg, #ffe9c2 0%, #ffc37a 55%, #7ac2ff 130%)",
   paper: "#fffdf5",
   text: "#2d1f0e",
   muted: "#8a6e4a",
-  accent: "#ff8a3d",
-  accent2: "#3da8ff",
-  badge: "#ff8a3d",
+  accent: "#ff6a00",
+  accent2: "#0d8bff",
+  badge: "#ff6a00",
   fontJa: '"Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif',
   fontZh: '"PingFang TC", "Microsoft JhengHei", sans-serif',
 };

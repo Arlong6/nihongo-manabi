@@ -1,12 +1,12 @@
 import type { KanaTimings } from "./data";
 
 export const kanaTheme = {
-  bg: "linear-gradient(180deg, #ffe5f0 0%, #e0f4ff 100%)",
-  text: "#2a2a3e",
-  muted: "#6a6a7e",
-  accentL: "#e94a8b",
-  accentR: "#3fb6e0",
-  accentOk: "#2bb673",
+  bg: "linear-gradient(165deg, #191036 0%, #3b1660 55%, #c2247a 130%)",
+  text: "#ffffff",
+  muted: "rgba(255,255,255,0.72)",
+  accentL: "#ff6ea9",
+  accentR: "#4fd8ff",
+  accentOk: "#35f0a6",
   fontJa: '"Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif',
   fontZh: '"PingFang TC", "Microsoft JhengHei", sans-serif',
 };
