@@ -17,9 +17,9 @@ Usage:
 
 Composition universe (auto-skipped if mp4 already exists):
   - Reel-15..30   (vocab; 04-14 skipped to avoid duplicating earlier IG posts)
-  - Kana-04..14
-  - Grammar-04..13
-  - Travel-04..13
+  - Kana-04..17
+  - Grammar-04..16
+  - Travel-04..16
   - Anime-01..17  (動漫經典台詞 — 2026-06 上線)
   - Oops-01..20   (觀光客踩雷 — 2026-06 上線)
 """
@@ -46,11 +46,11 @@ DEFAULT_BATCH = 5
 ROTATION = []
 for n in range(15, 31):
     ROTATION.append(("Reel", f"{n:02d}"))
-for n in range(4, 15):
+for n in range(4, 18):
     ROTATION.append(("Kana", f"{n:02d}"))
-for n in range(4, 14):
+for n in range(4, 17):
     ROTATION.append(("Grammar", f"{n:02d}"))
-for n in range(4, 14):
+for n in range(4, 17):
     ROTATION.append(("Travel", f"{n:02d}"))
 for n in range(1, 18):
     ROTATION.append(("Anime", f"{n:02d}"))
