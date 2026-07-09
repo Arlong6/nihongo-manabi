@@ -71,12 +71,14 @@ Re-determine data structure: open Webhook module → bottom **"Re-determine data
 
 ## Content rotation
 
-`auto_render.py` ROTATION pool (37 unique reels):
+`auto_render.py` ROTATION pool (93 unique reels):
 
 - Reel-15..30 (16) — vocab; **04..14 skipped** to avoid duplicating PIL Day 4-14 IG posts
-- Kana-04..10 (7) — kana drills
-- Grammar-04..10 (7) — grammar patterns
-- Travel-04..10 (7) — travel phrases
+- Kana-04..17 (14) — kana drills
+- Grammar-04..16 (13) — grammar patterns
+- Travel-04..16 (13) — travel phrases
+- Anime-01..17 (17) — 動漫經典台詞
+- Oops-01..20 (20) — 觀光客踩雷
 
 When pool exhausts, Telegram alert fires. Add new entries to
 `src/{kana,grammar,travel}/data.ts` to extend.

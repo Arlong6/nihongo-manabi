@@ -51,6 +51,8 @@ def fetch_events() -> list[dict]:
             ts = datetime.fromisoformat(e["ts"].replace("Z", "+00:00"))
         except (KeyError, ValueError):
             continue
+        if ts.tzinfo is None:
+            continue
         events.append({"filename": e.get("filename", ""), "ts": ts})
     return events
 
