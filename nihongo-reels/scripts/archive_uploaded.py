@@ -54,7 +54,8 @@ def resolve_dest(cli_dest: str | None) -> Path:
         )
     dest = Path(raw).expanduser()
     if not dest.exists():
-        sys.exit(f"[archive] destination does not exist: {dest}\n  (mount the drive or create the dir)")
+        print(f"[archive] destination not mounted, skipping: {dest}")
+        sys.exit(0)
     if not dest.is_dir():
         sys.exit(f"[archive] destination is not a directory: {dest}")
     if not os.access(dest, os.W_OK):
