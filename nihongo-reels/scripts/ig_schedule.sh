@@ -39,6 +39,12 @@ if grep -q "^RC_SECRET_KEY=" "$PROJECT_DIR/.env" 2>/dev/null; then
     $PYTHON scripts/revenue_check.py --telegram >> "$LOG" 2>&1 || echo "[schedule] revenue_check exited non-zero" >> "$LOG"
 fi
 
+# Weekly traffic digest to Telegram (Mondays) — theme-level click trends,
+# tracks whether the 2026-07 content rebalance is actually improving CTR.
+if [ "$(date +%u)" = "1" ]; then
+    $PYTHON scripts/stats_digest.py --telegram >> "$LOG" 2>&1 || echo "[schedule] stats_digest exited non-zero" >> "$LOG"
+fi
+
 # Archive uploaded mp4s older than 7d to external drive (no-op if NIHONGO_ARCHIVE_DIR
 # unset or drive unmounted — keeps disk clean without blocking today's post).
 if grep -q "^NIHONGO_ARCHIVE_DIR=" "$PROJECT_DIR/.env" 2>/dev/null; then
