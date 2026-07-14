@@ -5,7 +5,7 @@ Self-running pipeline that renders Japanese-learning Reels (Remotion) and publis
 ## Daily flow
 
 ```
-launchd (02:00) → scripts/ig_schedule.sh
+launchd (19:00) → scripts/ig_schedule.sh
   ├─ pipeline_health.py    verify yesterday's post actually landed on IG
   ├─ auto_render.py        refill queue if pending < 7 (renders new mp4s)
   └─ auto_post.py          push next pending mp4 to host repo + fire webhook
