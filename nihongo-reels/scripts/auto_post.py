@@ -182,7 +182,8 @@ SEARCH_LINE = "App Store 搜尋 Nihongo Manabi"
 # link (set the IG/TikTok bio to https://nihongo-manabi-proxy.vercel.app/r/bio?p=ig).
 BIO_CTA_IG = "👉 點個人檔案的連結，免費下載 App 一起學 📲"
 
-# TikTok: caption links ARE clickable — a one-line CTA placed just above the URL.
+# TikTok: caption links are NOT clickable for normal accounts — CTA points to the
+# (clickable) profile bio link; the raw URL stays for copy/paste + impressions.
 TT_CTA = "免費下載 App 一起練日文 👇"
 
 
@@ -191,8 +192,9 @@ def inject_redirect(caption: str, stem: str, platform: str) -> str:
 
     IG: caption text is NOT clickable, so a raw /r/ URL is dead noise — swap the
     search marker for an explicit "link in bio" CTA and let the (clickable)
-    profile bio link carry conversion. TT: caption links ARE clickable, so splice
-    a one-line CTA + the tracked /r/ URL just above the hashtag block.
+    profile bio link carry conversion. TT: caption links are NOT clickable
+    either — point the CTA at the bio link, keep the tracked /r/ URL below it
+    for copy/paste.
     """
     base = os.environ.get("REDIRECT_BASE_URL")
     base = base.rstrip("/") if base else None
@@ -209,7 +211,7 @@ def inject_redirect(caption: str, stem: str, platform: str) -> str:
     url = f"{base}/{stem}?p={platform}"
     lines = caption.split("\n")
     insert_at = next((i for i, ln in enumerate(lines) if ln.strip().startswith("#")), len(lines))
-    lines.insert(insert_at, f"{TT_CTA}\n📲 {url}")
+    lines.insert(insert_at, f"{TT_CTA}\n🔗 連結在個人檔案｜📲 {url}")
     return "\n".join(lines).replace("\n\n\n", "\n\n")
 
 
