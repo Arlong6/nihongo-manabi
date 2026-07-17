@@ -23,7 +23,10 @@
  * Without those, getOfferings() returns empty and isPro() returns false.
  * The app still runs, just like a free-only build.
  */
-import Purchases, { LOG_LEVEL, type CustomerInfo, type PurchasesOffering, type PurchasesPackage } from 'react-native-purchases'
+import Purchases, {
+  INTRO_ELIGIBILITY_STATUS, LOG_LEVEL,
+  type CustomerInfo, type PurchasesOffering, type PurchasesPackage,
+} from 'react-native-purchases'
 import { Platform } from 'react-native'
 
 export const PRO_ENTITLEMENT = 'pro'
@@ -44,12 +47,21 @@ export function initPurchases(appUserId?: string): Promise<void> {
     Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.WARN : LOG_LEVEL.ERROR)
     await Purchases.configure({ apiKey, appUserID: appUserId ?? null })
     configured = true
-  })()
+  })().catch((e) => {
+    // A failed configure must not be cached forever — clear the memoized
+    // promise so the next isPro()/fetchOfferings() call retries from scratch.
+    configurePromise = null
+    throw e
+  })
   return configurePromise
 }
 
 export async function isPro(): Promise<boolean> {
-  await initPurchases()
+  try {
+    await initPurchases()
+  } catch {
+    return false
+  }
   if (!configured) return false
   try {
     const info = await Purchases.getCustomerInfo()
@@ -69,7 +81,13 @@ export type OfferingsResult =
 // Apple's reviewer needs to see why Pro upgrade isn't working — a generic
 // "loading..." is what got us rejected last time.
 export async function fetchOfferings(): Promise<OfferingsResult> {
-  await initPurchases()
+  try {
+    await initPurchases()
+  } catch (e: any) {
+    // Configure failed (native module / bad key / transient). Surface as a
+    // retryable error — the paywall's 重試 button re-runs init from scratch.
+    return { kind: 'network', error: e?.message ?? 'init failed' }
+  }
   if (!configured) return { kind: 'no-key' }
   try {
     const o = await Purchases.getOfferings()
@@ -97,4 +115,32 @@ export async function restorePurchases(): Promise<CustomerInfo> {
 
 export function packageIsPro(info: CustomerInfo): boolean {
   return Boolean(info.entitlements.active[PRO_ENTITLEMENT])
+}
+
+// Re-fetch entitlements from RevenueCat (not the local cache). Used by the
+// paywall's "重新檢查" recovery path when a purchase completed but the
+// entitlement hadn't propagated yet.
+export async function recheckProStatus(): Promise<boolean> {
+  try {
+    await initPurchases()
+    if (!configured) return false
+    const info = await Purchases.getCustomerInfo()
+    return Boolean(info.entitlements.active[PRO_ENTITLEMENT])
+  } catch {
+    return false
+  }
+}
+
+// True only when the user can still redeem the annual plan's 7-day trial.
+// Defaults to false on any uncertainty so the paywall never promises a trial
+// Apple's payment sheet won't honor.
+export async function checkTrialEligibility(productId: string): Promise<boolean> {
+  try {
+    await initPurchases()
+    if (!configured) return false
+    const map = await Purchases.checkTrialOrIntroductoryPriceEligibility([productId])
+    return map[productId]?.status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+  } catch {
+    return false
+  }
 }

@@ -9,7 +9,7 @@ import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../
 import type { UserProgress } from '../types'
 import { STREAK_BADGES } from '../types'
 import { useNavigation } from '@react-navigation/native'
-import { isPro } from '../lib/iap'
+import { isPro, restorePurchases, packageIsPro } from '../lib/iap'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors, ThemeMode } from '../lib/theme'
 
@@ -130,6 +130,32 @@ export default function ProgressScreen() {
           </View>
           <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
         </TouchableOpacity>
+
+        {/* Restore entry outside the paywall — App Review expects one, and it's
+            the recovery path for paid-but-not-unlocked states. */}
+        {!pro && (
+          <TouchableOpacity
+            style={{ alignItems: 'center', marginTop: -6, marginBottom: 16, padding: 6 }}
+            onPress={async () => {
+              try {
+                const info = await restorePurchases()
+                if (packageIsPro(info)) {
+                  setPro(true)
+                  Alert.alert('已恢復購買', 'Pro 權限已啟用')
+                } else {
+                  Alert.alert('沒有可恢復的購買', '這個 Apple ID 沒有有效的 Pro 訂閱')
+                }
+              } catch (e: any) {
+                Alert.alert('恢復失敗', e?.message ?? '請稍後再試')
+              }
+            }}
+            hitSlop={8}
+          >
+            <Text style={{ color: colors.subtext, fontSize: 12, textDecorationLine: 'underline' }}>
+              已經買過 Pro？恢復購買
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Streak badges */}
         <View style={styles.section}>

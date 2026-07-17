@@ -8,9 +8,10 @@ import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import {
   fetchOfferings, purchasePackage, restorePurchases, packageIsPro,
+  recheckProStatus, checkTrialEligibility,
   type OfferingsResult,
 } from '../lib/iap'
-import type { PurchasesPackage, PurchasesOffering } from 'react-native-purchases'
+import { PURCHASES_ERROR_CODE, type PurchasesPackage, type PurchasesOffering } from 'react-native-purchases'
 
 const PRIVACY_URL = 'https://nihongo-manabi-proxy.vercel.app/privacy'
 const TERMS_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'
@@ -30,25 +31,56 @@ export default function PaywallScreen() {
   const [offering, setOffering] = useState<PurchasesOffering | null>(null)
   const [errorKind, setErrorKind] = useState<OfferingsResult['kind'] | null>(null)
   const [selectedPkg, setSelectedPkg] = useState<PurchasesPackage | null>(null)
+  const [trialEligible, setTrialEligible] = useState(false)
   const [loading, setLoading] = useState(true)
   const [buying, setBuying] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
-    const r = await fetchOfferings()
-    if (r.kind === 'ok') {
-      setOffering(r.offering)
-      setErrorKind(null)
-      const annual = r.offering.availablePackages.find(p => p.packageType === 'ANNUAL')
-      setSelectedPkg(annual || r.offering.availablePackages[0] || null)
-    } else {
+    try {
+      const r = await fetchOfferings()
+      if (r.kind === 'ok') {
+        setOffering(r.offering)
+        setErrorKind(null)
+        const annual = r.offering.availablePackages.find(p => p.packageType === 'ANNUAL')
+        setSelectedPkg(annual || r.offering.availablePackages[0] || null)
+        if (annual) {
+          // Only advertise the 7-day trial to users Apple will actually grant it to.
+          checkTrialEligibility(annual.product.identifier).then(setTrialEligible)
+        }
+      } else {
+        setOffering(null)
+        setErrorKind(r.kind)
+      }
+    } catch {
+      // fetchOfferings shouldn't throw, but the paywall must never hang on the
+      // spinner — degrade to the retryable error card.
       setOffering(null)
-      setErrorKind(r.kind)
+      setErrorKind('network')
     }
     setLoading(false)
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  // Recovery path for "paid but entitlement not active yet" — re-fetches from
+  // RevenueCat instead of leaving the user at a dead-end alert.
+  const recheckEntitlement = useCallback(async () => {
+    const active = await recheckProStatus()
+    if (active) {
+      Alert.alert('歡迎加入 Pro 🎉', '所有 Pro 功能已解鎖')
+      navigation.goBack()
+    } else {
+      Alert.alert(
+        'Pro 權限還沒生效',
+        '你的購買已完成，不需要重新購買。權限有時需要一兩分鐘同步；如果一直沒生效，請點「恢復購買」或聯繫我們。',
+        [
+          { text: '稍後再說', style: 'cancel' },
+          { text: '再檢查一次', onPress: () => { recheckEntitlement() } },
+        ],
+      )
+    }
+  }, [navigation])
 
   const handleBuy = async () => {
     if (!selectedPkg) return
@@ -59,10 +91,26 @@ export default function PaywallScreen() {
         Alert.alert('歡迎加入 Pro 🎉', '所有 Pro 功能已解鎖')
         navigation.goBack()
       } else {
-        Alert.alert('購買流程已完成', '但 Pro 權限尚未生效，請稍後再試')
+        Alert.alert(
+          '購買流程已完成',
+          'Pro 權限尚未生效（通常幾秒內會完成同步）。',
+          [
+            { text: '稍後再說', style: 'cancel' },
+            { text: '重新檢查', onPress: () => { recheckEntitlement() } },
+          ],
+        )
       }
     } catch (e: any) {
       if (e?.userCancelled) return
+      if (e?.code === PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR) {
+        // Ask to Buy / SCA: the purchase is waiting for approval elsewhere —
+        // retrying now would only queue a duplicate transaction.
+        Alert.alert(
+          '購買等待核准中',
+          '你的購買正在等待核准（例如家長同意或銀行驗證）。核准完成後 Pro 會自動生效，不需要重新購買。',
+        )
+        return
+      }
       Alert.alert('購買失敗', e?.message ?? '請稍後再試')
     } finally {
       setBuying(false)
@@ -135,6 +183,7 @@ export default function PaywallScreen() {
                 selected={selectedPkg?.identifier === pkg.identifier}
                 onSelect={() => setSelectedPkg(pkg)}
                 colors={colors}
+                trialEligible={trialEligible}
               />
             ))}
           </>
@@ -193,9 +242,10 @@ interface PlanOptionProps {
   selected: boolean
   onSelect: () => void
   colors: ThemeColors
+  trialEligible: boolean
 }
 
-function PlanOption({ pkg, selected, onSelect, colors }: PlanOptionProps) {
+function PlanOption({ pkg, selected, onSelect, colors, trialEligible }: PlanOptionProps) {
   const styles = createStyles(colors)
   const product = pkg.product
   const isAnnual = pkg.packageType === 'ANNUAL'
@@ -214,7 +264,7 @@ function PlanOption({ pkg, selected, onSelect, colors }: PlanOptionProps) {
       <View style={{ flex: 1 }}>
         <Text style={styles.planLabelInline}>{label}</Text>
         <Text style={styles.planPrice}>{priceLine}</Text>
-        {isAnnual && (
+        {isAnnual && trialEligible && (
           <Text style={styles.planBonus}>含 7 天免費試用</Text>
         )}
       </View>
