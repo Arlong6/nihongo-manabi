@@ -20,6 +20,9 @@ import { ANIME_FPS, ANIME_HEIGHT, ANIME_WIDTH, animeTotal } from "./anime/theme"
 import { OopsReel } from "./oops/OopsReel";
 import { oopsCases } from "./oops/data";
 import { OOPS_FPS, OOPS_HEIGHT, OOPS_WIDTH, oopsTotal } from "./oops/theme";
+import { QuizReel } from "./quiz/QuizReel";
+import { quizItems } from "./quiz/data";
+import { QUIZ_FPS, QUIZ_HEIGHT, QUIZ_WIDTH, quizTotal } from "./quiz/theme";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -127,6 +130,18 @@ export const RemotionRoot: React.FC = () => {
           height={OOPS_HEIGHT}
           durationInFrames={oopsTotal(o.timings)}
           defaultProps={{ o }}
+        />
+      ))}
+      {quizItems.map((q) => (
+        <Composition
+          key={q.id}
+          id={`Quiz-${q.id}`}
+          component={QuizReel}
+          fps={QUIZ_FPS}
+          width={QUIZ_WIDTH}
+          height={QUIZ_HEIGHT}
+          durationInFrames={quizTotal(q.timings)}
+          defaultProps={{ q }}
         />
       ))}
     </>
