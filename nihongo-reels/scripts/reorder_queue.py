@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 QUEUE = Path(__file__).resolve().parent.parent / "upload_queue.json"
-ORDER = ["Kana", "Reel", "Grammar", "Anime", "Travel", "Oops"]
+ORDER = ["Quiz", "Kana", "Reel", "Grammar", "Anime", "Travel", "Oops"]
 
 
 def theme_of(entry: dict) -> str:

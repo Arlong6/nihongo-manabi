@@ -98,10 +98,15 @@ def _write_mp3(track: np.ndarray, out_path: Path) -> None:
         subprocess.run(["ffmpeg", "-y", "-i", f.name, "-b:a", "192k", str(out_path)], capture_output=True, check=True)
 
 
+def oct_up(note: str, n: int = 1) -> str:
+    """Transpose a note name up n octaves ('C4' -> 'C5'). Preserves sharp."""
+    return note[:-1] + str(int(note[-1]) + n)
+
+
 def build_track(bpm: float, progression: list, out_path: Path, *,
                 kick_beats=(0, 2), kick_vol=0.18,
                 hihat_off_vol=0.03, pluck_vol=0.20, pad_vol=0.18,
-                vinyl_vol=0.012, cutoff=4500, duration=60):
+                vinyl_vol=0.012, cutoff=4500, duration=60, arp=False, arp_vol=0.14):
     beat = 60 / bpm
     total_samples = SR * duration
     track = np.zeros(total_samples)
@@ -125,6 +130,14 @@ def build_track(bpm: float, progression: list, out_path: Path, *,
         mix_at(track, hihat(vol=hihat_off_vol), t_offset + int(beat * 0.5 * SR))
         if beat_in_bar in kick_beats:
             mix_at(track, kick(vol=kick_vol), t_offset)
+        # Arpeggio top line — an octave-up chord tone on each 8th, cycling
+        # through the chord so the melody moves instead of sitting still.
+        if arp:
+            half = int(beat * 0.5 * SR)
+            for j, sub in enumerate((0, half)):
+                idx = (beat_i * 2 + j) % len(chord_notes)
+                note = oct_up(chord_notes[idx])
+                mix_at(track, pluck(note_freq(note), beat * 0.5, vol=arp_vol), t_offset + sub)
     if vinyl_vol > 0:
         track += vinyl_crackle(duration, vol=vinyl_vol)
     track = lowpass(track, cutoff=cutoff)
@@ -146,6 +159,14 @@ PROG_UPBEAT = [(["C4", "E4", "G4"], ["C3"]), (["G3", "B3", "D4"], ["G2"]),
 PROG_WARM = [(["A3", "C4", "E4"], ["A2"]), (["F3", "A3", "C4"], ["F2"]),
              (["C4", "E4", "G4"], ["C3"]), (["G3", "B3", "D4"], ["G2"])]
 
+# Quiz: 8-bar progression so it barely repeats inside a ~17s reel, more
+# harmonic movement (adds Em, Dm, and a IV-V lift), arpeggio top line for
+# energy. Keeps the upbeat 112 BPM feel.
+PROG_QUIZ = [(["C4", "E4", "G4"], ["C3"]), (["G3", "B3", "D4"], ["G2"]),
+             (["A3", "C4", "E4"], ["A2"]), (["E4", "G4", "B4"], ["E3"]),
+             (["F3", "A3", "C4"], ["F2"]), (["D4", "F4", "A4"], ["D3"]),
+             (["G3", "B3", "D4"], ["G2"]), (["C4", "E4", "G4"], ["C3"])]
+
 
 def main():
     try:
@@ -162,6 +183,9 @@ def main():
     build_track(82, PROG_WARM, music / "bgm-warm.mp3",
                 kick_vol=0.12, pluck_vol=0.12, pad_vol=0.26,
                 vinyl_vol=0.02, cutoff=3000)
+    build_track(112, PROG_QUIZ, music / "bgm-quiz.mp3",
+                kick_beats=(0, 1, 2, 3), kick_vol=0.22, hihat_off_vol=0.06,
+                vinyl_vol=0.0, cutoff=6500, arp=True, arp_vol=0.13)
 
 
 if __name__ == "__main__":

@@ -56,13 +56,15 @@ for n in range(1, 18):
     ROTATION.append(("Anime", f"{n:02d}"))
 for n in range(1, 21):
     ROTATION.append(("Oops", f"{n:02d}"))
+for n in range(1, 11):
+    ROTATION.append(("Quiz", f"{n:02d}"))
 
-# Interleave so each batch is varied (Reel, Kana, Grammar, Travel, Anime, Oops, ...)
+# Interleave so each batch is varied (Quiz, Reel, Kana, Grammar, Travel, Anime, Oops, ...)
 def interleaved_rotation():
     buckets = {}
     for tpl, n in ROTATION:
         buckets.setdefault(tpl, []).append((tpl, n))
-    order = ["Reel", "Kana", "Grammar", "Travel", "Anime", "Oops"]
+    order = ["Quiz", "Reel", "Kana", "Grammar", "Travel", "Anime", "Oops"]
     out = []
     while any(buckets.get(t) for t in order):
         for t in order:

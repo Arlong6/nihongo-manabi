@@ -53,6 +53,11 @@ RAW_URL_TMPL = "https://raw.githubusercontent.com/{repo}/main/{filename}"
 #           don't know X"), shorter, hashtags blasted at end including #fyp.
 # Theme is detected by filename prefix (Reel / Kana / Grammar / Travel / Anime / Oops).
 CAPTION_VARIANTS_IG = {
+    "Quiz": [
+        "3 秒文法挑戰 ⏱️\n你答對了嗎？留言告訴我\n\n#日語學習 #日本語 #JLPT #日文文法 #nihongo #日文測驗\nApp Store 搜尋 Nihongo Manabi",
+        "90% 的人選錯這題 ✏️\n你是那 10% 嗎？\n\n#日語學習 #日本語 #JLPT #文法 #nihongo #日文自學\nApp Store 搜尋 Nihongo Manabi",
+        "JLPT 一分鐘小測驗 📝\n答案跟你想的一樣嗎？\n\n#日語學習 #日本語 #JLPT #日文文法 #nihongo #N5 #N4\nApp Store 搜尋 Nihongo Manabi",
+    ],
     "Reel": [
         "每天一個日文單字 📚\n學日文從單字開始 ✨\n\n#日語學習 #日本語 #JLPT #nihongo #learnjapanese #每日一字\nApp Store 搜尋 Nihongo Manabi",
         "今天的日文單字 🌸\n你學會了嗎？\n\n#日語學習 #日本語 #JLPT #nihongo #learnjapanese #日文單字\nApp Store 搜尋 Nihongo Manabi",
@@ -90,6 +95,11 @@ CAPTION_VARIANTS_IG = {
 # Avoid "App Store 搜尋" wording at the very end since it tanks completion rate;
 # we leave a softer CTA and let the bio link handle conversion.
 CAPTION_VARIANTS_TT = {
+    "Quiz": [
+        "3 秒答不出來就去複習 ⏱️\n#日文 #JLPT #日語學習 #日文文法 #學日文 #日文測驗 #fyp #台灣",
+        "90% 的人這題選錯 你敢試嗎 👀\n#日文 #JLPT #日文文法 #日語學習 #學日文 #fyp",
+        "測你的日文等級 這題 N5 🧠\n#日文 #JLPT #N5 #日語學習 #日文自學 #學日文 #fyp #台灣",
+    ],
     "Reel": [
         "你每天都在說 但不知道日文怎麼講的單字 👇\n\n#日文 #日本語 #日語學習 #JLPT #學日文 #每日一字 #fyp #台灣",
         "30 秒記一個高頻日文 ⏱️\n#日文 #日本語 #JLPT #日語學習 #學日文 #日文單字 #fyp",

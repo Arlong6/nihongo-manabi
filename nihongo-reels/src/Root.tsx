@@ -20,7 +20,7 @@ import { ANIME_FPS, ANIME_HEIGHT, ANIME_WIDTH, animeTotal } from "./anime/theme"
 import { OopsReel } from "./oops/OopsReel";
 import { oopsCases } from "./oops/data";
 import { OOPS_FPS, OOPS_HEIGHT, OOPS_WIDTH, oopsTotal } from "./oops/theme";
-import { QuizReel } from "./quiz/QuizReel";
+import { QuizReelV2 } from "./quiz/QuizReelV2";
 import { quizItems } from "./quiz/data";
 import { QUIZ_FPS, QUIZ_HEIGHT, QUIZ_WIDTH, quizTotal } from "./quiz/theme";
 
@@ -136,7 +136,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           key={q.id}
           id={`Quiz-${q.id}`}
-          component={QuizReel}
+          component={QuizReelV2}
           fps={QUIZ_FPS}
           width={QUIZ_WIDTH}
           height={QUIZ_HEIGHT}
