@@ -8,8 +8,9 @@ import type { QuizItem } from "../data";
 export const QuizCountdownV2: React.FC<{ q: QuizItem }> = ({ q }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const countStart = fps * 2;
-  const countF = Math.max(0, frame - countStart);
+  // Count from frame 0 so 3→2→1 lines up with the tick sfx (beeps at ~0/1/2s)
+  // instead of freezing on "3" for the scene's first 2 seconds.
+  const countF = frame;
   const secLeft = Math.max(1, 3 - Math.floor(countF / fps));
 
   const R = 120;

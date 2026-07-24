@@ -20,7 +20,9 @@ const toFrames = (sec: number) => Math.ceil(sec * QUIZ_FPS);
 
 export const quizSceneFrames = (t: QuizTimings | undefined) => ({
   hook: toFrames(3.0),
-  countdown: toFrames(5.0),
+  // 3s of counting (3→2→1, synced to the tick sfx) + a short beat before the
+  // reveal. Matches the "3 秒" promise instead of a 5s scene frozen on "3".
+  countdown: toFrames(3.6),
   reveal: toFrames((t?.answer ?? 2.5) + 3.5),
   cta: toFrames(3.0),
 });
