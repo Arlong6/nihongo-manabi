@@ -110,6 +110,9 @@ export async function purchasePackage(pkg: PurchasesPackage): Promise<CustomerIn
 }
 
 export async function restorePurchases(): Promise<CustomerInfo> {
+  // Like every other entry point, ensure the SDK is configured first — a cold
+  // tap on the restore link can otherwise hit an unconfigured singleton.
+  await initPurchases()
   return await Purchases.restorePurchases()
 }
 
@@ -117,13 +120,15 @@ export function packageIsPro(info: CustomerInfo): boolean {
   return Boolean(info.entitlements.active[PRO_ENTITLEMENT])
 }
 
-// Re-fetch entitlements from RevenueCat (not the local cache). Used by the
+// Force a fresh entitlement check from RevenueCat's servers (getCustomerInfo
+// otherwise returns a locally cached CustomerInfo, ~5min TTL). Used by the
 // paywall's "重新檢查" recovery path when a purchase completed but the
-// entitlement hadn't propagated yet.
+// entitlement hadn't propagated to the local cache yet.
 export async function recheckProStatus(): Promise<boolean> {
   try {
     await initPurchases()
     if (!configured) return false
+    await Purchases.invalidateCustomerInfoCache()
     const info = await Purchases.getCustomerInfo()
     return Boolean(info.entitlements.active[PRO_ENTITLEMENT])
   } catch {
@@ -131,16 +136,17 @@ export async function recheckProStatus(): Promise<boolean> {
   }
 }
 
-// True only when the user can still redeem the annual plan's 7-day trial.
-// Defaults to false on any uncertainty so the paywall never promises a trial
-// Apple's payment sheet won't honor.
+// Whether to advertise the annual plan's 7-day trial. Only hides the badge
+// when RevenueCat explicitly reports the user INELIGIBLE (already consumed the
+// trial). Transient UNKNOWN (StoreKit warming up), NO_INTRO_OFFER, or errors
+// default to showing it — never hide a valid trial from an eligible buyer.
 export async function checkTrialEligibility(productId: string): Promise<boolean> {
   try {
     await initPurchases()
-    if (!configured) return false
+    if (!configured) return true
     const map = await Purchases.checkTrialOrIntroductoryPriceEligibility([productId])
-    return map[productId]?.status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+    return map[productId]?.status !== INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE
   } catch {
-    return false
+    return true
   }
 }

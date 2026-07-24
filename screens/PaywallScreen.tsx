@@ -31,7 +31,8 @@ export default function PaywallScreen() {
   const [offering, setOffering] = useState<PurchasesOffering | null>(null)
   const [errorKind, setErrorKind] = useState<OfferingsResult['kind'] | null>(null)
   const [selectedPkg, setSelectedPkg] = useState<PurchasesPackage | null>(null)
-  const [trialEligible, setTrialEligible] = useState(false)
+  // Default to showing the trial badge; only an explicit INELIGIBLE hides it.
+  const [trialEligible, setTrialEligible] = useState(true)
   const [loading, setLoading] = useState(true)
   const [buying, setBuying] = useState(false)
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import i18n, { SUPPORTED_LANGUAGES } from '../lib/i18n'
@@ -8,7 +8,7 @@ import { getDueCards } from '../lib/srs'
 import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../lib/notifications'
 import type { UserProgress } from '../types'
 import { STREAK_BADGES } from '../types'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { isPro, restorePurchases, packageIsPro } from '../lib/iap'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors, ThemeMode } from '../lib/theme'
@@ -57,6 +57,15 @@ export default function ProgressScreen() {
     })
     isPro().then(setPro)
   }, [])
+
+  // Re-check Pro whenever the screen regains focus — e.g. returning from the
+  // paywall after a purchase — so the upgrade card / restore prompt update
+  // without an app relaunch.
+  useFocusEffect(
+    useCallback(() => {
+      isPro().then(setPro)
+    }, []),
+  )
 
   if (!progress) return null
 
