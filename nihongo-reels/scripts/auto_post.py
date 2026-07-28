@@ -397,8 +397,18 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
             print(f"[post] Blob upload failed, falling back to git host: {e}", file=sys.stderr)
     if not video_url:
         print("[post] pushing to host repo (git fallback)...")
-        video_url = push_to_host_repo(mp4_path, repo)
-        print(f"[post] hosted at {video_url}")
+        try:
+            video_url = push_to_host_repo(mp4_path, repo)
+            print(f"[post] hosted at {video_url}")
+        except Exception as e:
+            # Both Blob and git host failed (usually a transient network/DNS
+            # blip). Alert and bail cleanly — the entry stays pending so the
+            # next scheduled run retries it, instead of crashing the whole
+            # pipeline and skipping the digest/archive steps.
+            msg = f"⚠️ Reel 發文失敗（託管連不上）：{mp4_path.name}\n{e}\n下次排程會自動重試。"
+            print(f"[post] {msg}", file=sys.stderr)
+            telegram(msg)
+            sys.exit(3)
 
     print("[post] firing IG webhook...")
     ig_payload = {"video_url": video_url, "caption": ig_caption, "filename": mp4_path.name}

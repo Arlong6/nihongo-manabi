@@ -27,8 +27,10 @@ fi
 # Refill queue if pending < threshold (renders new mp4s as needed).
 $PYTHON scripts/auto_render.py >> "$LOG" 2>&1 || echo "[schedule] auto_render exited non-zero" >> "$LOG"
 
-# Post next pending reel via Make.com webhook.
-$PYTHON scripts/auto_post.py --schedule >> "$LOG" 2>&1
+# Post next pending reel via Make.com webhook. A post failure (e.g. transient
+# network blip during media hosting) must not abort the rest of the pipeline
+# (digest/archive) — auto_post already alerts to Telegram on hard failure.
+$PYTHON scripts/auto_post.py --schedule >> "$LOG" 2>&1 || echo "[schedule] auto_post exited non-zero (see alert)" >> "$LOG"
 
 # Telegram nudge with today's bio link URL (manual 30s paste in IG App).
 # Half-auto fallback because IG profile-edit endpoints are anti-bot locked.
