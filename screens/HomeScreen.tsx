@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { loadProgress } from '../lib/storage'
+import { maybeAskForReview } from '../lib/review'
 import { allVocabulary, categoryInfo, getVocabularyByLevel } from '../data/vocabulary'
 import { phrases } from '../data/phrases'
 import { USER_LEVEL_KEY, UserLevel } from './OnboardingScreen'
@@ -18,6 +19,14 @@ export default function HomeScreen() {
   const { colors } = useTheme()
   const styles = useMemo(() => createStyles(colors), [colors])
   const [progress, setProgress] = useState<UserProgress | null>(null)
+
+  // Ask for an App Store review when returning to Home after earning a streak
+  // badge (armed in lib/storage). Guarded internally to at most once / 60 days.
+  useFocusEffect(
+    useCallback(() => {
+      maybeAskForReview()
+    }, []),
+  )
   const [showTour, setShowTour] = useState(false)
   const [dailyWords, setDailyWords] = useState<typeof allVocabulary>([])
 

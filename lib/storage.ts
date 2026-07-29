@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { UserProgress, DailyProgress, SRSCard, ExamRecord } from '../types'
 import { STREAK_BADGES } from '../types'
+import { armReviewPrompt } from './review'
 
 const EXAM_HISTORY_KEY = 'jlpt_exam_history'
 const GRAMMAR_PROGRESS_KEY = 'grammar_progress'
@@ -230,7 +231,8 @@ export async function markWordLearned(id: string, category: string, totalInCateg
     progress.categoryProgress[category].learned += 1
     progress.categoryProgress[category].total = totalInCategory
   }
-  updateStreak(progress)
+  const { newBadges } = updateStreak(progress)
+  if (newBadges.length > 0) await armReviewPrompt()
   await saveProgress(progress)
 }
 
@@ -265,7 +267,8 @@ export async function recordDailyActivity(
   if (progress.dailyHistory.length > 30) {
     progress.dailyHistory = progress.dailyHistory.slice(-30)
   }
-  updateStreak(progress)
+  const { newBadges } = updateStreak(progress)
+  if (newBadges.length > 0) await armReviewPrompt()
   await saveProgress(progress)
 }
 
