@@ -1,12 +1,11 @@
 /**
  * In-app App Store review prompt.
  *
- * Deliberately uses a Linking deep-link to the App Store review composer
- * rather than the native SKStoreReviewController (expo-store-review): the
- * native module isn't in the shipped binary, and this file must stay
- * OTA-deployable (pure JS). If a future native build adds expo-store-review,
- * swap openReview() for StoreReview.requestReview() for the smoother in-app
- * popup.
+ * Prefers the native SKStoreReviewController popup (expo-store-review, in the
+ * binary as of build 13 / v1.5.3) — no app leave, Apple-throttled. Falls back
+ * to a soft Alert + App Store review deep-link if the native module isn't
+ * available (e.g. an older build the change reaches via OTA); the fallback is
+ * guarded so it can never crash on a missing native module.
  *
  * Flow: a positive milestone (new streak badge) *arms* the prompt; the ask
  * itself surfaces the next time the user lands on Home, so we never interrupt
@@ -14,6 +13,7 @@
  */
 import { Alert, Linking, Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as StoreReview from 'expo-store-review'
 
 const APP_STORE_ID = '6760352124'
 const REVIEW_URL = `itms-apps://apps.apple.com/app/id${APP_STORE_ID}?action=write-review`
@@ -55,6 +55,17 @@ export async function maybeAskForReview(): Promise<void> {
     }
   } catch {
     return
+  }
+
+  // Preferred path: native in-app review popup (no app leave, Apple-throttled).
+  try {
+    if (await StoreReview.isAvailableAsync()) {
+      await markAsked()
+      await StoreReview.requestReview()
+      return
+    }
+  } catch {
+    // Native module unavailable (older build via OTA) — fall through to Linking.
   }
 
   Alert.alert(
