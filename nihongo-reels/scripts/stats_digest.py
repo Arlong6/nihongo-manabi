@@ -118,6 +118,21 @@ def main():
     except Exception as e:
         print(f"[digest] failed to build digest: {e}")
         sys.exit(0)  # never break the daily schedule
+
+    # Append IG reach/views if the Graph token is set up (best-effort — a
+    # missing/expired token or API hiccup must never break the click digest).
+    try:
+        import ig_insights
+        rows = ig_insights.fetch(days=7)
+        if rows:
+            reach = sum(r["reach"] or 0 for r in rows)
+            views = sum(r["views"] or 0 for r in rows)
+            digest += f"\n觸及/觀看（近 7 天，{len(rows)} 支）: reach {reach}, views {views}"
+            for r in sorted(rows, key=lambda x: (x["views"] or 0), reverse=True)[:3]:
+                digest += f"\n  {r['cap']}: reach {r['reach']}, views {r['views']}"
+    except Exception:
+        pass
+
     print(digest)
     if "--telegram" in sys.argv:
         try:
