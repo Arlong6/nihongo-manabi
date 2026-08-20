@@ -26,7 +26,7 @@ DATA_TS = ROOT / "src" / "quiz" / "data.ts"
 VOICE = "ja-JP-NanamiNeural"
 RATE = "-10%"
 SR = 44100
-PICK = 10
+PICK = 32
 
 
 def probe_duration(path: Path) -> float:

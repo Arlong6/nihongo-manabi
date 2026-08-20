@@ -56,7 +56,7 @@ for n in range(1, 18):
     ROTATION.append(("Anime", f"{n:02d}"))
 for n in range(1, 21):
     ROTATION.append(("Oops", f"{n:02d}"))
-for n in range(1, 11):
+for n in range(1, 33):
     ROTATION.append(("Quiz", f"{n:02d}"))
 
 # Interleave so each batch is varied (Quiz, Reel, Kana, Grammar, Travel, Anime, Oops, ...)
