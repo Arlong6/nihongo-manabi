@@ -50,3 +50,7 @@ nihongo-reels/.env.swp
 *.env
 nihongo-reels/upload_queue.json
 nihongo-reels/.host-repo/
+
+# Claude Code local settings
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
