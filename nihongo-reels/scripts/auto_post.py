@@ -444,6 +444,13 @@ def cmd_post(specific_video: Path | None = None, specific_caption: str | None = 
         queue_entry["video_url"] = video_url
         if publer_enabled or tiktok_webhook:
             queue_entry["tiktok_response"] = tiktok_response
+            # `status` tracks the IG post, which did succeed — so it stays
+            # "uploaded" and the entry is never retried. That silently hid four
+            # reels in September that reached IG but not TikTok, after the Publer
+            # workspace was cancelled and every call started returning 401.
+            # Record the TikTok outcome separately so those are findable:
+            #   jq '.[] | select(.tiktok_ok == false) | .video' queue.json
+            queue_entry["tiktok_ok"] = not str(tiktok_response).startswith("ERROR")
         save_queue(queue)
         print(f"[post] marked {mp4_path.name} as uploaded")
         # Refresh in-app Watch feed manifest so users see today's reel.
