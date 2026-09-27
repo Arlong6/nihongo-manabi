@@ -358,5 +358,17 @@
     "btnNext": "下一步",
     "btnPrev": "上一步",
     "btnStart": "開始學習！"
+  },
+  "ads": {
+    "watchForOne": "看廣告多 1 次",
+    "loading": "廣告載入中…",
+    "notReady": "廣告目前無法播放，或沒有看完。請稍後再試。",
+    "bonusGranted": "已多 1 次，繼續練習吧！",
+    "upgradePro": "升級 Pro 解鎖",
+    "cancel": "取消"
+  },
+  "camera": {
+    "limitTitle": "今日拍照翻譯已用完",
+    "limitMessage": "免費版每天可翻譯 {{limit}} 次，升級 Pro 即可無限使用。"
   }
 }

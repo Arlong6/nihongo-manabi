@@ -28,6 +28,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { I18nextProvider, useTranslation } from 'react-i18next'
 import i18n, { initI18n } from './lib/i18n'
+import { initAds } from './lib/ads'
 import { ThemeProvider, useTheme } from './lib/theme'
 import HomeScreen from './screens/HomeScreen'
 import KatakanaScreen from './screens/KatakanaScreen'
@@ -137,6 +138,12 @@ function AppInner() {
       setOnboardingDone(val === 'true')
     })
   }, [])
+
+  // 廣告（ATT → UMP → SDK）只在 onboarding 完成、進入主畫面後才初始化；Pro 用戶在 initAds 內直接略過。
+  // 不放在 App() 的 initPurchases 旁邊：那時 onboarding 可能還沒做完，新用戶第一眼就被問追蹤很突兀。
+  useEffect(() => {
+    if (onboardingDone) initAds().catch(() => {})
+  }, [onboardingDone])
 
   if (onboardingDone === null) return null
 

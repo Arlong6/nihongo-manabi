@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import i18n, { SUPPORTED_LANGUAGES } from '../lib/i18n'
-import { loadProgress, resetProgress, setLocale } from '../lib/storage'
+import { loadProgress, resetProgress, setLocale, toLocalDateString } from '../lib/storage'
 import { allVocabulary, categoryInfo } from '../data/vocabulary'
 import { getDueCards } from '../lib/srs'
 import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../lib/notifications'
@@ -74,7 +74,7 @@ export default function ProgressScreen() {
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    return d.toISOString().split('T')[0]
+    return toLocalDateString(d)
   })
 
   const handleReset = () => {

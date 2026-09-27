@@ -88,6 +88,10 @@ export interface UserProgress {
   // Sorted list of milestone day-counts the user has reached at least once.
   // Used for badge gallery — once earned, never lost.
   earnedBadges: number[]
+  // 'local' 表示日期字串（lastStudyDate、dailyHistory）已改用裝置本地時區。
+  // 1.6.0 之前用 UTC 算「今天」，台灣要早上 8 點才換日；缺這個欄位代表舊資料，
+  // updateStreak 會做一次寬鬆比對避免連勝被誤斷。
+  dateSchema?: 'local'
 }
 
 // Milestone thresholds that unlock a badge when current streak first hits them.

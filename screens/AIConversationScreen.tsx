@@ -10,8 +10,12 @@ import { speakJapanese } from '../lib/speech'
 import { useTheme, fonts } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { startConversation, sendMessage, type AIResponse, type ChatMessage } from '../lib/gemini'
-import { recordDailyActivity, getAIChatUsage, incrementAIChatUsage, AI_CHAT_DAILY_LIMIT } from '../lib/storage'
+import {
+  recordDailyActivity, getAIChatUsage, incrementAIChatUsage, grantAIChatBonus,
+  isUsageExhausted, usageRemaining, canGrantBonus, AI_CHAT_DAILY_LIMIT, type DailyUsage,
+} from '../lib/storage'
 import { isPro } from '../lib/iap'
+import { adsAvailable, showRewarded } from '../lib/ads'
 
 type ScreenMode = 'menu' | 'chat' | 'result'
 type Level = 'N5' | 'N4' | 'N3'
@@ -60,14 +64,15 @@ export default function AIConversationScreen() {
   const [messageCount, setMessageCount] = useState(0)
   const [corrections, setCorrections] = useState(0)
   const [showReading, setShowReading] = useState(true)
-  const [usageCount, setUsageCount] = useState(0)
+  const [usage, setUsage] = useState<DailyUsage>({ date: '', count: 0, bonus: 0 })
+  const [adLoading, setAdLoading] = useState(false)
   const [pro, setPro] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
   const inputRef = useRef<TextInput>(null)
   const msgIdRef = useRef(0)
 
   useEffect(() => {
-    getAIChatUsage().then(u => setUsageCount(u.count))
+    getAIChatUsage().then(setUsage)
     isPro().then(setPro)
   }, [mode])
 
@@ -79,13 +84,13 @@ export default function AIConversationScreen() {
     // here (not just trusted from the initial state) so users who buy Pro mid-
     // session don't need to relaunch the screen.
     const currentlyPro = pro || await isPro()
-    if (!currentlyPro && usage.count >= AI_CHAT_DAILY_LIMIT) {
+    if (!currentlyPro && isUsageExhausted(usage, AI_CHAT_DAILY_LIMIT)) {
       Alert.alert(
         t('aiChat.limitTitle'),
         t('aiChat.limitMessage', { limit: AI_CHAT_DAILY_LIMIT }),
         [
-          { text: '取消', style: 'cancel' },
-          { text: '升級 Pro 解鎖', onPress: () => navigation.navigate('Paywall' as never) },
+          { text: t('ads.cancel'), style: 'cancel' },
+          { text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall' as never) },
         ],
       )
       return
@@ -100,7 +105,7 @@ export default function AIConversationScreen() {
     setLoading(true)
 
     const updated = await incrementAIChatUsage()
-    setUsageCount(updated.count)
+    setUsage(updated)
 
     try {
       const res = await startConversation(scene.prompt, level, i18n.language)
@@ -168,6 +173,24 @@ export default function AIConversationScreen() {
     }
   }
 
+  // 額度用完 → 看一支激勵影片多換 1 次。Pro 用戶不會看到這顆按鈕（額度本來就無限）。
+  const handleWatchAd = async () => {
+    if (adLoading) return
+    setAdLoading(true)
+    try {
+      const earned = await showRewarded()
+      const granted = earned ? await grantAIChatBonus() : null
+      if (granted) {
+        setUsage(granted)
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      } else {
+        Alert.alert(t('ads.notReady'))
+      }
+    } finally {
+      setAdLoading(false)
+    }
+  }
+
   const handleFinish = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     await recordDailyActivity(0, messageCount, 0, 0)
@@ -186,14 +209,32 @@ export default function AIConversationScreen() {
           <Text style={styles.title}>{t('aiChat.title')}</Text>
           <Text style={styles.subtitle}>{t('aiChat.subtitle')}</Text>
 
-          {/* Usage banner */}
-          <View style={[styles.usageBanner, usageCount >= AI_CHAT_DAILY_LIMIT && styles.usageBannerExhausted]}>
-            <Text style={usageCount >= AI_CHAT_DAILY_LIMIT ? styles.usageTextExhausted : styles.usageText}>
-              {usageCount >= AI_CHAT_DAILY_LIMIT
-                ? t('aiChat.limitReached')
-                : t('aiChat.usageRemaining', { remaining: AI_CHAT_DAILY_LIMIT - usageCount, limit: AI_CHAT_DAILY_LIMIT })}
-            </Text>
-          </View>
+          {/* Usage banner；Pro 用戶額度無限，不顯示 */}
+          {!pro && (() => {
+            const exhausted = isUsageExhausted(usage, AI_CHAT_DAILY_LIMIT)
+            const offerAd = exhausted && canGrantBonus(usage) && adsAvailable()
+            return (
+              <View style={[styles.usageBanner, exhausted && styles.usageBannerExhausted]}>
+                <Text style={exhausted ? styles.usageTextExhausted : styles.usageText}>
+                  {exhausted
+                    ? t('aiChat.limitReached')
+                    : t('aiChat.usageRemaining', { remaining: usageRemaining(usage, AI_CHAT_DAILY_LIMIT), limit: AI_CHAT_DAILY_LIMIT + usage.bonus })}
+                </Text>
+                {offerAd && (
+                  <TouchableOpacity
+                    style={[styles.watchAdButton, adLoading && styles.watchAdButtonDisabled]}
+                    onPress={handleWatchAd}
+                    disabled={adLoading}
+                    accessibilityRole="button"
+                  >
+                    {adLoading
+                      ? <ActivityIndicator color="#fff" />
+                      : <Text style={styles.watchAdText}>{t('ads.watchForOne')}</Text>}
+                  </TouchableOpacity>
+                )}
+              </View>
+            )
+          })()}
 
           {/* Level selector */}
           <View style={styles.levelRow}>
@@ -211,7 +252,7 @@ export default function AIConversationScreen() {
           <Text style={styles.sectionLabel}>{t('aiChat.chooseScene')}</Text>
 
           {SCENES.map(scene => {
-            const exhausted = usageCount >= AI_CHAT_DAILY_LIMIT
+            const exhausted = !pro && isUsageExhausted(usage, AI_CHAT_DAILY_LIMIT)
             return (
               <TouchableOpacity
                 key={scene.id}
@@ -421,6 +462,12 @@ function createStyles(colors: ThemeColors) {
     },
     usageText: { fontSize: 13, color: colors.subtext, textAlign: 'center', letterSpacing: 0.2 },
     usageTextExhausted: { fontSize: 13, color: colors.warning, textAlign: 'center', fontWeight: '600' },
+    watchAdButton: {
+      marginTop: 10, alignSelf: 'center', backgroundColor: colors.primary,
+      paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, minWidth: 160, alignItems: 'center',
+    },
+    watchAdButtonDisabled: { opacity: 0.6 },
+    watchAdText: { color: '#fff', fontSize: 14, fontWeight: '700' },
     sceneEmoji: { fontSize: 30, marginRight: 14 },
     sceneInfo: { flex: 1 },
     sceneName: { fontSize: 16, fontWeight: '600', color: colors.text, letterSpacing: -0.2 },

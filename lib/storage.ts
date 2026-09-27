@@ -13,67 +13,96 @@ const AI_EXPLAIN_CACHE_MAX = 200
 
 export const AI_CHAT_DAILY_LIMIT = 3
 
-interface AIChatUsage {
+// ── 每日用量（免費版限制；Pro 無限）──────────────────────────────────────────
+// count：今天用掉幾次。bonus：今天靠看激勵廣告多換到幾次（每天最多 DAILY_BONUS_CAP）。
+// 額度用完的判斷是 count >= limit + bonus，兩個功能各自獨立計算，隔天歸零。
+export const DAILY_BONUS_CAP = 3
+
+export interface DailyUsage {
   date: string
   count: number
+  bonus: number
 }
 
-export async function getAIChatUsage(): Promise<AIChatUsage> {
+function emptyUsage(date: string): DailyUsage {
+  return { date, count: 0, bonus: 0 }
+}
+
+async function readUsage(key: string): Promise<DailyUsage> {
   const today = getTodayString()
   try {
-    const stored = await AsyncStorage.getItem(AI_CHAT_USAGE_KEY)
-    if (!stored) return { date: today, count: 0 }
-    const parsed = JSON.parse(stored) as AIChatUsage
-    if (parsed.date !== today) return { date: today, count: 0 }
-    return parsed
+    const stored = await AsyncStorage.getItem(key)
+    if (!stored) return emptyUsage(today)
+    const parsed = JSON.parse(stored) as Partial<DailyUsage>
+    if (parsed.date !== today) return emptyUsage(today)
+    return { date: today, count: parsed.count ?? 0, bonus: parsed.bonus ?? 0 }
   } catch {
-    return { date: today, count: 0 }
+    return emptyUsage(today)
   }
 }
 
-export async function incrementAIChatUsage(): Promise<AIChatUsage> {
-  const current = await getAIChatUsage()
-  const next: AIChatUsage = { date: current.date, count: current.count + 1 }
+async function writeUsage(key: string, usage: DailyUsage): Promise<void> {
   try {
-    await AsyncStorage.setItem(AI_CHAT_USAGE_KEY, JSON.stringify(next))
+    await AsyncStorage.setItem(key, JSON.stringify(usage))
   } catch {
-    console.error('Failed to save AI chat usage')
+    console.error(`Failed to save usage for ${key}`)
   }
+}
+
+export function isUsageExhausted(usage: DailyUsage, limit: number): boolean {
+  return usage.count >= limit + usage.bonus
+}
+
+export function usageRemaining(usage: DailyUsage, limit: number): number {
+  return Math.max(0, limit + usage.bonus - usage.count)
+}
+
+export function canGrantBonus(usage: DailyUsage): boolean {
+  return usage.bonus < DAILY_BONUS_CAP
+}
+
+/** 看完激勵廣告後 +1；達到每日上限則不加並回傳 null。 */
+async function grantBonus(key: string): Promise<DailyUsage | null> {
+  const current = await readUsage(key)
+  if (!canGrantBonus(current)) return null
+  const next = { ...current, bonus: current.bonus + 1 }
+  await writeUsage(key, next)
   return next
 }
 
-// ── 拍照翻譯每日用量（免費版限制；Pro 無限）────────────────────────────────────
+async function incrementUsage(key: string): Promise<DailyUsage> {
+  const current = await readUsage(key)
+  const next = { ...current, count: current.count + 1 }
+  await writeUsage(key, next)
+  return next
+}
+
+export function getAIChatUsage(): Promise<DailyUsage> {
+  return readUsage(AI_CHAT_USAGE_KEY)
+}
+
+export function incrementAIChatUsage(): Promise<DailyUsage> {
+  return incrementUsage(AI_CHAT_USAGE_KEY)
+}
+
+export function grantAIChatBonus(): Promise<DailyUsage | null> {
+  return grantBonus(AI_CHAT_USAGE_KEY)
+}
+
 const CAMERA_USAGE_KEY = 'camera_usage'
 
 export const CAMERA_DAILY_LIMIT = 3
 
-interface CameraUsage {
-  date: string
-  count: number
+export function getCameraUsage(): Promise<DailyUsage> {
+  return readUsage(CAMERA_USAGE_KEY)
 }
 
-export async function getCameraUsage(): Promise<CameraUsage> {
-  const today = getTodayString()
-  try {
-    const stored = await AsyncStorage.getItem(CAMERA_USAGE_KEY)
-    if (!stored) return { date: today, count: 0 }
-    const parsed = JSON.parse(stored) as CameraUsage
-    if (parsed.date !== today) return { date: today, count: 0 }
-    return parsed
-  } catch {
-    return { date: today, count: 0 }
-  }
+export function incrementCameraUsage(): Promise<DailyUsage> {
+  return incrementUsage(CAMERA_USAGE_KEY)
 }
 
-export async function incrementCameraUsage(): Promise<CameraUsage> {
-  const current = await getCameraUsage()
-  const next: CameraUsage = { date: current.date, count: current.count + 1 }
-  try {
-    await AsyncStorage.setItem(CAMERA_USAGE_KEY, JSON.stringify(next))
-  } catch {
-    console.error('Failed to save camera usage')
-  }
-  return next
+export function grantCameraBonus(): Promise<DailyUsage | null> {
+  return grantBonus(CAMERA_USAGE_KEY)
 }
 
 export async function getAIExplainCached(key: string): Promise<string | null> {
@@ -279,11 +308,19 @@ export interface StreakUpdateResult {
   newRecord: boolean
 }
 
-export function updateStreak(progress: UserProgress): StreakUpdateResult {
-  const today = getTodayString()
+export function updateStreak(progress: UserProgress, now: Date = new Date()): StreakUpdateResult {
+  const today = toLocalDateString(now)
+  const yesterday = toLocalDateString(addDays(now, -1))
+  // 舊資料（1.6.0 前）的日期是 UTC，最多比本地日期落後一天：
+  // 昨天讀的可能存成前天、今天讀的可能存成昨天。所以第一次遇到舊資料時，
+  // 「前天」也視為連續，之後就標成 local、恢復嚴格比對。
+  const legacy = progress.dateSchema !== 'local'
+  const dayBeforeYesterday = toLocalDateString(addDays(now, -2))
+  const isContinuing = progress.lastStudyDate === yesterday
+    || (legacy && progress.lastStudyDate === dayBeforeYesterday)
+  if (legacy) progress.dateSchema = 'local'
   if (progress.lastStudyDate === today) return { newBadges: [], newRecord: false }
-  const yesterday = getYesterdayString()
-  progress.streak = progress.lastStudyDate === yesterday ? progress.streak + 1 : 1
+  progress.streak = isContinuing ? progress.streak + 1 : 1
   progress.lastStudyDate = today
   // Defensive default for users upgrading from older schema.
   if (typeof progress.longestStreak !== 'number') progress.longestStreak = 0
@@ -304,12 +341,24 @@ export async function resetProgress(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY)
 }
 
+/** 裝置本地時區的 YYYY-MM-DD。全 App 的「今天」都要走這裡，不要用 toISOString（那是 UTC）。 */
+export function toLocalDateString(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function addDays(d: Date, delta: number): Date {
+  const next = new Date(d)
+  next.setDate(next.getDate() + delta)
+  return next
+}
+
 export function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return toLocalDateString(new Date())
 }
 
 export function getYesterdayString(): string {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().split('T')[0]
+  return toLocalDateString(addDays(new Date(), -1))
 }

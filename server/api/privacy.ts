@@ -21,10 +21,10 @@ const HTML = `<!DOCTYPE html>
 <body>
 
 <h1>Nihongo Manabi — 隱私權政策</h1>
-<p><strong>最後更新：2026 年 6 月 8 日</strong></p>
+<p><strong>最後更新：2026 年 9 月 26 日</strong></p>
 
 <h2>1. 我們蒐集的資料</h2>
-<p>Nihongo Manabi 是一款純本地的日語學習 App。所有學習進度、SRS 卡片、收藏單字、設定都儲存於你的裝置（透過 iOS AsyncStorage / Android SharedPreferences），不上傳任何伺服器。</p>
+<p>Nihongo Manabi 的學習進度、SRS 卡片、收藏單字、設定都儲存於你的裝置（透過 iOS AsyncStorage / Android SharedPreferences），我們沒有帳號系統，也不會把這些資料上傳到自己的伺服器。下列第 2 節與第 4 節說明的功能會把必要資料傳給第三方服務處理。</p>
 
 <h2>2. 我們處理的資料</h2>
 <ul>
@@ -36,17 +36,28 @@ const HTML = `<!DOCTYPE html>
 <h2>3. 訂閱與付款</h2>
 <p>Pro 訂閱由 Apple App Store 處理。我們透過 RevenueCat 確認你的訂閱狀態，僅取得匿名的「Pro / 非 Pro」結果，不取得你的姓名、Apple ID、信用卡資訊。RevenueCat 隱私權政策見 <a href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</a>。</p>
 
-<h2>4. 第三方服務</h2>
+<h2>4. 廣告（僅免費版）</h2>
+<p>免費版在 AI 對話或拍照翻譯的每日額度用完時，可以<strong>自行選擇</strong>觀看一支 Google AdMob 的激勵影片廣告換取額外次數。我們不會在學習過程中插入任何廣告；Pro 訂閱用戶完全不會看到廣告，也不會初始化廣告 SDK。</p>
+<ul>
+<li>AdMob 為了投放與計量廣告，可能收集：廣告識別碼（IDFA，僅在你於 App Tracking Transparency 對話框中允許追蹤時）、由 IP 位址推估的大略位置、廣告互動資料、當機與效能資料。</li>
+<li>第一次進入主畫面時 iOS 會詢問是否允許追蹤。選「要求 App 不要追蹤」仍可看廣告換次數，只是廣告不會用 IDFA 做個人化。你隨時可在「設定 → 隱私權與安全性 → 追蹤」更改。</li>
+<li>在歐盟、英國與瑞士，App 會依 Google User Messaging Platform 顯示同意表單。</li>
+<li>App 使用 Apple SKAdNetwork 進行廣告成效歸因，該機制不會向廣告主揭露你的身分。廣告內容分級設定為 PG。</li>
+<li>Google 如何使用廣告資料：<a href="https://policies.google.com/technologies/partner-sites">policies.google.com/technologies/partner-sites</a></li>
+</ul>
+
+<h2>5. 第三方服務</h2>
 <ul>
 <li>Google Gemini API（AI 對話與拍照翻譯）— <a href="https://policies.google.com/privacy">policies.google.com/privacy</a></li>
+<li>Google AdMob 與 User Messaging Platform（免費版的激勵影片廣告與同意管理）— <a href="https://policies.google.com/privacy">policies.google.com/privacy</a></li>
 <li>RevenueCat（訂閱狀態驗證）— <a href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</a></li>
 <li>Apple App Store（付款處理）— <a href="https://www.apple.com/legal/privacy/">apple.com/legal/privacy</a></li>
 </ul>
 
-<h2>5. 兒童隱私</h2>
+<h2>6. 兒童隱私</h2>
 <p>本 App 不主動蒐集 13 歲以下兒童的個人資料。如有家長發現相關情形，請聯繫我們刪除。</p>
 
-<h2>6. 你的權利</h2>
+<h2>7. 你的權利</h2>
 <p>你可隨時於 App 內「設定」清除所有本地資料。卸載 App 即會自動清除所有資料。</p>
 
 <h2>7. 變更通知</h2>
@@ -58,10 +69,10 @@ const HTML = `<!DOCTYPE html>
 <hr>
 
 <h1 class="lang-en">Nihongo Manabi — Privacy Policy (English)</h1>
-<p><strong>Last updated: June 8, 2026</strong></p>
+<p><strong>Last updated: September 26, 2026</strong></p>
 
 <h2>1. Data We Collect</h2>
-<p>Nihongo Manabi is a fully local Japanese learning app. All learning progress, SRS cards, saved vocabulary, and settings are stored on your device (via iOS AsyncStorage / Android SharedPreferences). Nothing is uploaded to a backend.</p>
+<p>Nihongo Manabi stores your learning progress, SRS cards, saved vocabulary and settings on your device (via iOS AsyncStorage / Android SharedPreferences). There is no account system and we do not upload this data to servers of our own. Sections 2 and 4 describe the features that send the necessary data to third-party services.</p>
 
 <h2>2. Data We Process</h2>
 <ul>
@@ -73,20 +84,31 @@ const HTML = `<!DOCTYPE html>
 <h2>3. Subscription & Payments</h2>
 <p>Pro subscriptions are handled by Apple App Store. We use RevenueCat to verify subscription status — we receive only an anonymous "Pro / not Pro" result, never your name, Apple ID, or credit card. See <a href="https://www.revenuecat.com/privacy">RevenueCat privacy policy</a>.</p>
 
-<h2>4. Third-Party Services</h2>
+<h2>4. Advertising (free tier only)</h2>
+<p>When the daily quota for AI chat or camera translation is used up, free users may <strong>choose</strong> to watch a Google AdMob rewarded video ad in exchange for extra uses. No ads are inserted into the learning flow, and Pro subscribers never see ads (the ads SDK is not even initialised for them).</p>
+<ul>
+<li>To serve and measure ads, AdMob may collect: the advertising identifier (IDFA, only if you allow tracking in the App Tracking Transparency prompt), coarse location inferred from IP address, ad interaction data, and crash and performance data.</li>
+<li>iOS asks for tracking permission when you first reach the main screen. If you choose &ldquo;Ask App Not to Track&rdquo;, you can still watch ads for extra uses; they are simply not personalised with the IDFA. Change this anytime in Settings → Privacy &amp; Security → Tracking.</li>
+<li>In the EU, UK and Switzerland the app shows a consent form via Google&rsquo;s User Messaging Platform.</li>
+<li>The app uses Apple&rsquo;s SKAdNetwork for ad attribution, which does not reveal your identity to advertisers. The maximum ad content rating is set to PG.</li>
+<li>How Google uses ad data: <a href="https://policies.google.com/technologies/partner-sites">policies.google.com/technologies/partner-sites</a></li>
+</ul>
+
+<h2>5. Third-Party Services</h2>
 <ul>
 <li>Google Gemini API (AI chat &amp; camera OCR) — <a href="https://policies.google.com/privacy">policies.google.com/privacy</a></li>
+<li>Google AdMob and User Messaging Platform (rewarded ads and consent for the free tier) — <a href="https://policies.google.com/privacy">policies.google.com/privacy</a></li>
 <li>RevenueCat (subscription verification) — <a href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</a></li>
 <li>Apple App Store (payment processing) — <a href="https://www.apple.com/legal/privacy/">apple.com/legal/privacy</a></li>
 </ul>
 
-<h2>5. Children's Privacy</h2>
+<h2>6. Children's Privacy</h2>
 <p>This app does not knowingly collect personal data from children under 13. Parents who become aware of such data may contact us for deletion.</p>
 
-<h2>6. Your Rights</h2>
+<h2>7. Your Rights</h2>
 <p>You can clear all local data at any time via the in-app Settings screen. Uninstalling the app automatically erases everything.</p>
 
-<h2>7. Changes</h2>
+<h2>8. Changes</h2>
 <p>Material changes to this policy will be communicated in-app or via the App Store release notes.</p>
 
 <h2>8. Contact</h2>

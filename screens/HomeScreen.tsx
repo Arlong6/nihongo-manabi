@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { loadProgress } from '../lib/storage'
+import { loadProgress, getTodayString } from '../lib/storage'
 import { maybeAskForReview } from '../lib/review'
 import { allVocabulary, categoryInfo, getVocabularyByLevel } from '../data/vocabulary'
 import { phrases } from '../data/phrases'
@@ -44,7 +44,7 @@ export default function HomeScreen() {
       AsyncStorage.getItem(USER_LEVEL_KEY).then(level => {
         const vocab = getVocabularyByLevel((level as UserLevel) ?? 'beginner')
         const unlearned = vocab.filter(v => !p.learnedIds.includes(v.id))
-        const seed = parseInt(new Date().toISOString().split('T')[0].replace(/-/g, ''))
+        const seed = parseInt(getTodayString().replace(/-/g, ''))
         const shuffled = [...unlearned].sort((a, b) =>
           ((seed * a.id.charCodeAt(0)) % 100) - ((seed * b.id.charCodeAt(0)) % 100)
         )
@@ -60,9 +60,7 @@ export default function HomeScreen() {
   const longestStreak = progress?.longestStreak ?? 0
   const earnedBadges = progress?.earnedBadges ?? []
   const totalLearned = progress?.totalWordsLearned ?? 0
-  const today = progress?.dailyHistory.find(
-    d => d.date === new Date().toISOString().split('T')[0]
-  )
+  const today = progress?.dailyHistory.find(d => d.date === getTodayString())
 
   // Highest-tier badge earned, surfaced as a single decorative chip on Home.
   // Full gallery lives in ProgressScreen so Home stays scannable.

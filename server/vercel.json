@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/r/:filename", "destination": "/api/r/:filename" },
-    { "source": "/privacy", "destination": "/api/privacy" }
+    { "source": "/privacy", "destination": "/api/privacy" },
+    { "source": "/app-ads.txt", "destination": "/api/app-ads" }
   ]
 }

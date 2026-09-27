@@ -358,5 +358,17 @@
     "btnNext": "Next",
     "btnPrev": "Back",
     "btnStart": "Start Learning!"
+  },
+  "ads": {
+    "watchForOne": "Watch an ad for +1",
+    "loading": "Loading ad…",
+    "notReady": "The ad could not be shown or was not completed. Please try again later.",
+    "bonusGranted": "+1 added. Keep practicing!",
+    "upgradePro": "Upgrade to Pro",
+    "cancel": "Cancel"
+  },
+  "camera": {
+    "limitTitle": "Daily photo translation limit reached",
+    "limitMessage": "Free users can translate {{limit}} photos per day. Upgrade to Pro for unlimited use."
   }
 }

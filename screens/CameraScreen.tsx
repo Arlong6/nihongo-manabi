@@ -4,6 +4,7 @@ import {
   SafeAreaView, Image, Alert, Pressable,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as ImagePicker from 'expo-image-picker'
 import * as ImageManipulator from 'expo-image-manipulator'
@@ -11,12 +12,14 @@ import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { ocrAndTranslate, type OCRResult } from '../lib/gemini-vision'
 import { isPro } from '../lib/iap'
-import { getCameraUsage, incrementCameraUsage, CAMERA_DAILY_LIMIT } from '../lib/storage'
+import { getCameraUsage, incrementCameraUsage, grantCameraBonus, isUsageExhausted, canGrantBonus, CAMERA_DAILY_LIMIT } from '../lib/storage'
+import { adsAvailable, showRewarded } from '../lib/ads'
 
 type Phase = 'capture' | 'processing' | 'result'
 
 export default function CameraScreen() {
   const { colors } = useTheme()
+  const { t } = useTranslation()
   const styles = useMemo(() => createStyles(colors), [colors])
   const navigation = useNavigation<any>()
   const [permission, requestPermission] = useCameraPermissions()
@@ -39,16 +42,33 @@ export default function CameraScreen() {
     const currentlyPro = pro || await isPro()
     if (!currentlyPro) {
       const usage = await getCameraUsage()
-      if (usage.count >= CAMERA_DAILY_LIMIT) {
+      if (isUsageExhausted(usage, CAMERA_DAILY_LIMIT)) {
         setPreviewUri(null)
         setPhase('capture')
+        const buttons: Array<{ text: string; style?: 'cancel'; onPress?: () => void }> = [
+          { text: t('ads.cancel'), style: 'cancel' },
+        ]
+        // 看一支激勵影片多換 1 次；每天有上限，沒有原生模組（舊 binary）就不提供
+        if (canGrantBonus(usage) && adsAvailable()) {
+          buttons.push({
+            text: t('ads.watchForOne'),
+            onPress: async () => {
+              const earned = await showRewarded()
+              const granted = earned ? await grantCameraBonus() : null
+              if (granted) {
+                setPreviewUri(uri)
+                await compressAndOCR(uri)
+              } else {
+                Alert.alert(t('ads.notReady'))
+              }
+            },
+          })
+        }
+        buttons.push({ text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall') })
         Alert.alert(
-          '今日拍照翻譯已用完',
-          `免費版每天可翻譯 ${CAMERA_DAILY_LIMIT} 次，升級 Pro 即可無限使用。`,
-          [
-            { text: '取消', style: 'cancel' },
-            { text: '升級 Pro 解鎖', onPress: () => navigation.navigate('Paywall') },
-          ],
+          t('camera.limitTitle'),
+          t('camera.limitMessage', { limit: CAMERA_DAILY_LIMIT }),
+          buttons,
         )
         return
       }
@@ -71,7 +91,7 @@ export default function CameraScreen() {
       setError(e?.message ?? '辨識失敗')
       setPhase('capture')
     }
-  }, [pro, navigation])
+  }, [pro, navigation, t])
 
   const takePhoto = async () => {
     if (!cameraRef.current) return
