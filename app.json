@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nihongo Manabi",
     "slug": "nihongo-manabi",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nihongomanabi.app",
-      "buildNumber": "15",
+      "buildNumber": "16",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "需要麥克風來練習日文發音",
