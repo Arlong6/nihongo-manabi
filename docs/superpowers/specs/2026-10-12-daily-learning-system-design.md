@@ -52,7 +52,7 @@
   3. 文法 1 題（當前級別，優先取 `loadGrammarStats` 中答錯率高的）。
   4. 漢字讀音或聽力 1 題，二擇一輪替（依當天日期奇偶）。
 - 不足時依序補位：到期不足 5 題，用新單字補到 10 題；新單字也用完（該級別全學完），用已學單字的隨機複習補。
-- 級別池：`level` 為 N5..N1 時取對應 JLPT 單字＋主題單字（主題單字視為 N5 池的一部分）。`level` 為 `daily`（舊 onboarding 值）視同 N5。
+- 級別池：`level` 為 N5..N1 時取對應 JLPT 單字＋主題單字（主題單字視為 N5 池的一部分）。onboarding 目前存的是 `beginner | n5 | n4`，由 `getUserLevel()` 映射：beginner、n5 → N5，n4 → N4；onboarding 三個選項不動，N3 以上只能在設定頁選。
 
 ### 3.3 課程流程 `screens/LessonScreen.tsx`（新畫面，Stack）
 - 逐題作答，沿用現有單字卡／選擇題元件。
