@@ -20,7 +20,6 @@ const PRO_BENEFITS = [
   { emoji: '🤖', title: 'AI 對話無上限', body: '不限次數跟 AI 老師練習各種情境' },
   { emoji: '🎓', title: 'N1 / N2 進階模考', body: '高階文法 + 完整模擬考' },
   { emoji: '📸', title: '拍照翻譯無上限', body: '日本旅遊看不懂的招牌、菜單，秒翻' },
-  { emoji: '🎬', title: '影片下載 + 字典', body: '看 Reel 學日文時，單字一鍵存進複習' },
   { emoji: '🚫', title: '無廣告', body: '專心學習，零打擾' },
 ]
 
@@ -31,8 +30,9 @@ export default function PaywallScreen() {
   const [offering, setOffering] = useState<PurchasesOffering | null>(null)
   const [errorKind, setErrorKind] = useState<OfferingsResult['kind'] | null>(null)
   const [selectedPkg, setSelectedPkg] = useState<PurchasesPackage | null>(null)
-  // Default to showing the trial badge; only an explicit INELIGIBLE hides it.
-  const [trialEligible, setTrialEligible] = useState(true)
+  // Hidden until the product proves it carries a free trial and Apple confirms
+  // eligibility — advertising a trial ASC doesn't have would charge full price.
+  const [trialEligible, setTrialEligible] = useState(false)
   const [loading, setLoading] = useState(true)
   const [buying, setBuying] = useState(false)
 
@@ -47,7 +47,7 @@ export default function PaywallScreen() {
         setSelectedPkg(annual || r.offering.availablePackages[0] || null)
         if (annual) {
           // Only advertise the 7-day trial to users Apple will actually grant it to.
-          checkTrialEligibility(annual.product.identifier).then(setTrialEligible)
+          checkTrialEligibility(annual.product).then(setTrialEligible)
         }
       } else {
         setOffering(null)
@@ -206,7 +206,7 @@ export default function PaywallScreen() {
 
         <Text style={styles.legal}>
           Nihongo Pro 為自動續訂訂閱（月訂閱 / 年訂閱）。{'\n'}
-          年訂閱含 7 天免費試用，僅限新訂閱用戶。{'\n'}
+          {trialEligible && <>年訂閱含 7 天免費試用，僅限新訂閱用戶。{'\n'}</>}
           費用於每期結束前 24 小時自動向 Apple ID 收取下一期，{'\n'}
           可在 設定 → Apple ID → 訂閱項目 隨時取消。
         </Text>

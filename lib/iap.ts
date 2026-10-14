@@ -25,7 +25,7 @@
  */
 import Purchases, {
   INTRO_ELIGIBILITY_STATUS, LOG_LEVEL,
-  type CustomerInfo, type PurchasesOffering, type PurchasesPackage,
+  type CustomerInfo, type PurchasesOffering, type PurchasesPackage, type PurchasesStoreProduct,
 } from 'react-native-purchases'
 import { Platform } from 'react-native'
 
@@ -136,16 +136,26 @@ export async function recheckProStatus(): Promise<boolean> {
   }
 }
 
-// Whether to advertise the annual plan's 7-day trial. Only hides the badge
-// when RevenueCat explicitly reports the user INELIGIBLE (already consumed the
-// trial). Transient UNKNOWN (StoreKit warming up), NO_INTRO_OFFER, or errors
-// default to showing it — never hide a valid trial from an eligible buyer.
-export async function checkTrialEligibility(productId: string): Promise<boolean> {
+/** True only when the store product carries a free (price 0) introductory offer. */
+export function productHasFreeTrial(product: Pick<PurchasesStoreProduct, 'introPrice'>): boolean {
+  return !!product.introPrice && product.introPrice.price === 0
+}
+
+// Whether the paywall may advertise the free trial for this product.
+// Two gates: (1) the product itself must carry a free intro offer — if ASC has
+// none configured, no amount of SDK optimism makes a trial exist; (2) Apple
+// must not report the user INELIGIBLE (already consumed it) or deny the offer
+// exists. Transient UNKNOWN (StoreKit warming up) or errors keep showing it so
+// an eligible buyer never loses a real trial.
+export async function checkTrialEligibility(product: Pick<PurchasesStoreProduct, 'identifier' | 'introPrice'>): Promise<boolean> {
+  if (!productHasFreeTrial(product)) return false
   try {
     await initPurchases()
-    if (!configured) return true
-    const map = await Purchases.checkTrialOrIntroductoryPriceEligibility([productId])
-    return map[productId]?.status !== INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE
+    if (!configured) return false
+    const map = await Purchases.checkTrialOrIntroductoryPriceEligibility([product.identifier])
+    const status = map[product.identifier]?.status
+    return status !== INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE
+      && status !== INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_NO_INTRO_OFFER_EXISTS
   } catch {
     return true
   }
