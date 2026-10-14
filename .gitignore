@@ -55,3 +55,6 @@ nihongo-reels/.host-repo/
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 .vercel
+
+# Claude Code worktrees
+.claude/worktrees/
