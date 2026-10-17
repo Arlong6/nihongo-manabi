@@ -21,9 +21,10 @@ jest.mock('../lib/i18n', () => {
 import {
   syncStreakRiskNotification, scheduleLapseReminders, countDueWithin, suggestReminderTime,
   hasAskedNotificationPermission, markAskedNotificationPermission, lapseBody,
-  STREAK_NOTIF_ID, LAPSE_IDS, DEFAULT_LAPSE_HOUR,
+  STREAK_NOTIF_ID, LAPSE_IDS, DEFAULT_LAPSE_HOUR, scheduleDaily, DAILY_NOTIF_ID,
 } from '../lib/notifications'
 import { toLocalDateString } from '../lib/storage'
+import * as Notifications from 'expo-notifications'
 import type { UserProgress, SRSCard } from '../types'
 
 function base(over: Partial<UserProgress> = {}): UserProgress {
@@ -46,7 +47,20 @@ describe('syncStreakRiskNotification', () => {
     expect(cancelled).toContain(STREAK_NOTIF_ID)
     expect(scheduled.find(s => s.identifier === STREAK_NOTIF_ID)).toBeUndefined()
   })
-  test('未打卡且 streak ≥ 1 → 排今天 21:30 一次性', async () => {
+  test('最後打卡是 3 天前（連勝已斷）→ 取消，不排', async () => {
+    const d = new Date(now); d.setDate(d.getDate() - 3)
+    await syncStreakRiskNotification(base({ streak: 5, lastStudyDate: toLocalDateString(d) }), now)
+    expect(cancelled).toContain(STREAK_NOTIF_ID)
+    expect(scheduled.find(s => s.identifier === STREAK_NOTIF_ID)).toBeUndefined()
+  })
+  test('使用者關閉提醒 → 只取消，不排', async () => {
+    await AsyncStorage.setItem('notification_enabled', 'false')
+    const y = new Date(now); y.setDate(y.getDate() - 1)
+    await syncStreakRiskNotification(base({ streak: 5, lastStudyDate: toLocalDateString(y) }), now)
+    expect(cancelled).toContain(STREAK_NOTIF_ID)
+    expect(scheduled).toHaveLength(0)
+  })
+  test('昨天打卡且 streak ≥ 1 → 排今天 21:30 一次性', async () => {
     const y = new Date(now); y.setDate(y.getDate() - 1)
     await syncStreakRiskNotification(base({ streak: 5, lastStudyDate: toLocalDateString(y) }), now)
     const req = scheduled.find(s => s.identifier === STREAK_NOTIF_ID)
@@ -78,6 +92,12 @@ describe('scheduleLapseReminders', () => {
     const days = reqs.map(r => Math.round((new Date(r.trigger.date).getTime() - now.getTime()) / 86400000))
     expect(days).toEqual([1, 3, 7])
     expect(new Date(reqs[0].trigger.date).getHours()).toBe(DEFAULT_LAPSE_HOUR)
+  })
+  test('使用者關閉提醒 → 只取消，不排', async () => {
+    await AsyncStorage.setItem('notification_enabled', 'false')
+    await scheduleLapseReminders(base({ streak: 3 }), now)
+    for (const id of LAPSE_IDS) expect(cancelled).toContain(id)
+    expect(scheduled).toHaveLength(0)
   })
   test('使用者有設提醒時間就用那個小時', async () => {
     await AsyncStorage.setItem('notification_hour', '8')
@@ -118,4 +138,11 @@ test('lapseBody 三種文案都走 i18n', () => {
   expect(lapseBody(1, { dueIn: 4, streak: 2, level: 'N5' })).toContain('notif.lapse1')
   expect(lapseBody(3, { dueIn: 4, streak: 2, level: 'N5' })).toContain('notif.lapse3')
   expect(lapseBody(7, { dueIn: 4, streak: 2, level: 'N5' })).toContain('notif.lapse7')
+})
+
+test('scheduleDaily 只取消 DAILY_NOTIF_ID，不清掉其他排程', async () => {
+  await scheduleDaily(9, 30)
+  expect(Notifications.cancelAllScheduledNotificationsAsync).not.toHaveBeenCalled()
+  expect(cancelled).toContain(DAILY_NOTIF_ID)
+  expect(scheduled.find(s => s.identifier === DAILY_NOTIF_ID)).toBeDefined()
 })

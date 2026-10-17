@@ -13,7 +13,7 @@ import {
 import { createSRSCard, updateSRSCard as computeNextSRS, getDueCards } from '../lib/srs'
 import {
   syncStreakRiskNotification, scheduleLapseReminders, hasAskedNotificationPermission,
-  markAskedNotificationPermission, suggestReminderTime, scheduleDaily,
+  markAskedNotificationPermission, suggestReminderTime, scheduleDaily, getNotificationSettings,
 } from '../lib/notifications'
 import { speakJapanese } from '../lib/speech'
 import { usePro } from '../lib/pro'
@@ -135,6 +135,8 @@ export default function LessonScreen() {
     await scheduleLapseReminders(progressAfter, new Date(), level)
     if (await hasAskedNotificationPermission()) return
     await markAskedNotificationPermission()
+    // 已開啟提醒的用戶保留原本選的時間，不再詢問
+    if ((await getNotificationSettings()).enabled) return
     const { hour, minute } = suggestReminderTime()
     const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
     Alert.alert(t('notif.askTitle', { time }), t('notif.askMessage'), [
@@ -143,6 +145,10 @@ export default function LessonScreen() {
         dueCount: getDueCards(progressAfter.srsCards).length,
         currentStreak: progressAfter.streak,
         longestStreak: progressAfter.longestStreak,
+      }).then(async () => {
+        // 授權在這之後才發生，前面排的召回可能被系統丟棄，授權後重排
+        await syncStreakRiskNotification(progressAfter)
+        await scheduleLapseReminders(progressAfter, new Date(), level)
       }).catch(() => {}) },
     ])
   }

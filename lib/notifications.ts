@@ -49,6 +49,11 @@ export async function scheduleDaily(hour: number, minute: number = 0, context: D
   await AsyncStorage.setItem(NOTIF_ENABLED_KEY, 'true')
 }
 
+/** 使用者在設定頁明確關閉（enabled === 'false'）。從未設定（null）視為允許。 */
+async function isOptedOut(): Promise<boolean> {
+  return (await AsyncStorage.getItem(NOTIF_ENABLED_KEY)) === 'false'
+}
+
 export async function cancelNotifications(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync()
   await AsyncStorage.setItem(NOTIF_ENABLED_KEY, 'false')
@@ -80,8 +85,11 @@ function composeDailyBody({ dueCount, currentStreak, longestStreak }: DailySched
 /** App 回前景或課程完成時呼叫。當天已打卡就取消；未打卡且有連勝就排今天 21:30 一次性。 */
 export async function syncStreakRiskNotification(progress: UserProgress, now: Date = new Date()): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(STREAK_NOTIF_ID)
-  const today = toLocalDateString(now)
-  if (progress.lastStudyDate === today || progress.streak < 1) return
+  // 只有「昨天有打卡」的連勝才有可能今天斷；更早的連勝已斷（儲存的 streak 要到下次打卡才歸零）
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (progress.lastStudyDate !== toLocalDateString(yesterday) || progress.streak < 1) return
+  if (await isOptedOut()) return
   const fire = new Date(now)
   fire.setHours(STREAK_RISK_HOUR, STREAK_RISK_MINUTE, 0, 0)
   if (fire.getTime() <= now.getTime()) return
@@ -107,6 +115,7 @@ export function lapseBody(day: 1 | 3 | 7, ctx: { dueIn: number; streak: number; 
 /** 每次打卡完成時重排。再打卡會先取消再排，所以活躍用戶永遠收不到。 */
 export async function scheduleLapseReminders(progress: UserProgress, now: Date = new Date(), level: string = 'N5'): Promise<void> {
   for (const id of LAPSE_IDS) await Notifications.cancelScheduledNotificationAsync(id)
+  if (await isOptedOut()) return
   const hourRaw = await AsyncStorage.getItem(NOTIF_HOUR_KEY)
   const hour = hourRaw ? parseInt(hourRaw, 10) : DEFAULT_LAPSE_HOUR
   for (let i = 0; i < LAPSE_DAYS.length; i++) {
