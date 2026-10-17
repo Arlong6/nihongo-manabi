@@ -1,7 +1,7 @@
 // __tests__/lesson.test.ts
 import { composeLesson, levelPool, levelMasteryRatio, LESSON_SIZE, MAX_REVIEW, NEW_WORDS } from '../lib/lesson'
-import { allVocabulary } from '../data/vocabulary'
-import type { UserProgress, SRSCard } from '../types'
+import { grammarQuestions } from '../data/grammar'
+import type { UserProgress, SRSCard, Vocabulary } from '../types'
 
 const rng = () => 0.5
 function base(over: Partial<UserProgress> = {}): UserProgress {
@@ -20,7 +20,7 @@ test('levelPool N5 含主題單字（daily），N4 不含', () => {
   expect(levelPool('N4').every(v => v.level === 'N4')).toBe(true)
 })
 
-test('空進度：10 題全為新單字且 id 不重複', () => {
+test('空進度：10 題且 id 不重複，其中新單字 3 題', () => {
   const items = composeLesson({ progress: base(), level: 'N5', grammarStats: {}, today: '2026-10-12', rng })
   expect(items).toHaveLength(LESSON_SIZE)
   const ids = items.map(i => i.question.id)
@@ -85,4 +85,35 @@ test('levelMasteryRatio', () => {
   const half = pool.slice(0, Math.floor(pool.length / 2)).map(v => v.id)
   expect(levelMasteryRatio(base({ learnedIds: half }), 'N4')).toBeCloseTo(0.5, 1)
   expect(levelMasteryRatio(base(), 'N4')).toBe(0)
+})
+
+test('文法：空統計時不同 rng 可選到不同題（會輪替）', () => {
+  const ids = new Set([0.01, 0.5, 0.99, 0.3, 0.7].map(x =>
+    composeLesson({ progress: base(), level: 'N5', grammarStats: {}, today: '2026-10-12', rng: () => x })
+      .find(i => i.role === 'grammar')!.question.id))
+  expect(ids.size).toBeGreaterThan(1)
+})
+
+test('文法：沒作答過的題優先於全對的題', () => {
+  const n5 = grammarQuestions.filter(g => g.level === 'N5')
+  const target = n5[n5.length - 1].id
+  const stats: Record<string, { correct: number; total: number }> = {}
+  for (const g of n5) if (g.id !== target) stats[g.id] = { correct: 3, total: 3 }
+  const g = composeLesson({ progress: base(), level: 'N5', grammarStats: stats, today: '2026-10-12', rng })
+    .find(i => i.role === 'grammar')!.question.id
+  expect(g).toBe(target)
+})
+
+test('同 japanese 不同 id 的單字，同一堂課不重複出現', () => {
+  const mk = (id: string, ja: string, zh: string): Vocabulary =>
+    ({ id, japanese: ja, reading: ja, chinese: zh, level: 'N4', category: 'x', example: '', exampleReading: '', exampleChinese: '' } as unknown as Vocabulary)
+  const vocab = [
+    mk('a1', '食べる', '吃'), mk('a2', '食べる', '吃'),
+    ...Array.from({ length: 14 }, (_, i) => mk(`b${i}`, `語${i}`, `意${i}`)),
+  ]
+  for (const today of ['2026-10-12', '2026-10-13']) {
+    const items = composeLesson({ progress: base(), level: 'N4', grammarStats: {}, today, rng, vocab })
+    const ja = items.filter(i => i.vocabId).map(i => vocab.find(v => v.id === i.vocabId)!.japanese)
+    expect(new Set(ja).size).toBe(ja.length)
+  }
 })
