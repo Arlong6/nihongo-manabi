@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import i18n, { SUPPORTED_LANGUAGES } from '../lib/i18n'
-import { loadProgress, resetProgress, setLocale, toLocalDateString } from '../lib/storage'
+import { loadProgress, resetProgress, setLocale, toLocalDateString, getUserLevel, setUserLevel } from '../lib/storage'
 import { allVocabulary, categoryInfo } from '../data/vocabulary'
 import { getDueCards } from '../lib/srs'
 import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../lib/notifications'
 import type { UserProgress } from '../types'
-import { STREAK_BADGES } from '../types'
+import { STREAK_BADGES, JLPT_LEVELS } from '../types'
+import type { JlptLevel } from '../types'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { usePro } from '../lib/pro'
 import { restorePurchases, packageIsPro } from '../lib/iap'
@@ -47,11 +48,13 @@ export default function ProgressScreen() {
   const [progress, setProgress] = useState<UserProgress | null>(null)
   const [notifEnabled, setNotifEnabled] = useState(false)
   const [notifHour, setNotifHour] = useState(9)
+  const [level, setLevel] = useState<JlptLevel>('N5')
   const { pro, refresh } = usePro()
   const navigation = useNavigation<any>()
 
   useEffect(() => {
     loadProgress().then(setProgress)
+    getUserLevel().then(setLevel)
     getNotificationSettings().then(s => {
       setNotifEnabled(s.enabled)
       setNotifHour(s.hour)
@@ -269,6 +272,22 @@ export default function ProgressScreen() {
             </View>
           </View>
         )}
+
+        {/* JLPT level */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('progress.levelSection')}</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {JLPT_LEVELS.map(l => (
+              <TouchableOpacity
+                key={l}
+                style={[styles.hourBtn, level === l && styles.hourBtnActive]}
+                onPress={async () => { setLevel(l); await setUserLevel(l) }}
+              >
+                <Text style={[styles.hourText, level === l && styles.hourTextActive]}>{l}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
         {/* Notifications */}
         <View style={styles.section}>
