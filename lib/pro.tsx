@@ -23,16 +23,22 @@ export function ProProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     mounted.current = true
     refresh().catch(() => {})
-    let sub: { remove: () => void } | null = null
+    const listener = (info: Parameters<typeof packageIsPro>[0]) => {
+      if (mounted.current) setPro(packageIsPro(info))
+    }
+    let attached = false
     initPurchases()
       .then(() => {
+        if (!mounted.current) return          // 已 unmount：不要再掛 listener
         if (!purchasesConfigured()) return   // 無 key：SDK 未 configure，不能掛 listener
-        sub = Purchases.addCustomerInfoUpdateListener(info => {
-          if (mounted.current) setPro(packageIsPro(info))
-        }) as unknown as { remove: () => void }
+        Purchases.addCustomerInfoUpdateListener(listener)
+        attached = true
       })
       .catch(() => { /* 無 key 時沒有 listener，pro 維持 false */ })
-    return () => { mounted.current = false; sub?.remove() }
+    return () => {
+      mounted.current = false
+      if (attached) Purchases.removeCustomerInfoUpdateListener(listener)
+    }
   }, [refresh])
 
   return <ProContext.Provider value={{ pro, refresh }}>{children}</ProContext.Provider>
