@@ -17,7 +17,7 @@ import type { ExplainWrongInput } from '../lib/gemini'
 import type { Vocabulary, ExamRecord, ExamWrongItem } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
-import { isPro } from '../lib/iap'
+import { usePro } from '../lib/pro'
 import { shuffle, hasKanji } from '../lib/quiz'
 
 // ── 型別 ────────────────────────────────────────────────────────────────────
@@ -543,11 +543,10 @@ export default function JLPTScreen() {
   const [questions, setQuestions] = useState<ExamQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [history, setHistory] = useState<ExamRecord[]>([])
-  const [pro, setPro] = useState(false)
+  const { pro, refresh } = usePro()
 
   useEffect(() => {
     loadExamHistory().then(setHistory)
-    isPro().then(setPro)
   }, [])
 
   const startExam = (l: ExamLevel) => {
@@ -561,7 +560,7 @@ export default function JLPTScreen() {
   // Recompute isPro() live so a mid-session upgrade unlocks without relaunch.
   const handleSelectLevel = async (l: ExamLevel) => {
     if (l === 'N2' || l === 'N1') {
-      const currentlyPro = pro || await isPro()
+      const currentlyPro = pro || await refresh()
       if (!currentlyPro) {
         Alert.alert(
           'N1 / N2 進階模考',

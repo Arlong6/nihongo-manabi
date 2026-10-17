@@ -9,7 +9,8 @@ import { scheduleDaily, cancelNotifications, getNotificationSettings } from '../
 import type { UserProgress } from '../types'
 import { STREAK_BADGES } from '../types'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
-import { isPro, restorePurchases, packageIsPro } from '../lib/iap'
+import { usePro } from '../lib/pro'
+import { restorePurchases, packageIsPro } from '../lib/iap'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors, ThemeMode } from '../lib/theme'
 
@@ -46,7 +47,7 @@ export default function ProgressScreen() {
   const [progress, setProgress] = useState<UserProgress | null>(null)
   const [notifEnabled, setNotifEnabled] = useState(false)
   const [notifHour, setNotifHour] = useState(9)
-  const [pro, setPro] = useState(false)
+  const { pro, refresh } = usePro()
   const navigation = useNavigation<any>()
 
   useEffect(() => {
@@ -55,7 +56,6 @@ export default function ProgressScreen() {
       setNotifEnabled(s.enabled)
       setNotifHour(s.hour)
     })
-    isPro().then(setPro)
   }, [])
 
   // Re-check Pro whenever the screen regains focus — e.g. returning from the
@@ -63,8 +63,8 @@ export default function ProgressScreen() {
   // without an app relaunch.
   useFocusEffect(
     useCallback(() => {
-      isPro().then(setPro)
-    }, []),
+      refresh().catch(() => {})
+    }, [refresh]),
   )
 
   if (!progress) return null
@@ -149,7 +149,7 @@ export default function ProgressScreen() {
               try {
                 const info = await restorePurchases()
                 if (packageIsPro(info)) {
-                  setPro(true)
+                  await refresh()
                   Alert.alert('已恢復購買', 'Pro 權限已啟用')
                 } else {
                   Alert.alert('沒有可恢復的購買', '這個 Apple ID 沒有有效的 Pro 訂閱')
