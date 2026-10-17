@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Text, LogBox } from 'react-native'
+import { Text, LogBox, AppState } from 'react-native'
 
 // expo-notifications eagerly tries to register an APNS push token at module
 // init. In simulator + local debug builds we don't have the aps-environment
@@ -47,7 +47,7 @@ import PaywallScreen from './screens/PaywallScreen'
 import LessonScreen from './screens/LessonScreen'
 import { initPurchases } from './lib/iap'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
-import { getNotificationSettings, scheduleDaily } from './lib/notifications'
+import { getNotificationSettings, scheduleDaily, syncStreakRiskNotification } from './lib/notifications'
 import { loadProgress } from './lib/storage'
 import { getDueCards } from './lib/srs'
 
@@ -147,6 +147,15 @@ function AppInner() {
     if (onboardingDone) initAds().catch(() => {})
   }, [onboardingDone])
 
+  // 連勝風險通知：啟動與回前景時依「今天是否已打卡」重排或取消
+  useEffect(() => {
+    if (!onboardingDone) return
+    const sync = () => loadProgress().then(p => syncStreakRiskNotification(p)).catch(() => {})
+    sync()
+    const sub = AppState.addEventListener('change', state => { if (state === 'active') sync() })
+    return () => sub.remove()
+  }, [onboardingDone])
+
   if (onboardingDone === null) return null
 
   if (!onboardingDone) {
@@ -208,7 +217,7 @@ export default function App() {
         ])
         if (settings.enabled) {
           const dueCount = getDueCards(progress.srsCards).length
-          await scheduleDaily(settings.hour, 0, {
+          await scheduleDaily(settings.hour, settings.minute, {
             dueCount,
             currentStreak: progress.streak,
             longestStreak: progress.longestStreak,

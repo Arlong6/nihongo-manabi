@@ -10,7 +10,11 @@ import {
   recordLessonResult, getUserLevel, setUserLevel, getLevelPromptDismissedUntil, setLevelPromptDismissedUntil,
   getTodayString, toLocalDateString, type StreakUpdateResult,
 } from '../lib/storage'
-import { createSRSCard, updateSRSCard as computeNextSRS } from '../lib/srs'
+import { createSRSCard, updateSRSCard as computeNextSRS, getDueCards } from '../lib/srs'
+import {
+  syncStreakRiskNotification, scheduleLapseReminders, hasAskedNotificationPermission,
+  markAskedNotificationPermission, suggestReminderTime, scheduleDaily,
+} from '../lib/notifications'
 import { speakJapanese } from '../lib/speech'
 import { usePro } from '../lib/pro'
 import { getVocabularyById, getVocabularyByCategory } from '../data/vocabulary'
@@ -122,6 +126,25 @@ export default function LessonScreen() {
     setSummary({ correct: correctCount, total: items.length, newWords: newIds.current.size, reviewed: reviewedIds.current.size, streak, streakDays: progress.streak })
     setPhase('result')
     maybePromptLevelUp(progress)
+    scheduleAfterLesson(progress).catch(() => { /* 通知是 best-effort */ })
+  }
+
+  // 課程完成後：重排連勝風險與 D+1/3/7 召回；首次完成才問要不要開每日提醒
+  const scheduleAfterLesson = async (progressAfter: UserProgress) => {
+    await syncStreakRiskNotification(progressAfter)
+    await scheduleLapseReminders(progressAfter, new Date(), level)
+    if (await hasAskedNotificationPermission()) return
+    await markAskedNotificationPermission()
+    const { hour, minute } = suggestReminderTime()
+    const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+    Alert.alert(t('notif.askTitle', { time }), t('notif.askMessage'), [
+      { text: t('notif.askNo'), style: 'cancel' },
+      { text: t('notif.askYes'), onPress: () => scheduleDaily(hour, minute, {
+        dueCount: getDueCards(progressAfter.srsCards).length,
+        currentStreak: progressAfter.streak,
+        longestStreak: progressAfter.longestStreak,
+      }).catch(() => {}) },
+    ])
   }
 
   const maybePromptLevelUp = async (p: UserProgress) => {

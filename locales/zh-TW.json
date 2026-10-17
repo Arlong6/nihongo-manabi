@@ -409,5 +409,23 @@
     "exitTitle": "離開課程？",
     "exitMessage": "提前離開不會算今天打卡，但已答的單字會保留。",
     "exitConfirm": "離開"
+  },
+  "notif": {
+    "dailyTitle": "🌸 日語學習時間！",
+    "dailyDue": "今天有 {{count}} 個單字到期複習，10 分鐘就能掃完 🔥",
+    "dailyMilestone": "🔥 連勝第 {{streak}} 天！再 {{remaining}} 天解鎖「{{milestone}} 日勳章」",
+    "dailyRecord": "🏆 {{streak}} 天連勝 — 你正在創造個人新紀錄",
+    "dailyStreak": "🔥 連勝第 {{streak}} 天，繼續保持！",
+    "dailyGeneric": "今日份的日文練習等你來！",
+    "streakRiskTitle": "🔥 別讓連勝斷在今天",
+    "streakRiskBody": "你的 {{streak}} 天連勝今天還沒打卡，3 分鐘就能保住記錄！",
+    "lapseTitle": "Nihongo Manabi",
+    "lapse1": "你有 {{dueIn}} 個單字快忘了，3 分鐘複習一下",
+    "lapse3": "連勝停在 {{streak}} 天，今天重新開始只要 3 分鐘",
+    "lapse7": "我們幫你把 {{level}} 的進度留著了，隨時回來",
+    "askTitle": "明天 {{time}} 提醒你？",
+    "askMessage": "每天一節課，三分鐘就夠。我們在你剛才學習的時間提醒你。",
+    "askYes": "好",
+    "askNo": "先不要"
   }
 }

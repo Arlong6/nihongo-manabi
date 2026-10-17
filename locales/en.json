@@ -409,5 +409,23 @@
     "exitTitle": "Leave lesson?",
     "exitMessage": "Leaving early won't count as today's check-in, but words you've answered are kept.",
     "exitConfirm": "Leave"
+  },
+  "notif": {
+    "dailyTitle": "🌸 Time for Japanese!",
+    "dailyDue": "{{count}} words are due for review — 10 minutes clears them 🔥",
+    "dailyMilestone": "🔥 Day {{streak}}! {{remaining}} more days to the {{milestone}}-day badge",
+    "dailyRecord": "🏆 {{streak}}-day streak — a new personal record",
+    "dailyStreak": "🔥 Day {{streak}} — keep it going!",
+    "dailyGeneric": "Today's Japanese practice is waiting!",
+    "streakRiskTitle": "🔥 Don't break your streak today",
+    "streakRiskBody": "Your {{streak}}-day streak isn't checked in yet — 3 minutes saves it!",
+    "lapseTitle": "Nihongo Manabi",
+    "lapse1": "{{dueIn}} words are slipping away — a 3-minute review fixes that",
+    "lapse3": "Your streak stopped at {{streak}} days. Restart today in 3 minutes",
+    "lapse7": "We kept your {{level}} progress safe. Come back anytime",
+    "askTitle": "Remind you tomorrow at {{time}}?",
+    "askMessage": "One lesson a day, three minutes. We'll nudge you at the time you just studied.",
+    "askYes": "Sure",
+    "askNo": "Not now"
   }
 }

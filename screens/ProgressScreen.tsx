@@ -67,6 +67,7 @@ export default function ProgressScreen() {
   useFocusEffect(
     useCallback(() => {
       refresh().catch(() => {})
+      getNotificationSettings().then(s => { setNotifEnabled(s.enabled); setNotifHour(s.hour) }).catch(() => {})
     }, [refresh]),
   )
 
