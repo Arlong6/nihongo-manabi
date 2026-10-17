@@ -17,3 +17,27 @@ test('recordLessonResult 寫 last_lesson_date、累計每日統計、回傳 stre
 test('沒做過課程時 getLastLessonDate 回 null', async () => {
   expect(await getLastLessonDate()).toBeNull()
 })
+
+import { markWordLearned, saveProgress, getFreezeUsedDate, toLocalDateString } from '../lib/storage'
+
+function daysAgo(n: number) { const d = new Date(); d.setDate(d.getDate() - n); return toLocalDateString(d) }
+
+test('markWordLearned skipStreak 不動 lastStudyDate', async () => {
+  const p = await loadProgress()
+  p.lastStudyDate = daysAgo(2); p.dateSchema = 'local'; p.streak = 3
+  await saveProgress(p)
+  await markWordLearned('w1', 'cat', 10, { skipStreak: true })
+  const after = await loadProgress()
+  expect(after.lastStudyDate).toBe(daysAgo(2))
+  expect(after.learnedIds).toContain('w1')
+})
+
+test('課程內 skipStreak 後 recordLessonResult 仍能消耗凍結並記錄日期', async () => {
+  const p = await loadProgress()
+  p.lastStudyDate = daysAgo(2); p.dateSchema = 'local'; p.streak = 3; p.streakFreezes = 1
+  await saveProgress(p)
+  await markWordLearned('w1', 'cat', 10, { skipStreak: true })
+  const r = await recordLessonResult({ correct: 1, total: 1, newWords: 1, reviewed: 0, durationS: 5 })
+  expect(r.freezeUsed).toBe(true)
+  expect(await getFreezeUsedDate()).toBe(getTodayString())
+})

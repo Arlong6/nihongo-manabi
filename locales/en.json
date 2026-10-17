@@ -395,7 +395,7 @@
     "levelUpLater": "Not yet",
     "backHome": "Back to Home",
     "exitTitle": "Leave lesson?",
-    "exitMessage": "Progress in this lesson won't be saved.",
+    "exitMessage": "Leaving early won't count as today's check-in, but words you've answered are kept.",
     "exitConfirm": "Leave"
   }
 }

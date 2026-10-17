@@ -48,6 +48,8 @@ export default function LessonScreen() {
   const [level, setLevel] = useState<JlptLevel>('N5')
   const startedAt = useRef(Date.now())
   const finishing = useRef(false)
+  const learnedIds = useRef<Set<string>>(new Set())
+  const pendingWrite = useRef<Promise<void>>(Promise.resolve())
   const newIds = useRef<Set<string>>(new Set())
   const reviewedIds = useRef<Set<string>>(new Set())
 
@@ -55,6 +57,7 @@ export default function LessonScreen() {
     (async () => {
       const [progress, grammarStats, lvl] = await Promise.all([loadProgress(), loadGrammarStats(), getUserLevel()])
       setLevel(lvl)
+      learnedIds.current = new Set(progress.learnedIds)
       const composed = composeLesson({ progress, level: lvl, grammarStats, today: getTodayString() })
       setItems(composed)
       setPhase('quiz')
@@ -71,22 +74,31 @@ export default function LessonScreen() {
     if (correct) setCorrectCount(c => c + 1)
     Haptics.notificationAsync(correct ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error)
 
-    // 寫回學習狀態：單字類更新 SRS 與已學；文法寫統計
-    if (current.question.kind === 'grammar') {
-      await saveGrammarResult(current.question.id, correct)
-    } else if (current.vocabId) {
-      const progress = await loadProgress()
-      const card = progress.srsCards.find(c => c.id === current.vocabId) ?? createSRSCard(current.vocabId, 'vocabulary')
-      await updateSRSCard(computeNextSRS(card, correct ? 'good' : 'unknown'))
-      const wasLearned = progress.learnedIds.includes(current.vocabId)
-      if (!wasLearned) {
-        const v = getVocabularyById(current.vocabId)
-        if (v) await markWordLearned(v.id, v.category, getVocabularyByCategory(v.category).length, { isPro: pro })
-        newIds.current.add(current.vocabId)
-      } else {
-        reviewedIds.current.add(current.vocabId)
+    // 寫回學習狀態：單字類更新 SRS 與已學；文法寫統計。
+    // 計數同步先記（不受 await 影響）；寫入串成一條 promise 鏈，避免讀改寫互相覆蓋，結束前會 await。
+    const q = current.question
+    const vocabId = current.vocabId
+    let isNew = false
+    if (q.kind !== 'grammar' && vocabId) {
+      isNew = !learnedIds.current.has(vocabId)
+      learnedIds.current.add(vocabId)
+      ;(isNew ? newIds : reviewedIds).current.add(vocabId)
+    }
+    const job = async () => {
+      if (q.kind === 'grammar') {
+        await saveGrammarResult(q.id, correct)
+      } else if (vocabId) {
+        const progress = await loadProgress()
+        const card = progress.srsCards.find(c => c.id === vocabId) ?? createSRSCard(vocabId, 'vocabulary')
+        await updateSRSCard(computeNextSRS(card, correct ? 'good' : 'unknown'))
+        if (isNew) {
+          const v = getVocabularyById(vocabId)
+          // 打卡只在課程結束的 recordLessonResult 做一次（spec 3.3）
+          if (v) await markWordLearned(v.id, v.category, getVocabularyByCategory(v.category).length, { skipStreak: true })
+        }
       }
     }
+    pendingWrite.current = pendingWrite.current.then(job).catch(e => console.warn('lesson write failed', e))
   }
 
   const handleNext = async () => {
@@ -100,6 +112,7 @@ export default function LessonScreen() {
     }
     if (finishing.current) return
     finishing.current = true
+    await pendingWrite.current
     const durationS = Math.round((Date.now() - startedAt.current) / 1000)
     const streak = await recordLessonResult(
       { correct: correctCount, total: items.length, newWords: newIds.current.size, reviewed: reviewedIds.current.size, durationS },

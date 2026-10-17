@@ -280,7 +280,7 @@ export async function saveProgress(progress: UserProgress): Promise<void> {
 }
 
 export async function markWordLearned(
-  id: string, category: string, totalInCategory: number, opts: { isPro?: boolean } = {},
+  id: string, category: string, totalInCategory: number, opts: { isPro?: boolean; skipStreak?: boolean } = {},
 ): Promise<void> {
   const progress = await loadProgress()
   if (!progress.learnedIds.includes(id)) {
@@ -292,8 +292,11 @@ export async function markWordLearned(
     progress.categoryProgress[category].learned += 1
     progress.categoryProgress[category].total = totalInCategory
   }
-  const { newBadges } = updateStreak(progress, new Date(), opts)
-  if (newBadges.length > 0) await armReviewPrompt()
+  // 課程內由 recordLessonResult 統一打卡，這裡跳過
+  if (!opts.skipStreak) {
+    const { newBadges } = updateStreak(progress, new Date(), opts)
+    if (newBadges.length > 0) await armReviewPrompt()
+  }
   await saveProgress(progress)
 }
 

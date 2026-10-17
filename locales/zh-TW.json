@@ -395,7 +395,7 @@
     "levelUpLater": "再等等",
     "backHome": "回首頁",
     "exitTitle": "離開課程？",
-    "exitMessage": "這節課的進度不會保存。",
+    "exitMessage": "提前離開不會算今天打卡，但已答的單字會保留。",
     "exitConfirm": "離開"
   }
 }
