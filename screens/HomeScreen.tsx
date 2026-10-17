@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { loadProgress, getTodayString } from '../lib/storage'
+import { loadProgress, getTodayString, getUserLevel } from '../lib/storage'
 import { maybeAskForReview } from '../lib/review'
 import { allVocabulary, categoryInfo, getVocabularyByLevel } from '../data/vocabulary'
 import { phrases } from '../data/phrases'
-import { USER_LEVEL_KEY, UserLevel } from './OnboardingScreen'
 import TourGuide from '../components/TourGuide'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { UserProgress } from '../types'
@@ -41,8 +40,8 @@ export default function HomeScreen() {
   useEffect(() => {
     loadProgress().then(p => {
       setProgress(p)
-      AsyncStorage.getItem(USER_LEVEL_KEY).then(level => {
-        const vocab = getVocabularyByLevel((level as UserLevel) ?? 'beginner')
+      getUserLevel().then(level => {
+        const vocab = getVocabularyByLevel(level === 'N5' ? 'n5' : 'n4')
         const unlearned = vocab.filter(v => !p.learnedIds.includes(v.id))
         const seed = parseInt(getTodayString().replace(/-/g, ''))
         const shuffled = [...unlearned].sort((a, b) =>
