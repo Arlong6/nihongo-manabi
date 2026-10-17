@@ -1,3 +1,4 @@
+jest.mock('../lib/analytics', () => ({ track: jest.fn() }))
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { recordLessonResult, getLastLessonDate, loadProgress, getTodayString } from '../lib/storage'
 
@@ -40,4 +41,46 @@ test('課程內 skipStreak 後 recordLessonResult 仍能消耗凍結並記錄日
   const r = await recordLessonResult({ correct: 1, total: 1, newWords: 1, reviewed: 0, durationS: 5 })
   expect(r.freezeUsed).toBe(true)
   expect(await getFreezeUsedDate()).toBe(getTodayString())
+})
+
+describe('streak 事件追蹤（所有打卡路徑）', () => {
+  const { track } = require('../lib/analytics')
+  const { recordDailyActivity } = require('../lib/storage')
+  beforeEach(() => { (track as jest.Mock).mockClear() })
+
+  async function seed(streak: number, lastDaysAgo: number, freezes = 0) {
+    const p = await loadProgress()
+    p.lastStudyDate = daysAgo(lastDaysAgo); p.dateSchema = 'local'; p.streak = streak; p.streakFreezes = freezes
+    await saveProgress(p)
+  }
+
+  test('2+ 連勝斷掉：recordDailyActivity 觸發 streak_lost 一次', async () => {
+    await seed(3, 3)
+    await recordDailyActivity(1, 0, 0, 0)
+    const calls = (track as jest.Mock).mock.calls.filter(c => c[0] === 'streak_lost')
+    expect(calls).toEqual([['streak_lost', { streak_before: 3 }]])
+  })
+
+  test('消耗凍結：streak_freeze_used 一次且帶 remaining，不觸發 streak_lost', async () => {
+    await seed(3, 2, 1)
+    await recordDailyActivity(1, 0, 0, 0)
+    const names = (track as jest.Mock).mock.calls.map(c => c[0])
+    expect(names.filter(n => n === 'streak_freeze_used')).toHaveLength(1)
+    expect((track as jest.Mock).mock.calls.find(c => c[0] === 'streak_freeze_used')![1]).toEqual({ remaining: 0 })
+    expect(names).not.toContain('streak_lost')
+  })
+
+  test('recordLessonResult 路徑只觸發一次', async () => {
+    await seed(3, 3)
+    await recordLessonResult({ correct: 1, total: 1, newWords: 1, reviewed: 0, durationS: 5 })
+    expect((track as jest.Mock).mock.calls.filter(c => c[0] === 'streak_lost')).toHaveLength(1)
+  })
+
+  test('連續的一天：兩者都不觸發', async () => {
+    await seed(3, 1)
+    await recordDailyActivity(1, 0, 0, 0)
+    const names = (track as jest.Mock).mock.calls.map(c => c[0])
+    expect(names).not.toContain('streak_lost')
+    expect(names).not.toContain('streak_freeze_used')
+  })
 })

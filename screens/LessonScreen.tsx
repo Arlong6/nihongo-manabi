@@ -147,16 +147,18 @@ export default function LessonScreen() {
     const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
     Alert.alert(t('notif.askTitle', { time }), t('notif.askMessage'), [
       { text: t('notif.askNo'), style: 'cancel', onPress: () => track('notif_permission', { granted: false }) },
-      { text: t('notif.askYes'), onPress: () => scheduleDaily(hour, minute, {
+      { text: t('notif.askYes'), onPress: () => { let tracked = false; return scheduleDaily(hour, minute, {
         dueCount: getDueCards(progressAfter.srsCards).length,
         currentStreak: progressAfter.streak,
         longestStreak: progressAfter.longestStreak,
       }).then(async () => {
-        track('notif_permission', { granted: (await getNotificationSettings()).enabled })
+        const enabled = (await getNotificationSettings()).enabled
+        tracked = true
+        track('notif_permission', { granted: enabled })
         // 授權在這之後才發生，前面排的召回可能被系統丟棄，授權後重排
         await syncStreakRiskNotification(progressAfter)
         await scheduleLapseReminders(progressAfter, new Date(), level)
-      }).catch(() => {}) },
+      }).catch(() => { if (!tracked) track('notif_permission', { granted: false }) }) } },
     ])
   }
 

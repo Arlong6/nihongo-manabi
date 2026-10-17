@@ -295,7 +295,7 @@ export async function markWordLearned(
   }
   // 課程內由 recordLessonResult 統一打卡，這裡跳過
   if (!opts.skipStreak) {
-    const { newBadges } = updateStreak(progress, new Date(), opts)
+    const { newBadges } = applyStreak(progress, opts)
     if (newBadges.length > 0) await armReviewPrompt()
   }
   await saveProgress(progress)
@@ -333,9 +333,21 @@ export async function recordDailyActivity(
   if (progress.dailyHistory.length > 30) {
     progress.dailyHistory = progress.dailyHistory.slice(-30)
   }
-  const result = updateStreak(progress, new Date(), opts)
+  const result = applyStreak(progress, opts)
   if (result.newBadges.length > 0) await armReviewPrompt()
   await saveProgress(progress)
+  return result
+}
+
+/** 所有打卡路徑共用：updateStreak + streak 事件追蹤（best-effort，只在這一處觸發）。 */
+function applyStreak(progress: UserProgress, opts: { isPro?: boolean } = {}): StreakUpdateResult {
+  const prev = progress.streak
+  const result = updateStreak(progress, new Date(), opts)
+  try {
+    // 連勝斷掉後重新從 1 開始（之前至少 2 天才算「掉了」）
+    if (prev >= 2 && progress.streak === 1) track('streak_lost', { streak_before: prev })
+    if (result.freezeUsed) track('streak_freeze_used', { remaining: progress.streakFreezes ?? 0 })
+  } catch { /* analytics 是 best-effort */ }
   return result
 }
 
@@ -412,14 +424,7 @@ export interface LessonSummary {
 
 /** 課程完成：打卡 + 記當日統計 + 記最後完成日期（首頁判斷「今天完成了」用）。 */
 export async function recordLessonResult(summary: LessonSummary, opts: { isPro?: boolean } = {}): Promise<StreakUpdateResult> {
-  const before = await loadProgress()
   const result = await recordDailyActivity(summary.newWords, summary.reviewed, 0, 0, opts)
-  try {
-    const after = await loadProgress()
-    // 連勝斷掉後重新從 1 開始（之前至少 2 天才算「掉了」）
-    if (before.streak >= 2 && after.streak === 1) track('streak_lost', { streak_before: before.streak })
-    if (result.freezeUsed) track('streak_freeze_used', { remaining: after.streakFreezes ?? 0 })
-  } catch { /* analytics 是 best-effort */ }
   try {
     await AsyncStorage.setItem(LAST_LESSON_DATE_KEY, getTodayString())
     // 首頁要顯示「昨天用了一張凍結」，但 progress 沒存這件事，單獨記日期
