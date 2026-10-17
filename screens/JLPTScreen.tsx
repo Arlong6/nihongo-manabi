@@ -18,6 +18,7 @@ import type { Vocabulary, ExamRecord, ExamWrongItem } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { isPro } from '../lib/iap'
+import { shuffle, hasKanji } from '../lib/quiz'
 
 // ── 型別 ────────────────────────────────────────────────────────────────────
 type ExamLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
@@ -46,19 +47,6 @@ const EXAM_CONFIG: Record<ExamLevel, { vocabCount: number; grammarCount: number;
 }
 
 // ── 工具 ─────────────────────────────────────────────────────────────────────
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
-function hasKanji(str: string): boolean {
-  return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(str)
-}
-
 function getVocabPool(level: ExamLevel): Vocabulary[] {
   if (level === 'N5') return allVocabulary.filter(v => v.level === 'N5' || v.level === 'daily')
   if (level === 'N4') return allVocabulary.filter(v => v.level === 'N4')
