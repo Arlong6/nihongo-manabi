@@ -135,11 +135,13 @@ test('countDueWithin', () => {
   expect(countDueWithin(cards, 7, now)).toBe(4)
 })
 
-test('suggestReminderTime 四捨五入到整點或半點', () => {
+test('suggestReminderTime 往前取整到整點或半點，深夜不繞到隔天', () => {
+  expect(suggestReminderTime(new Date(2026, 9, 12, 20, 0))).toEqual({ hour: 20, minute: 0 })
   expect(suggestReminderTime(new Date(2026, 9, 12, 20, 10))).toEqual({ hour: 20, minute: 0 })
-  expect(suggestReminderTime(new Date(2026, 9, 12, 20, 20))).toEqual({ hour: 20, minute: 30 })
-  expect(suggestReminderTime(new Date(2026, 9, 12, 20, 50))).toEqual({ hour: 21, minute: 0 })
-  expect(suggestReminderTime(new Date(2026, 9, 12, 23, 50))).toEqual({ hour: 0, minute: 0 })
+  expect(suggestReminderTime(new Date(2026, 9, 12, 20, 30))).toEqual({ hour: 20, minute: 30 })
+  expect(suggestReminderTime(new Date(2026, 9, 12, 20, 50))).toEqual({ hour: 20, minute: 30 })
+  expect(suggestReminderTime(new Date(2026, 9, 12, 23, 57))).toEqual({ hour: 23, minute: 30 })
+  expect(suggestReminderTime(new Date(2026, 9, 12, 0, 10))).toEqual({ hour: 0, minute: 0 })
 })
 
 test('權限對話只問一次（永久旗標）', async () => {

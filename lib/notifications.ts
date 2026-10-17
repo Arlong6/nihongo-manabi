@@ -146,11 +146,11 @@ export async function markAskedNotificationPermission(): Promise<void> {
   try { await AsyncStorage.setItem(NOTIF_ASKED_KEY, 'true') } catch { /* best-effort */ }
 }
 
-/** 取現在時間四捨五入到整點或半點，當作建議的提醒時間。 */
+/** 取現在時間往前取整到整點或半點，當作建議的提醒時間（提醒落在平常學習時間之前；深夜不會繞到隔天 00:00）。 */
 export function suggestReminderTime(now: Date = new Date()): { hour: number; minute: number } {
   const total = now.getHours() * 60 + now.getMinutes()
-  const rounded = (Math.round(total / 30) * 30) % (24 * 60)
-  return { hour: Math.floor(rounded / 60), minute: rounded % 60 }
+  const floored = Math.floor(total / 30) * 30
+  return { hour: Math.floor(floored / 60), minute: floored % 60 }
 }
 
 export const __test = { composeDailyBody }
