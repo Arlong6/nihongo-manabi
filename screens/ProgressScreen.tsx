@@ -129,7 +129,7 @@ export default function ProgressScreen() {
             padding: 18, borderRadius: 16, marginBottom: 16,
             flexDirection: 'row', alignItems: 'center', gap: 14,
           }}
-          onPress={() => navigation.navigate('Paywall')}
+          onPress={() => navigation.navigate('Paywall', { source: 'progress' })}
           activeOpacity={0.85}
         >
           <Text style={{ fontSize: 32 }}>{pro ? '✅' : '✨'}</Text>

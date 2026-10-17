@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { UserProgress, DailyProgress, SRSCard, ExamRecord, JlptLevel } from '../types'
 import { STREAK_BADGES, JLPT_LEVELS } from '../types'
 import { armReviewPrompt } from './review'
+import { track } from './analytics'
 
 const EXAM_HISTORY_KEY = 'jlpt_exam_history'
 const GRAMMAR_PROGRESS_KEY = 'grammar_progress'
@@ -411,7 +412,14 @@ export interface LessonSummary {
 
 /** 課程完成：打卡 + 記當日統計 + 記最後完成日期（首頁判斷「今天完成了」用）。 */
 export async function recordLessonResult(summary: LessonSummary, opts: { isPro?: boolean } = {}): Promise<StreakUpdateResult> {
+  const before = await loadProgress()
   const result = await recordDailyActivity(summary.newWords, summary.reviewed, 0, 0, opts)
+  try {
+    const after = await loadProgress()
+    // 連勝斷掉後重新從 1 開始（之前至少 2 天才算「掉了」）
+    if (before.streak >= 2 && after.streak === 1) track('streak_lost', { streak_before: before.streak })
+    if (result.freezeUsed) track('streak_freeze_used', { remaining: after.streakFreezes ?? 0 })
+  } catch { /* analytics 是 best-effort */ }
   try {
     await AsyncStorage.setItem(LAST_LESSON_DATE_KEY, getTodayString())
     // 首頁要顯示「昨天用了一張凍結」，但 progress 沒存這件事，單獨記日期

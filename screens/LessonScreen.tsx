@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert, ScrollVi
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import * as Haptics from 'expo-haptics'
-import { composeLesson, levelMasteryRatio, type LessonItem } from '../lib/lesson'
+import { composeLesson, levelMasteryRatio, levelPool, MAX_REVIEW, type LessonItem } from '../lib/lesson'
 import {
   loadProgress, loadGrammarStats, saveGrammarResult, updateSRSCard, markWordLearned,
   recordLessonResult, getUserLevel, setUserLevel, getLevelPromptDismissedUntil, setLevelPromptDismissedUntil,
@@ -17,6 +17,7 @@ import {
 } from '../lib/notifications'
 import { speakJapanese } from '../lib/speech'
 import { usePro } from '../lib/pro'
+import { track } from '../lib/analytics'
 import { getVocabularyById, getVocabularyByCategory } from '../data/vocabulary'
 import { JLPT_LEVELS, type JlptLevel, type UserProgress } from '../types'
 import { useTheme } from '../lib/theme'
@@ -65,6 +66,10 @@ export default function LessonScreen() {
       const composed = composeLesson({ progress, level: lvl, grammarStats, today: getTodayString() })
       setItems(composed)
       setPhase('quiz')
+      // 到期卡片數（本級別池內、上限 MAX_REVIEW）；不能用 role === 'review' 算，補題的已學單字也是 review
+      const poolIds = new Set(levelPool(lvl).map(v => v.id))
+      const dueCount = Math.min(getDueCards(progress.srsCards).filter(c => poolIds.has(c.id)).length, MAX_REVIEW)
+      track('lesson_start', { level: lvl, due_count: dueCount })
       if (composed[0]?.question.kind === 'listening') speakJapanese(composed[0].question.audioText!)
     })()
   }, [])
@@ -122,6 +127,7 @@ export default function LessonScreen() {
       { correct: correctCount, total: items.length, newWords: newIds.current.size, reviewed: reviewedIds.current.size, durationS },
       { isPro: pro },
     )
+    track('lesson_complete', { level, correct: correctCount, total: items.length, duration_s: durationS })
     const progress = await loadProgress()
     setSummary({ correct: correctCount, total: items.length, newWords: newIds.current.size, reviewed: reviewedIds.current.size, streak, streakDays: progress.streak })
     setPhase('result')
@@ -140,12 +146,13 @@ export default function LessonScreen() {
     const { hour, minute } = suggestReminderTime()
     const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
     Alert.alert(t('notif.askTitle', { time }), t('notif.askMessage'), [
-      { text: t('notif.askNo'), style: 'cancel' },
+      { text: t('notif.askNo'), style: 'cancel', onPress: () => track('notif_permission', { granted: false }) },
       { text: t('notif.askYes'), onPress: () => scheduleDaily(hour, minute, {
         dueCount: getDueCards(progressAfter.srsCards).length,
         currentStreak: progressAfter.streak,
         longestStreak: progressAfter.longestStreak,
       }).then(async () => {
+        track('notif_permission', { granted: (await getNotificationSettings()).enabled })
         // 授權在這之後才發生，前面排的召回可能被系統丟棄，授權後重排
         await syncStreakRiskNotification(progressAfter)
         await scheduleLapseReminders(progressAfter, new Date(), level)
@@ -166,10 +173,11 @@ export default function LessonScreen() {
       t('lesson.levelUpMessage', { pct: Math.round(ratio * 100), current: level, level: next }),
       [
         { text: t('lesson.levelUpLater'), style: 'cancel', onPress: async () => {
+          track('level_up_prompt', { level: next, accepted: false })
           const d = new Date(); d.setDate(d.getDate() + LEVEL_UP_SNOOZE_DAYS)
           await setLevelPromptDismissedUntil(toLocalDateString(d))
         } },
-        { text: t('lesson.levelUpAccept'), onPress: () => setUserLevel(next) },
+        { text: t('lesson.levelUpAccept'), onPress: () => { track('level_up_prompt', { level: next, accepted: true }); setUserLevel(next) } },
       ],
     )
   }

@@ -567,7 +567,7 @@ export default function JLPTScreen() {
           '高階文法與完整模擬考是 Pro 專屬，升級即可解鎖 N1・N2 模考。',
           [
             { text: '取消', style: 'cancel' },
-            { text: '升級 Pro 解鎖', onPress: () => (navigation as any).navigate('Paywall') },
+            { text: '升級 Pro 解鎖', onPress: () => (navigation as any).navigate('Paywall', { source: 'jlpt' }) },
           ],
         )
         return

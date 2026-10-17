@@ -89,7 +89,7 @@ export default function AIConversationScreen() {
         t('aiChat.limitMessage', { limit: AI_CHAT_DAILY_LIMIT }),
         [
           { text: t('ads.cancel'), style: 'cancel' },
-          { text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall' as never) },
+          { text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall' as never, { source: 'ai_chat' } as never) },
         ],
       )
       return

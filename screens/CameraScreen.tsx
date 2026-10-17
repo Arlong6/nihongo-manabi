@@ -60,7 +60,7 @@ export default function CameraScreen() {
             },
           })
         }
-        buttons.push({ text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall') })
+        buttons.push({ text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall', { source: 'camera' }) })
         Alert.alert(
           t('camera.limitTitle'),
           t('camera.limitMessage', { limit: CAMERA_DAILY_LIMIT }),

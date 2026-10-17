@@ -45,7 +45,9 @@ import WatchScreen from './screens/WatchScreen'
 import CameraScreen from './screens/CameraScreen'
 import PaywallScreen from './screens/PaywallScreen'
 import LessonScreen from './screens/LessonScreen'
+import Purchases from 'react-native-purchases'
 import { initPurchases } from './lib/iap'
+import { initAnalytics, track, identifyWithRevenueCat } from './lib/analytics'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
 import { getNotificationSettings, scheduleDaily, syncStreakRiskNotification } from './lib/notifications'
 import { loadProgress } from './lib/storage'
@@ -206,9 +208,13 @@ export default function App() {
   useEffect(() => {
     initI18n().then(async () => {
       setI18nReady(true)
+      await initAnalytics()
+      track('app_open')
       // RevenueCat init — runs early so getOfferings() is warm by the time
       // the user lands on the paywall. Tolerates missing keys (no-op in that case).
-      initPurchases().catch(() => { /* silent */ })
+      initPurchases().then(async () => {
+        try { identifyWithRevenueCat(await Purchases.getAppUserID()) } catch { /* no key */ }
+      }).catch(() => { /* silent */ })
       // Reschedule notification with today's due SRS count
       try {
         const [settings, progress] = await Promise.all([

@@ -3,8 +3,9 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator,
   SafeAreaView, Alert, Linking,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useTheme } from '../lib/theme'
+import { track } from '../lib/analytics'
 import type { ThemeColors } from '../lib/theme'
 import {
   fetchOfferings, purchasePackage, restorePurchases, packageIsPro,
@@ -27,6 +28,7 @@ export default function PaywallScreen() {
   const { colors } = useTheme()
   const styles = useMemo(() => createStyles(colors), [colors])
   const navigation = useNavigation<any>()
+  const route = useRoute<any>()
   const [offering, setOffering] = useState<PurchasesOffering | null>(null)
   const [errorKind, setErrorKind] = useState<OfferingsResult['kind'] | null>(null)
   const [selectedPkg, setSelectedPkg] = useState<PurchasesPackage | null>(null)
@@ -63,6 +65,7 @@ export default function PaywallScreen() {
   }, [])
 
   useEffect(() => { load() }, [load])
+  useEffect(() => { track('paywall_view', { source: route.params?.source ?? 'unknown' }) }, [route.params?.source])
 
   // Recovery path for "paid but entitlement not active yet" — re-fetches from
   // RevenueCat instead of leaving the user at a dead-end alert.
@@ -89,6 +92,7 @@ export default function PaywallScreen() {
     try {
       const info = await purchasePackage(selectedPkg)
       if (packageIsPro(info)) {
+        track('purchase', { product_id: selectedPkg.product.identifier })
         Alert.alert('歡迎加入 Pro 🎉', '所有 Pro 功能已解鎖')
         navigation.goBack()
       } else {
