@@ -107,8 +107,8 @@ export function countDueWithin(cards: SRSCard[], days: number, now: Date = new D
 }
 
 export function lapseBody(day: 1 | 3 | 7, ctx: { dueIn: number; streak: number; level: string }): string {
-  if (day === 1) return i18n.t('notif.lapse1', { dueIn: ctx.dueIn })
-  if (day === 3) return i18n.t('notif.lapse3', { streak: ctx.streak })
+  if (day === 1) return ctx.dueIn > 0 ? i18n.t('notif.lapse1', { dueIn: ctx.dueIn }) : i18n.t('notif.lapse1Empty')
+  if (day === 3) return ctx.streak > 0 ? i18n.t('notif.lapse3', { streak: ctx.streak }) : i18n.t('notif.lapse3NoStreak')
   return i18n.t('notif.lapse7', { level: ctx.level })
 }
 
@@ -118,8 +118,11 @@ export async function scheduleLapseReminders(progress: UserProgress, now: Date =
   if (await isOptedOut()) return
   const hourRaw = await AsyncStorage.getItem(NOTIF_HOUR_KEY)
   const hour = hourRaw ? parseInt(hourRaw, 10) : DEFAULT_LAPSE_HOUR
+  // 每日提醒已開啟時，D+1 會和它撞在同一個小時重複打擾，所以只留 D+3 / D+7
+  const dailyOn = (await AsyncStorage.getItem(NOTIF_ENABLED_KEY)) === 'true'
   for (let i = 0; i < LAPSE_DAYS.length; i++) {
     const day = LAPSE_DAYS[i]
+    if (day === 1 && dailyOn) continue
     const fire = new Date(now)
     fire.setDate(fire.getDate() + day)
     fire.setHours(hour, 0, 0, 0)

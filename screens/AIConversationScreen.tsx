@@ -192,7 +192,7 @@ export default function AIConversationScreen() {
 
   const handleFinish = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-    await recordDailyActivity(0, messageCount, 0, 0)
+    await recordDailyActivity(0, messageCount, 0, 0, { isPro: pro })
     setMode('result')
   }
 

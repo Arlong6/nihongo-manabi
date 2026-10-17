@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTranslation } from 'react-i18next'
+import { usePro } from '../lib/pro'
 import { speakJapanese } from '../lib/speech'
 import { allVocabulary, categoryInfo, getVocabularyByCategory } from '../data/vocabulary'
 import { loadProgress, markWordLearned, updateSRSCard, recordDailyActivity, loadFavorites, saveFavorites } from '../lib/storage'
@@ -183,6 +184,7 @@ function FlashCard({
 }
 
 export default function VocabularyScreen({ route }: any) {
+  const { pro } = usePro()
   const { t, i18n } = useTranslation()
   const { colors } = useTheme()
   const styles = useMemo(() => createStyles(colors), [colors])
@@ -245,7 +247,7 @@ export default function VocabularyScreen({ route }: any) {
     if (isNew) {
       const vocab = allVocabulary.find(v => v.id === id)
       if (vocab) {
-        await markWordLearned(id, vocab.category, getVocabularyByCategory(vocab.category).length)
+        await markWordLearned(id, vocab.category, getVocabularyByCategory(vocab.category).length, { isPro: pro })
         newCount += 1
         setSessionNew(newCount)
       }
@@ -257,7 +259,7 @@ export default function VocabularyScreen({ route }: any) {
     const next = currentIndex + 1
     if (next >= cards.length) {
       setFinished(true)
-      await recordDailyActivity(newCount, reviewCount, 0, 0)
+      await recordDailyActivity(newCount, reviewCount, 0, 0, { isPro: pro })
     } else {
       setCurrentIndex(next)
     }

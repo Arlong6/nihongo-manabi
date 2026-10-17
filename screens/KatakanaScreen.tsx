@@ -8,6 +8,7 @@ import { speakJapanese } from '../lib/speech'
 import { katakanaChars, confusablePairs } from '../data/katakana'
 import { hiraganaChars, hiraganaConfusablePairs, hiraganaConfusableSet } from '../data/hiragana'
 import { recordDailyActivity } from '../lib/storage'
+import { usePro } from '../lib/pro'
 import type { KatakanaChar, HiraganaChar } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
@@ -41,6 +42,7 @@ function getChoices(correct: KanaItem, pool: KanaItem[]): KanaItem[] {
 }
 
 function Quiz({ pool, onBack }: { pool: KanaItem[]; onBack: () => void }) {
+  const { pro } = usePro()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const styles = useMemo(() => createStyles(colors), [colors])
@@ -76,7 +78,7 @@ function Quiz({ pool, onBack }: { pool: KanaItem[]; onBack: () => void }) {
     setTimeout(() => {
       if (index + 1 >= questions.length) {
         setFinished(true)
-        recordDailyActivity(0, 0, newScore, questions.length)
+        recordDailyActivity(0, 0, newScore, questions.length, { isPro: pro })
       } else {
         setIndex(i => i + 1)
       }

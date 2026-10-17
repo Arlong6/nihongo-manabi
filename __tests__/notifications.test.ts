@@ -104,6 +104,20 @@ describe('scheduleLapseReminders', () => {
     await scheduleLapseReminders(base(), now)
     expect(new Date(scheduled.find(s => s.identifier === 'lapse-3').trigger.date).getHours()).toBe(8)
   })
+  test('每日提醒開啟 → 不排 lapse-1（並取消），保留 lapse-3 / lapse-7', async () => {
+    await AsyncStorage.setItem('notification_enabled', 'true')
+    await scheduleLapseReminders(base({ streak: 3 }), now)
+    expect(cancelled).toContain('lapse-1')
+    expect(scheduled.map(s => s.identifier).sort()).toEqual(['lapse-3', 'lapse-7'])
+  })
+  test('每日提醒未開啟 → 三則都排', async () => {
+    await scheduleLapseReminders(base({ streak: 3 }), now)
+    expect(scheduled.map(s => s.identifier).sort()).toEqual(['lapse-1', 'lapse-3', 'lapse-7'])
+  })
+  test('到期數為 0 / 連勝為 0 時改用不帶數字的文案', () => {
+    expect(lapseBody(1, { dueIn: 0, streak: 0, level: 'N5' })).toBe('notif.lapse1Empty')
+    expect(lapseBody(3, { dueIn: 0, streak: 0, level: 'N5' })).toBe('notif.lapse3NoStreak')
+  })
   test('文案帶到期數與連勝', async () => {
     const p = base({ streak: 9, srsCards: [card('a', 0, now), card('b', 2, now), card('c', 10, now)] })
     await scheduleLapseReminders(p, now)

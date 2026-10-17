@@ -43,6 +43,25 @@ test('課程內 skipStreak 後 recordLessonResult 仍能消耗凍結並記錄日
   expect(await getFreezeUsedDate()).toBe(getTodayString())
 })
 
+test('直接 recordDailyActivity 消耗凍結也會記錄凍結日期', async () => {
+  const { recordDailyActivity } = require('../lib/storage')
+  const p = await loadProgress()
+  p.lastStudyDate = daysAgo(2); p.dateSchema = 'local'; p.streak = 3; p.streakFreezes = 1
+  await saveProgress(p)
+  const r = await recordDailyActivity(1, 0, 0, 0)
+  expect(r.freezeUsed).toBe(true)
+  expect(await getFreezeUsedDate()).toBe(getTodayString())
+})
+
+test('Pro 免費延續（markWordLearned 路徑）也會記錄凍結日期', async () => {
+  const p = await loadProgress()
+  p.lastStudyDate = daysAgo(2); p.dateSchema = 'local'; p.streak = 3; p.streakFreezes = 0
+  await saveProgress(p)
+  await markWordLearned('w2', 'cat', 10, { isPro: true })
+  expect((await loadProgress()).streak).toBe(4)
+  expect(await getFreezeUsedDate()).toBe(getTodayString())
+})
+
 describe('streak 事件追蹤（所有打卡路徑）', () => {
   const { track } = require('../lib/analytics')
   const { recordDailyActivity } = require('../lib/storage')

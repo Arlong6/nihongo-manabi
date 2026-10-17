@@ -295,7 +295,7 @@ export async function markWordLearned(
   }
   // 課程內由 recordLessonResult 統一打卡，這裡跳過
   if (!opts.skipStreak) {
-    const { newBadges } = applyStreak(progress, opts)
+    const { newBadges } = await applyStreak(progress, opts)
     if (newBadges.length > 0) await armReviewPrompt()
   }
   await saveProgress(progress)
@@ -333,14 +333,14 @@ export async function recordDailyActivity(
   if (progress.dailyHistory.length > 30) {
     progress.dailyHistory = progress.dailyHistory.slice(-30)
   }
-  const result = applyStreak(progress, opts)
+  const result = await applyStreak(progress, opts)
   if (result.newBadges.length > 0) await armReviewPrompt()
   await saveProgress(progress)
   return result
 }
 
-/** 所有打卡路徑共用：updateStreak + streak 事件追蹤（best-effort，只在這一處觸發）。 */
-function applyStreak(progress: UserProgress, opts: { isPro?: boolean } = {}): StreakUpdateResult {
+/** 所有打卡路徑共用：updateStreak + streak 事件追蹤 + 凍結使用日期（best-effort，只在這一處觸發）。 */
+async function applyStreak(progress: UserProgress, opts: { isPro?: boolean } = {}): Promise<StreakUpdateResult> {
   const prev = progress.streak
   const result = updateStreak(progress, new Date(), opts)
   try {
@@ -348,6 +348,10 @@ function applyStreak(progress: UserProgress, opts: { isPro?: boolean } = {}): St
     if (prev >= 2 && progress.streak === 1) track('streak_lost', { streak_before: prev })
     if (result.freezeUsed) track('streak_freeze_used', { remaining: progress.streakFreezes ?? 0 })
   } catch { /* analytics 是 best-effort */ }
+  // 首頁要顯示「昨天用了一張凍結」，但 progress 沒存這件事，單獨記日期
+  if (result.freezeUsed) {
+    try { await AsyncStorage.setItem(FREEZE_USED_DATE_KEY, getTodayString()) } catch { /* best-effort */ }
+  }
   return result
 }
 
@@ -427,8 +431,6 @@ export async function recordLessonResult(summary: LessonSummary, opts: { isPro?:
   const result = await recordDailyActivity(summary.newWords, summary.reviewed, 0, 0, opts)
   try {
     await AsyncStorage.setItem(LAST_LESSON_DATE_KEY, getTodayString())
-    // 首頁要顯示「昨天用了一張凍結」，但 progress 沒存這件事，單獨記日期
-    if (result.freezeUsed) await AsyncStorage.setItem(FREEZE_USED_DATE_KEY, getTodayString())
   } catch { /* best-effort */ }
   return result
 }

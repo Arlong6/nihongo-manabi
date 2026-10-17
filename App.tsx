@@ -49,8 +49,8 @@ import Purchases from 'react-native-purchases'
 import { initPurchases } from './lib/iap'
 import { initAnalytics, track, identifyWithRevenueCat } from './lib/analytics'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
-import { getNotificationSettings, scheduleDaily, syncStreakRiskNotification } from './lib/notifications'
-import { loadProgress } from './lib/storage'
+import { getNotificationSettings, scheduleDaily, syncStreakRiskNotification, scheduleLapseReminders } from './lib/notifications'
+import { loadProgress, getTodayString, getUserLevel } from './lib/storage'
 import { getDueCards } from './lib/srs'
 
 const Tab = createBottomTabNavigator()
@@ -152,9 +152,16 @@ function AppInner() {
   // 連勝風險通知：啟動與回前景時依「今天是否已打卡」重排或取消
   useEffect(() => {
     if (!onboardingDone) return
-    const sync = () => loadProgress().then(p => syncStreakRiskNotification(p)).catch(() => {})
+    const sync = async () => {
+      try {
+        const p = await loadProgress()
+        await syncStreakRiskNotification(p)
+        // 今天已打卡：背景時把召回倒數從現在重排（涵蓋課程以外的打卡路徑）
+        if (p.lastStudyDate === getTodayString()) await scheduleLapseReminders(p, new Date(), await getUserLevel())
+      } catch { /* best-effort */ }
+    }
     sync()
-    const sub = AppState.addEventListener('change', state => { if (state === 'active') sync() })
+    const sub = AppState.addEventListener('change', state => { if (state === 'active' || state === 'background') sync() })
     return () => sub.remove()
   }, [onboardingDone])
 
