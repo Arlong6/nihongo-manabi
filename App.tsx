@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Text, LogBox } from 'react-native'
+import { Text, LogBox, AppState } from 'react-native'
 
 // expo-notifications eagerly tries to register an APNS push token at module
 // init. In simulator + local debug builds we don't have the aps-environment
@@ -30,6 +30,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next'
 import i18n, { initI18n } from './lib/i18n'
 import { initAds } from './lib/ads'
 import { ThemeProvider, useTheme } from './lib/theme'
+import { ProProvider } from './lib/pro'
 import HomeScreen from './screens/HomeScreen'
 import KatakanaScreen from './screens/KatakanaScreen'
 import VocabularyScreen from './screens/VocabularyScreen'
@@ -43,10 +44,13 @@ import AIConversationScreen from './screens/AIConversationScreen'
 import WatchScreen from './screens/WatchScreen'
 import CameraScreen from './screens/CameraScreen'
 import PaywallScreen from './screens/PaywallScreen'
+import LessonScreen from './screens/LessonScreen'
+import Purchases from 'react-native-purchases'
 import { initPurchases } from './lib/iap'
+import { initAnalytics, track, identifyWithRevenueCat } from './lib/analytics'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
-import { getNotificationSettings, scheduleDaily } from './lib/notifications'
-import { loadProgress } from './lib/storage'
+import { getNotificationSettings, scheduleDaily, syncStreakRiskNotification, scheduleLapseReminders } from './lib/notifications'
+import { loadProgress, getTodayString, getUserLevel } from './lib/storage'
 import { getDueCards } from './lib/srs'
 
 const Tab = createBottomTabNavigator()
@@ -145,6 +149,22 @@ function AppInner() {
     if (onboardingDone) initAds().catch(() => {})
   }, [onboardingDone])
 
+  // 連勝風險通知：啟動與回前景時依「今天是否已打卡」重排或取消
+  useEffect(() => {
+    if (!onboardingDone) return
+    const sync = async () => {
+      try {
+        const p = await loadProgress()
+        await syncStreakRiskNotification(p)
+        // 今天已打卡：背景時把召回倒數從現在重排（涵蓋課程以外的打卡路徑）
+        if (p.lastStudyDate === getTodayString()) await scheduleLapseReminders(p, new Date(), await getUserLevel())
+      } catch { /* best-effort */ }
+    }
+    sync()
+    const sub = AppState.addEventListener('change', state => { if (state === 'active' || state === 'background') sync() })
+    return () => sub.remove()
+  }, [onboardingDone])
+
   if (onboardingDone === null) return null
 
   if (!onboardingDone) {
@@ -159,6 +179,7 @@ function AppInner() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="Lesson" component={LessonScreen} options={{ gestureEnabled: false }} />
         <Stack.Screen name="Grammar" component={GrammarScreen} />
         <Stack.Screen name="JLPT" component={JLPTScreen} />
         <Stack.Screen name="Kanji" component={KanjiScreen} />
@@ -194,9 +215,13 @@ export default function App() {
   useEffect(() => {
     initI18n().then(async () => {
       setI18nReady(true)
+      await initAnalytics()
+      track('app_open')
       // RevenueCat init — runs early so getOfferings() is warm by the time
       // the user lands on the paywall. Tolerates missing keys (no-op in that case).
-      initPurchases().catch(() => { /* silent */ })
+      initPurchases().then(async () => {
+        try { identifyWithRevenueCat(await Purchases.getAppUserID()) } catch { /* no key */ }
+      }).catch(() => { /* silent */ })
       // Reschedule notification with today's due SRS count
       try {
         const [settings, progress] = await Promise.all([
@@ -205,7 +230,7 @@ export default function App() {
         ])
         if (settings.enabled) {
           const dueCount = getDueCards(progress.srsCards).length
-          await scheduleDaily(settings.hour, 0, {
+          await scheduleDaily(settings.hour, settings.minute, {
             dueCount,
             currentStreak: progress.streak,
             longestStreak: progress.longestStreak,
@@ -222,7 +247,9 @@ export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
-        <AppInner />
+        <ProProvider>
+          <AppInner />
+        </ProProvider>
       </ThemeProvider>
     </I18nextProvider>
   )

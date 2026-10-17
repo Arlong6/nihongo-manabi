@@ -14,7 +14,7 @@ import {
   recordDailyActivity, getAIChatUsage, incrementAIChatUsage, grantAIChatBonus,
   isUsageExhausted, usageRemaining, canGrantBonus, AI_CHAT_DAILY_LIMIT, type DailyUsage,
 } from '../lib/storage'
-import { isPro } from '../lib/iap'
+import { usePro } from '../lib/pro'
 import { adsAvailable, showRewarded } from '../lib/ads'
 
 type ScreenMode = 'menu' | 'chat' | 'result'
@@ -66,14 +66,13 @@ export default function AIConversationScreen() {
   const [showReading, setShowReading] = useState(true)
   const [usage, setUsage] = useState<DailyUsage>({ date: '', count: 0, bonus: 0 })
   const [adLoading, setAdLoading] = useState(false)
-  const [pro, setPro] = useState(false)
+  const { pro, refresh } = usePro()
   const scrollRef = useRef<ScrollView>(null)
   const inputRef = useRef<TextInput>(null)
   const msgIdRef = useRef(0)
 
   useEffect(() => {
     getAIChatUsage().then(setUsage)
-    isPro().then(setPro)
   }, [mode])
 
   const nextId = () => ++msgIdRef.current
@@ -83,14 +82,14 @@ export default function AIConversationScreen() {
     // Pro entitlement bypasses the daily limit entirely. The check is recomputed
     // here (not just trusted from the initial state) so users who buy Pro mid-
     // session don't need to relaunch the screen.
-    const currentlyPro = pro || await isPro()
+    const currentlyPro = pro || await refresh()
     if (!currentlyPro && isUsageExhausted(usage, AI_CHAT_DAILY_LIMIT)) {
       Alert.alert(
         t('aiChat.limitTitle'),
         t('aiChat.limitMessage', { limit: AI_CHAT_DAILY_LIMIT }),
         [
           { text: t('ads.cancel'), style: 'cancel' },
-          { text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall' as never) },
+          { text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall' as never, { source: 'ai_chat' } as never) },
         ],
       )
       return
@@ -193,7 +192,7 @@ export default function AIConversationScreen() {
 
   const handleFinish = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-    await recordDailyActivity(0, messageCount, 0, 0)
+    await recordDailyActivity(0, messageCount, 0, 0, { isPro: pro })
     setMode('result')
   }
 

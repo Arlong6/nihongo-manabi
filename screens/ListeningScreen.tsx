@@ -9,6 +9,7 @@ import { allVocabulary } from '../data/vocabulary/index'
 import { phrases } from '../data/phrases'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { shuffle, pickDistractors } from '../lib/quiz'
 
 interface ListeningQuestion {
   id: string
@@ -25,25 +26,12 @@ type ScreenMode = 'menu' | 'quiz' | 'result'
 
 const TOTAL_QUESTIONS = 10
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
 function buildQuestions(mode: DifficultyMode): ListeningQuestion[] {
   if (mode === 'phrases') {
     const pool = shuffle(phrases)
     const selected = pool.slice(0, Math.min(TOTAL_QUESTIONS, pool.length))
     return selected.map(p => {
-      const distractors = pool
-        .filter(x => x.id !== p.id)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3)
-        .map(x => x.japanese)
+      const distractors = pickDistractors(pool, p, 3, x => x.id).map(x => x.japanese)
       const options = shuffle([p.japanese, ...distractors])
       return {
         id: p.id,
@@ -59,11 +47,7 @@ function buildQuestions(mode: DifficultyMode): ListeningQuestion[] {
     const shuffled = shuffle(pool)
     const selected = shuffled.slice(0, Math.min(TOTAL_QUESTIONS, shuffled.length))
     return selected.map(v => {
-      const distractors = pool
-        .filter(x => x.id !== v.id)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3)
-        .map(x => x.japanese)
+      const distractors = pickDistractors(pool, v, 3, x => x.id).map(x => x.japanese)
       const options = shuffle([v.japanese, ...distractors])
       return {
         id: v.id,

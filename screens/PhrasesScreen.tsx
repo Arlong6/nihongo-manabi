@@ -7,6 +7,7 @@ import type { Phrase } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { requestPermission, recognizeJapanese, scoreTranscript, type Score } from '../lib/pronunciation'
+import { shuffle, pickDistractors } from '../lib/quiz'
 
 type ScreenMode = 'browse' | 'quiz'
 
@@ -19,18 +20,8 @@ function gradeColor(g: string): string {
   return GRADE_COLORS[g] || '#6B7280'
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
 function getChoices(correct: Phrase, pool: Phrase[]): Phrase[] {
-  const distractors = pool.filter(p => p.id !== correct.id).sort(() => Math.random() - 0.5).slice(0, 3)
-  return shuffle([correct, ...distractors])
+  return shuffle([correct, ...pickDistractors(pool, correct, 3, p => p.id)])
 }
 
 function PhraseQuiz({ pool, onBack }: { pool: Phrase[]; onBack: () => void }) {

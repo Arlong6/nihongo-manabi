@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import type { UserProgress, DailyProgress, SRSCard, ExamRecord } from '../types'
-import { STREAK_BADGES } from '../types'
+import type { UserProgress, DailyProgress, SRSCard, ExamRecord, JlptLevel } from '../types'
+import { STREAK_BADGES, JLPT_LEVELS } from '../types'
 import { armReviewPrompt } from './review'
+import { track } from './analytics'
 
 const EXAM_HISTORY_KEY = 'jlpt_exam_history'
 const GRAMMAR_PROGRESS_KEY = 'grammar_progress'
@@ -217,6 +218,35 @@ export async function clearExamHistory(): Promise<void> {
   await AsyncStorage.removeItem(EXAM_HISTORY_KEY)
 }
 
+// ── 使用者級別 ────────────────────────────────────────────────────────────────
+// onboarding 寫的是 'beginner' | 'n5' | 'n4'（1.6.x 以前），這裡統一映射成 JLPT 級別。
+export const USER_LEVEL_KEY = 'user_level'
+const LEVEL_PROMPT_DISMISSED_KEY = 'level_prompt_dismissed_until'
+const LEGACY_LEVEL_MAP: Record<string, JlptLevel> = { beginner: 'N5', n5: 'N5', n4: 'N4' }
+
+export async function getUserLevel(): Promise<JlptLevel> {
+  try {
+    const raw = await AsyncStorage.getItem(USER_LEVEL_KEY)
+    if (!raw) return 'N5'
+    if ((JLPT_LEVELS as readonly string[]).includes(raw)) return raw as JlptLevel
+    return LEGACY_LEVEL_MAP[raw] ?? 'N5'
+  } catch {
+    return 'N5'
+  }
+}
+
+export async function setUserLevel(level: JlptLevel): Promise<void> {
+  try { await AsyncStorage.setItem(USER_LEVEL_KEY, level) } catch { console.error('Failed to save level') }
+}
+
+export async function getLevelPromptDismissedUntil(): Promise<string | null> {
+  try { return await AsyncStorage.getItem(LEVEL_PROMPT_DISMISSED_KEY) } catch { return null }
+}
+
+export async function setLevelPromptDismissedUntil(date: string): Promise<void> {
+  try { await AsyncStorage.setItem(LEVEL_PROMPT_DISMISSED_KEY, date) } catch { /* best-effort */ }
+}
+
 const STORAGE_KEY = 'japanese_learner_progress'
 
 const defaultProgress: UserProgress = {
@@ -229,6 +259,7 @@ const defaultProgress: UserProgress = {
   srsCards: [],
   learnedIds: [],
   earnedBadges: [],
+  streakFreezes: 0,
 }
 
 export async function loadProgress(): Promise<UserProgress> {
@@ -249,7 +280,9 @@ export async function saveProgress(progress: UserProgress): Promise<void> {
   }
 }
 
-export async function markWordLearned(id: string, category: string, totalInCategory: number): Promise<void> {
+export async function markWordLearned(
+  id: string, category: string, totalInCategory: number, opts: { isPro?: boolean; skipStreak?: boolean } = {},
+): Promise<void> {
   const progress = await loadProgress()
   if (!progress.learnedIds.includes(id)) {
     progress.learnedIds.push(id)
@@ -260,8 +293,11 @@ export async function markWordLearned(id: string, category: string, totalInCateg
     progress.categoryProgress[category].learned += 1
     progress.categoryProgress[category].total = totalInCategory
   }
-  const { newBadges } = updateStreak(progress)
-  if (newBadges.length > 0) await armReviewPrompt()
+  // 課程內由 recordLessonResult 統一打卡，這裡跳過
+  if (!opts.skipStreak) {
+    const { newBadges } = await applyStreak(progress, opts)
+    if (newBadges.length > 0) await armReviewPrompt()
+  }
   await saveProgress(progress)
 }
 
@@ -280,8 +316,9 @@ export async function recordDailyActivity(
   newWords: number,
   reviewed: number,
   katakanaCorrect: number,
-  katakanaTotal: number
-): Promise<void> {
+  katakanaTotal: number,
+  opts: { isPro?: boolean } = {},
+): Promise<StreakUpdateResult> {
   const progress = await loadProgress()
   const today = getTodayString()
   const existing = progress.dailyHistory.find(d => d.date === today)
@@ -296,49 +333,119 @@ export async function recordDailyActivity(
   if (progress.dailyHistory.length > 30) {
     progress.dailyHistory = progress.dailyHistory.slice(-30)
   }
-  const { newBadges } = updateStreak(progress)
-  if (newBadges.length > 0) await armReviewPrompt()
+  const result = await applyStreak(progress, opts)
+  if (result.newBadges.length > 0) await armReviewPrompt()
   await saveProgress(progress)
+  return result
 }
+
+/** 所有打卡路徑共用：updateStreak + streak 事件追蹤 + 凍結使用日期（best-effort，只在這一處觸發）。 */
+async function applyStreak(progress: UserProgress, opts: { isPro?: boolean } = {}): Promise<StreakUpdateResult> {
+  const prev = progress.streak
+  const result = updateStreak(progress, new Date(), opts)
+  try {
+    // 連勝斷掉後重新從 1 開始（之前至少 2 天才算「掉了」）
+    if (prev >= 2 && progress.streak === 1) track('streak_lost', { streak_before: prev })
+    if (result.freezeUsed) track('streak_freeze_used', { remaining: progress.streakFreezes ?? 0 })
+  } catch { /* analytics 是 best-effort */ }
+  // 首頁要顯示「昨天用了一張凍結」，但 progress 沒存這件事，單獨記日期
+  if (result.freezeUsed) {
+    try { await AsyncStorage.setItem(FREEZE_USED_DATE_KEY, getTodayString()) } catch { /* best-effort */ }
+  }
+  return result
+}
+
+export const MAX_STREAK_FREEZES = 2
+export const FREEZE_EARN_EVERY = 7
 
 export interface StreakUpdateResult {
-  /** Day-count thresholds the user just crossed this update (may be empty). */
   newBadges: number[]
-  /** True when current streak set a new personal record. */
   newRecord: boolean
+  /** 這次打卡用掉一張凍結（或 Pro 免費延續）保住了連勝。 */
+  freezeUsed: boolean
+  /** 這次打卡剛好賺到一張凍結。 */
+  freezeEarned: boolean
 }
 
-export function updateStreak(progress: UserProgress, now: Date = new Date()): StreakUpdateResult {
+export function updateStreak(
+  progress: UserProgress, now: Date = new Date(), opts: { isPro?: boolean } = {},
+): StreakUpdateResult {
+  const none: StreakUpdateResult = { newBadges: [], newRecord: false, freezeUsed: false, freezeEarned: false }
   const today = toLocalDateString(now)
   const yesterday = toLocalDateString(addDays(now, -1))
-  // 舊資料（1.6.0 前）的日期是 UTC，最多比本地日期落後一天：
-  // 昨天讀的可能存成前天、今天讀的可能存成昨天。所以第一次遇到舊資料時，
-  // 「前天」也視為連續，之後就標成 local、恢復嚴格比對。
-  const legacy = progress.dateSchema !== 'local'
   const dayBeforeYesterday = toLocalDateString(addDays(now, -2))
-  const isContinuing = progress.lastStudyDate === yesterday
-    || (legacy && progress.lastStudyDate === dayBeforeYesterday)
+  if (typeof progress.streakFreezes !== 'number') progress.streakFreezes = 0
+  if (progress.lastStudyDate === today) return none
+
+  // 舊資料（1.6.0 前）的日期是 UTC，最多比本地日期落後一天，第一次遇到時「前天」也視為連續。
+  // 這條寬鬆路徑優先於凍結，不扣張數。
+  const legacy = progress.dateSchema !== 'local'
   if (legacy) progress.dateSchema = 'local'
-  if (progress.lastStudyDate === today) return { newBadges: [], newRecord: false }
+
+  let freezeUsed = false
+  let isContinuing = progress.lastStudyDate === yesterday
+  if (!isContinuing && progress.lastStudyDate === dayBeforeYesterday) {
+    if (legacy) {
+      isContinuing = true
+    } else if (opts.isPro) {
+      isContinuing = true; freezeUsed = true
+    } else if (progress.streakFreezes > 0) {
+      progress.streakFreezes -= 1; isContinuing = true; freezeUsed = true
+    }
+  }
+
   progress.streak = isContinuing ? progress.streak + 1 : 1
   progress.lastStudyDate = today
-  // Defensive default for users upgrading from older schema.
   if (typeof progress.longestStreak !== 'number') progress.longestStreak = 0
   if (!Array.isArray(progress.earnedBadges)) progress.earnedBadges = []
   const newRecord = progress.streak > progress.longestStreak
   if (newRecord) progress.longestStreak = progress.streak
+
+  let freezeEarned = false
+  if (progress.streak % FREEZE_EARN_EVERY === 0 && progress.streakFreezes < MAX_STREAK_FREEZES) {
+    progress.streakFreezes += 1; freezeEarned = true
+  }
+
   const newBadges: number[] = []
   for (const threshold of STREAK_BADGES) {
     if (progress.streak >= threshold && !progress.earnedBadges.includes(threshold)) {
-      progress.earnedBadges.push(threshold)
-      newBadges.push(threshold)
+      progress.earnedBadges.push(threshold); newBadges.push(threshold)
     }
   }
-  return { newBadges, newRecord }
+  return { newBadges, newRecord, freezeUsed, freezeEarned }
+}
+
+const LAST_LESSON_DATE_KEY = 'last_lesson_date'
+const FREEZE_USED_DATE_KEY = 'freeze_used_date'
+
+export interface LessonSummary {
+  correct: number
+  total: number
+  newWords: number
+  reviewed: number
+  durationS: number
+}
+
+/** 課程完成：打卡 + 記當日統計 + 記最後完成日期（首頁判斷「今天完成了」用）。 */
+export async function recordLessonResult(summary: LessonSummary, opts: { isPro?: boolean } = {}): Promise<StreakUpdateResult> {
+  const result = await recordDailyActivity(summary.newWords, summary.reviewed, 0, 0, opts)
+  try {
+    await AsyncStorage.setItem(LAST_LESSON_DATE_KEY, getTodayString())
+  } catch { /* best-effort */ }
+  return result
+}
+
+export async function getLastLessonDate(): Promise<string | null> {
+  try { return await AsyncStorage.getItem(LAST_LESSON_DATE_KEY) } catch { return null }
+}
+
+export async function getFreezeUsedDate(): Promise<string | null> {
+  try { return await AsyncStorage.getItem(FREEZE_USED_DATE_KEY) } catch { return null }
 }
 
 export async function resetProgress(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY)
+  await AsyncStorage.multiRemove([LAST_LESSON_DATE_KEY, FREEZE_USED_DATE_KEY])
 }
 
 /** 裝置本地時區的 YYYY-MM-DD。全 App 的「今天」都要走這裡，不要用 toISOString（那是 UTC）。 */

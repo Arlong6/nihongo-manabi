@@ -9,18 +9,10 @@ import { grammarQuestions, GrammarQuestion } from '../data/grammar'
 import { saveGrammarResult, loadGrammarStats, GrammarStats } from '../lib/storage'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { shuffle } from '../lib/quiz'
 
 type Mode = 'menu' | 'quiz'
 type Filter = 'all' | 'N5' | 'N4'
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
 
 function Quiz({ questions, onBack, onAnswer }: {
   questions: GrammarQuestion[]

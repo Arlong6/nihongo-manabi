@@ -17,7 +17,8 @@ import type { ExplainWrongInput } from '../lib/gemini'
 import type { Vocabulary, ExamRecord, ExamWrongItem } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
-import { isPro } from '../lib/iap'
+import { usePro } from '../lib/pro'
+import { shuffle, hasKanji } from '../lib/quiz'
 
 // ── 型別 ────────────────────────────────────────────────────────────────────
 type ExamLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
@@ -46,19 +47,6 @@ const EXAM_CONFIG: Record<ExamLevel, { vocabCount: number; grammarCount: number;
 }
 
 // ── 工具 ─────────────────────────────────────────────────────────────────────
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
-function hasKanji(str: string): boolean {
-  return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(str)
-}
-
 function getVocabPool(level: ExamLevel): Vocabulary[] {
   if (level === 'N5') return allVocabulary.filter(v => v.level === 'N5' || v.level === 'daily')
   if (level === 'N4') return allVocabulary.filter(v => v.level === 'N4')
@@ -555,11 +543,10 @@ export default function JLPTScreen() {
   const [questions, setQuestions] = useState<ExamQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [history, setHistory] = useState<ExamRecord[]>([])
-  const [pro, setPro] = useState(false)
+  const { pro, refresh } = usePro()
 
   useEffect(() => {
     loadExamHistory().then(setHistory)
-    isPro().then(setPro)
   }, [])
 
   const startExam = (l: ExamLevel) => {
@@ -573,14 +560,14 @@ export default function JLPTScreen() {
   // Recompute isPro() live so a mid-session upgrade unlocks without relaunch.
   const handleSelectLevel = async (l: ExamLevel) => {
     if (l === 'N2' || l === 'N1') {
-      const currentlyPro = pro || await isPro()
+      const currentlyPro = pro || await refresh()
       if (!currentlyPro) {
         Alert.alert(
           'N1 / N2 進階模考',
           '高階文法與完整模擬考是 Pro 專屬，升級即可解鎖 N1・N2 模考。',
           [
             { text: '取消', style: 'cancel' },
-            { text: '升級 Pro 解鎖', onPress: () => (navigation as any).navigate('Paywall') },
+            { text: '升級 Pro 解鎖', onPress: () => (navigation as any).navigate('Paywall', { source: 'jlpt' }) },
           ],
         )
         return

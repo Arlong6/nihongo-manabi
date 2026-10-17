@@ -8,9 +8,11 @@ import { speakJapanese } from '../lib/speech'
 import { katakanaChars, confusablePairs } from '../data/katakana'
 import { hiraganaChars, hiraganaConfusablePairs, hiraganaConfusableSet } from '../data/hiragana'
 import { recordDailyActivity } from '../lib/storage'
+import { usePro } from '../lib/pro'
 import type { KatakanaChar, HiraganaChar } from '../types'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { shuffle, pickDistractors } from '../lib/quiz'
 
 type KanaItem = {
   id: string
@@ -35,24 +37,12 @@ function toKanaItem(char: KatakanaChar | HiraganaChar, type: KanaType): KanaItem
   }
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
 function getChoices(correct: KanaItem, pool: KanaItem[]): KanaItem[] {
-  const distractors = pool
-    .filter(c => c.id !== correct.id)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3)
-  return shuffle([correct, ...distractors])
+  return shuffle([correct, ...pickDistractors(pool, correct, 3, c => c.id)])
 }
 
 function Quiz({ pool, onBack }: { pool: KanaItem[]; onBack: () => void }) {
+  const { pro } = usePro()
   const { t } = useTranslation()
   const { colors } = useTheme()
   const styles = useMemo(() => createStyles(colors), [colors])
@@ -88,7 +78,7 @@ function Quiz({ pool, onBack }: { pool: KanaItem[]; onBack: () => void }) {
     setTimeout(() => {
       if (index + 1 >= questions.length) {
         setFinished(true)
-        recordDailyActivity(0, 0, newScore, questions.length)
+        recordDailyActivity(0, 0, newScore, questions.length, { isPro: pro })
       } else {
         setIndex(i => i + 1)
       }

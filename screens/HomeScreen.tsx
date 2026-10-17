@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { loadProgress, getTodayString } from '../lib/storage'
+import { loadProgress, getTodayString, getUserLevel, getLastLessonDate, getFreezeUsedDate } from '../lib/storage'
+import { getDueCards } from '../lib/srs'
 import { maybeAskForReview } from '../lib/review'
 import { allVocabulary, categoryInfo, getVocabularyByLevel } from '../data/vocabulary'
 import { phrases } from '../data/phrases'
-import { USER_LEVEL_KEY, UserLevel } from './OnboardingScreen'
 import TourGuide from '../components/TourGuide'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { UserProgress } from '../types'
@@ -19,14 +19,8 @@ export default function HomeScreen() {
   const { colors } = useTheme()
   const styles = useMemo(() => createStyles(colors), [colors])
   const [progress, setProgress] = useState<UserProgress | null>(null)
-
-  // Ask for an App Store review when returning to Home after earning a streak
-  // badge (armed in lib/storage). Guarded internally to at most once / 60 days.
-  useFocusEffect(
-    useCallback(() => {
-      maybeAskForReview()
-    }, []),
-  )
+  const [lessonDoneToday, setLessonDoneToday] = useState(false)
+  const [freezeUsedToday, setFreezeUsedToday] = useState(false)
   const [showTour, setShowTour] = useState(false)
   const [dailyWords, setDailyWords] = useState<typeof allVocabulary>([])
 
@@ -38,19 +32,33 @@ export default function HomeScreen() {
     { emoji: '🎯', title: t('home.tourDailyTitle'), desc: t('home.tourDailyDesc') },
   ]
 
+  const reload = useCallback(async () => {
+    const [p, lastLesson, level, freezeDate] = await Promise.all([
+      loadProgress(), getLastLessonDate(), getUserLevel(), getFreezeUsedDate(),
+    ])
+    setProgress(p)
+    setLessonDoneToday(lastLesson === getTodayString())
+    setFreezeUsedToday(freezeDate === getTodayString())
+    const vocab = getVocabularyByLevel(level === 'N5' ? 'n5' : 'n4')
+    const unlearned = vocab.filter(v => !p.learnedIds.includes(v.id))
+    const seed = parseInt(getTodayString().replace(/-/g, ''))
+    const shuffled = [...unlearned].sort((a, b) =>
+      ((seed * a.id.charCodeAt(0)) % 100) - ((seed * b.id.charCodeAt(0)) % 100)
+    )
+    setDailyWords(shuffled.slice(0, 5))
+  }, [])
+
+  // Reload on every focus so numbers refresh when returning from a lesson.
+  // Also ask for an App Store review after earning a streak badge (armed in
+  // lib/storage); guarded internally to at most once / 60 days.
+  useFocusEffect(
+    useCallback(() => {
+      reload()
+      maybeAskForReview()
+    }, [reload]),
+  )
+
   useEffect(() => {
-    loadProgress().then(p => {
-      setProgress(p)
-      AsyncStorage.getItem(USER_LEVEL_KEY).then(level => {
-        const vocab = getVocabularyByLevel((level as UserLevel) ?? 'beginner')
-        const unlearned = vocab.filter(v => !p.learnedIds.includes(v.id))
-        const seed = parseInt(getTodayString().replace(/-/g, ''))
-        const shuffled = [...unlearned].sort((a, b) =>
-          ((seed * a.id.charCodeAt(0)) % 100) - ((seed * b.id.charCodeAt(0)) % 100)
-        )
-        setDailyWords(shuffled.slice(0, 5))
-      })
-    })
     AsyncStorage.getItem('tour_home').then(done => {
       if (!done) setShowTour(true)
     })
@@ -58,16 +66,11 @@ export default function HomeScreen() {
 
   const streak = progress?.streak ?? 0
   const longestStreak = progress?.longestStreak ?? 0
-  const earnedBadges = progress?.earnedBadges ?? []
-  const totalLearned = progress?.totalWordsLearned ?? 0
-  const today = progress?.dailyHistory.find(d => d.date === getTodayString())
-
-  // Highest-tier badge earned, surfaced as a single decorative chip on Home.
-  // Full gallery lives in ProgressScreen so Home stays scannable.
-  const topBadge = earnedBadges.length > 0 ? Math.max(...earnedBadges) : 0
-  // What comes next? Used to nudge "再 X 天解鎖 Y 日勳章".
+  // What comes next? Used to nudge "N more days to the X-day badge".
   const nextBadge = [3, 7, 14, 30, 60, 100, 200, 365].find(b => streak < b)
   const remainingToNext = nextBadge ? nextBadge - streak : 0
+  const dueCount = progress ? getDueCards(progress.srsCards).length : 0
+  const freezes = progress?.streakFreezes ?? 0
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -81,47 +84,34 @@ export default function HomeScreen() {
       <Text style={styles.title}>{t('home.title')}</Text>
       <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
 
-      {/* Streak */}
+      {/* 今日課程 */}
+      <TouchableOpacity
+        style={[styles.lessonBtn, lessonDoneToday && styles.lessonBtnDone]}
+        onPress={() => navigation.navigate('Lesson')}
+        activeOpacity={0.9}
+      >
+        <Text style={styles.lessonBtnTitle}>{lessonDoneToday ? `✅ ${t('home.lessonDone')}` : `▶ ${t('home.startLesson')}`}</Text>
+        <Text style={styles.lessonBtnSub}>{lessonDoneToday ? t('home.practiceMore') : (dueCount > 0 ? t('home.dueReview', { count: dueCount }) : t('home.dueNone'))}</Text>
+      </TouchableOpacity>
+
+      {/* 連勝 + 凍結 + 到期 */}
       <View style={styles.streakCard}>
         <Text style={styles.streakEmoji}>🔥</Text>
         <View style={{ flex: 1 }}>
           <Text style={styles.streakNum}>{t('home.streak', { count: streak })}</Text>
           <Text style={styles.streakSub}>
-            {streak === 0
-              ? t('home.streakStart')
-              : nextBadge
-                ? `再 ${remainingToNext} 天解鎖 ${nextBadge} 日勳章`
-                : t('home.streakKeepGoing')}
+            {streak === 0 ? t('home.streakStart')
+              : nextBadge ? t('home.nextBadge', { days: remainingToNext, badge: nextBadge })
+              : t('home.streakKeepGoing')}
           </Text>
-          {longestStreak > streak && (
-            <Text style={[styles.streakSub, { marginTop: 2 }]}>🏆 最佳紀錄 {longestStreak} 天</Text>
-          )}
+          {freezeUsedToday && <Text style={[styles.streakSub, { color: colors.primary }]}>🧊 {t('home.freezeUsedToday')}</Text>}
+          {longestStreak > streak && <Text style={styles.streakSub}>🏆 {t('home.bestStreak', { count: longestStreak })}</Text>}
         </View>
-        {topBadge > 0 && (
-          <View style={styles.badgeChip}>
-            <Text style={styles.badgeChipNum}>{topBadge}</Text>
-            <Text style={styles.badgeChipLabel}>日勳章</Text>
-          </View>
-        )}
+        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+          <Text style={styles.freezeChip}>🧊 {t('home.freezes', { count: freezes })}</Text>
+          {dueCount > 0 && <Text style={styles.dueChip}>{t('home.dueReview', { count: dueCount })}</Text>}
+        </View>
       </View>
-
-      {/* Today stats */}
-      {today && (
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={[styles.statNum, { color: colors.primary }]}>{today.newWordsLearned}</Text>
-            <Text style={styles.statLabel}>{t('home.todayNew')}</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={[styles.statNum, { color: colors.success }]}>{today.wordsReviewed}</Text>
-            <Text style={styles.statLabel}>{t('home.todayReview')}</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={[styles.statNum, { color: colors.warning }]}>{totalLearned}</Text>
-            <Text style={styles.statLabel}>{t('home.totalWords')}</Text>
-          </View>
-        </View>
-      )}
 
       {/* Quick Actions */}
       <View style={styles.grid}>
@@ -292,19 +282,12 @@ function createStyles(colors: ThemeColors) {
     streakEmoji: { fontSize: 36 },
     streakNum: { fontSize: 22, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
     streakSub: { fontSize: 13, color: colors.subtext, marginTop: 2 },
-    badgeChip: {
-      backgroundColor: colors.primarySoft, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
-      alignItems: 'center', minWidth: 64,
-    },
-    badgeChipNum: { fontSize: 22, fontWeight: '800', color: colors.primaryDeep, letterSpacing: -0.5 },
-    badgeChipLabel: { fontSize: 11, color: colors.primaryDeep, fontWeight: '600', marginTop: 2 },
-    statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
-    statBox: {
-      flex: 1, borderRadius: 16, padding: 14, alignItems: 'center',
-      backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
-    },
-    statNum: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3 },
-    statLabel: { fontSize: 11, color: colors.subtext, marginTop: 2, letterSpacing: 0.2 },
+    lessonBtn: { backgroundColor: colors.primary, borderRadius: 16, padding: 20, marginBottom: 16 },
+    lessonBtnDone: { backgroundColor: colors.success },
+    lessonBtnTitle: { color: '#fff', fontSize: 20, fontWeight: '700' },
+    lessonBtnSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 4 },
+    freezeChip: { fontSize: 12, color: colors.subtext },
+    dueChip: { fontSize: 12, color: '#DC2626', fontWeight: '600' },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
     card: {
       width: '47%', borderRadius: 20, padding: 18,

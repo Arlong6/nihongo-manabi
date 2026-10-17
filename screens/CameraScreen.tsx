@@ -11,7 +11,7 @@ import * as ImageManipulator from 'expo-image-manipulator'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
 import { ocrAndTranslate, type OCRResult } from '../lib/gemini-vision'
-import { isPro } from '../lib/iap'
+import { usePro } from '../lib/pro'
 import { getCameraUsage, incrementCameraUsage, grantCameraBonus, isUsageExhausted, canGrantBonus, CAMERA_DAILY_LIMIT } from '../lib/storage'
 import { adsAvailable, showRewarded } from '../lib/ads'
 
@@ -28,18 +28,14 @@ export default function CameraScreen() {
   const [previewUri, setPreviewUri] = useState<string | null>(null)
   const [result, setResult] = useState<OCRResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [pro, setPro] = useState(false)
-
-  useEffect(() => {
-    isPro().then(setPro)
-  }, [])
+  const { pro, refresh } = usePro()
 
   // Downsample + compress on-device so the payload fits in the proxy's 5MB limit
   // (and so Gemini doesn't pay for processing huge images we don't need).
   const compressAndOCR = useCallback(async (uri: string) => {
     // Pro unlocks unlimited photo translation; free tier gets CAMERA_DAILY_LIMIT/day.
     // Recompute isPro() live so a mid-session upgrade takes effect without relaunch.
-    const currentlyPro = pro || await isPro()
+    const currentlyPro = pro || await refresh()
     if (!currentlyPro) {
       const usage = await getCameraUsage()
       if (isUsageExhausted(usage, CAMERA_DAILY_LIMIT)) {
@@ -64,7 +60,7 @@ export default function CameraScreen() {
             },
           })
         }
-        buttons.push({ text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall') })
+        buttons.push({ text: t('ads.upgradePro'), onPress: () => navigation.navigate('Paywall', { source: 'camera' }) })
         Alert.alert(
           t('camera.limitTitle'),
           t('camera.limitMessage', { limit: CAMERA_DAILY_LIMIT }),
@@ -91,7 +87,7 @@ export default function CameraScreen() {
       setError(e?.message ?? '辨識失敗')
       setPhase('capture')
     }
-  }, [pro, navigation, t])
+  }, [pro, refresh, navigation, t])
 
   const takePhoto = async () => {
     if (!cameraRef.current) return

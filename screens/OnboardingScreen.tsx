@@ -6,15 +6,18 @@ import {
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import i18n, { SUPPORTED_LANGUAGES } from '../lib/i18n'
-import { setLocale } from '../lib/storage'
+import { setLocale, setUserLevel } from '../lib/storage'
+import type { JlptLevel } from '../types'
 import { useTheme } from '../lib/theme'
+import { track } from '../lib/analytics'
 import type { ThemeColors } from '../lib/theme'
 
 const { width } = Dimensions.get('window')
 
 export const ONBOARDING_KEY = 'onboarding_completed'
-export const USER_LEVEL_KEY = 'user_level'
+export { USER_LEVEL_KEY } from '../lib/storage'
 export type UserLevel = 'beginner' | 'n5' | 'n4'
+const LEGACY_TO_JLPT: Record<UserLevel, JlptLevel> = { beginner: 'N5', n5: 'N5', n4: 'N4' }
 
 interface Props {
   onComplete: (level: UserLevel) => void
@@ -59,7 +62,8 @@ export default function OnboardingScreen({ onComplete }: Props) {
   const handleStart = async () => {
     const level = selectedLevel ?? 'beginner'
     await AsyncStorage.setItem(ONBOARDING_KEY, 'true')
-    await AsyncStorage.setItem(USER_LEVEL_KEY, level)
+    await setUserLevel(LEGACY_TO_JLPT[level])
+    track('onboarding_complete', { level: LEGACY_TO_JLPT[level] })
     onComplete(level)
   }
 

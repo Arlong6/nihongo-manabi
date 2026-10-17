@@ -56,6 +56,8 @@ export function initPurchases(appUserId?: string): Promise<void> {
   return configurePromise
 }
 
+export function purchasesConfigured(): boolean { return configured }
+
 export async function isPro(): Promise<boolean> {
   try {
     await initPurchases()

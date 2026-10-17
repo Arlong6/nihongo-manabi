@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics'
 import { allVocabulary } from '../data/vocabulary'
 import { useTheme } from '../lib/theme'
 import type { ThemeColors } from '../lib/theme'
+import { shuffle, pickDistractors, hasKanji } from '../lib/quiz'
 
 type KanjiMode = 'kanjiToReading' | 'readingToKanji'
 type Level = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
@@ -24,29 +25,13 @@ interface KanjiQuestion {
 
 const TOTAL_QUESTIONS = 10
 
-function hasKanji(text: string): boolean {
-  return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(text)
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
 function buildQuestions(level: Level, mode: KanjiMode): KanjiQuestion[] {
   const pool = allVocabulary.filter(v => v.level === level && hasKanji(v.japanese))
   if (pool.length < 4) return []
   const shuffled = shuffle(pool)
   const selected = shuffled.slice(0, Math.min(TOTAL_QUESTIONS, shuffled.length))
   return selected.map(v => {
-    const distractors = pool
-      .filter(x => x.id !== v.id)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
+    const distractors = pickDistractors(pool, v, 3, x => x.id)
     if (mode === 'kanjiToReading') {
       const opts = shuffle([v.reading, ...distractors.map(d => d.reading)])
       return { id: v.id, prompt: v.japanese, options: opts, answer: v.reading, japanese: v.japanese, reading: v.reading, meaning: v.chinese }

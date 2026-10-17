@@ -9,3 +9,8 @@ jest.mock('expo-store-review', () => ({
 jest.mock('react-native-google-mobile-ads', () => {
   throw new Error('native module not available in jest')
 })
+jest.mock('posthog-react-native', () => ({
+  PostHog: jest.fn().mockImplementation(() => ({
+    capture: jest.fn(), identify: jest.fn(), flush: jest.fn(async () => {}),
+  })),
+}))
