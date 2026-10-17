@@ -370,5 +370,32 @@
   "camera": {
     "limitTitle": "오늘 사진 번역 한도 사용 완료",
     "limitMessage": "무료 버전은 하루 {{limit}}회 번역할 수 있습니다. Pro로 업그레이드하면 무제한입니다."
+  },
+  "lesson": {
+    "title": "오늘의 수업",
+    "roleReview": "복습",
+    "roleNew": "새 단어",
+    "roleGrammar": "문법",
+    "roleExtra": "보너스",
+    "listenPrompt": "듣고 들린 단어를 고르세요",
+    "replay": "다시 듣기",
+    "next": "다음",
+    "finish": "결과 보기",
+    "resultTitle": "오늘 완료!",
+    "resultScore": "{{correct}} / {{total}} 정답",
+    "resultNew": "새 단어 {{count}}개",
+    "resultReviewed": "복습 {{count}}개",
+    "resultStreak": "{{count}}일 연속",
+    "resultFreezeUsed": "어제 연속 보호권을 사용해 연속이 유지됐어요",
+    "resultFreezeEarned": "연속 보호권을 획득했어요!",
+    "resultBadge": "{{count}}일 배지 획득",
+    "levelUpTitle": "{{level}}에 도전할까요?",
+    "levelUpMessage": "{{current}} 단어의 {{pct}}%를 익혔어요. {{level}}로 올라갈까요?",
+    "levelUpAccept": "올리기",
+    "levelUpLater": "나중에",
+    "backHome": "홈으로",
+    "exitTitle": "수업을 나갈까요?",
+    "exitMessage": "이 수업의 진행 상황은 저장되지 않아요.",
+    "exitConfirm": "나가기"
   }
 }

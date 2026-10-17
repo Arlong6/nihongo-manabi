@@ -370,5 +370,32 @@
   "camera": {
     "limitTitle": "今日拍照翻譯已用完",
     "limitMessage": "免費版每天可翻譯 {{limit}} 次，升級 Pro 即可無限使用。"
+  },
+  "lesson": {
+    "title": "今日課程",
+    "roleReview": "複習",
+    "roleNew": "新單字",
+    "roleGrammar": "文法",
+    "roleExtra": "加碼",
+    "listenPrompt": "聽聽看，選出你聽到的詞",
+    "replay": "再聽一次",
+    "next": "下一題",
+    "finish": "看成績",
+    "resultTitle": "今天完成了！",
+    "resultScore": "答對 {{correct}} / {{total}}",
+    "resultNew": "新學 {{count}} 個單字",
+    "resultReviewed": "複習 {{count}} 個單字",
+    "resultStreak": "連勝 {{count}} 天",
+    "resultFreezeUsed": "昨天用了一張凍結，連勝保住了",
+    "resultFreezeEarned": "獲得一張連勝凍結！",
+    "resultBadge": "解鎖 {{count}} 日勳章",
+    "levelUpTitle": "要挑戰 {{level}} 了嗎？",
+    "levelUpMessage": "你已經學會 {{pct}}% 的 {{current}} 單字，可以升級到 {{level}}。",
+    "levelUpAccept": "升級",
+    "levelUpLater": "再等等",
+    "backHome": "回首頁",
+    "exitTitle": "離開課程？",
+    "exitMessage": "這節課的進度不會保存。",
+    "exitConfirm": "離開"
   }
 }

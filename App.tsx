@@ -44,6 +44,7 @@ import AIConversationScreen from './screens/AIConversationScreen'
 import WatchScreen from './screens/WatchScreen'
 import CameraScreen from './screens/CameraScreen'
 import PaywallScreen from './screens/PaywallScreen'
+import LessonScreen from './screens/LessonScreen'
 import { initPurchases } from './lib/iap'
 import OnboardingScreen, { ONBOARDING_KEY, UserLevel } from './screens/OnboardingScreen'
 import { getNotificationSettings, scheduleDaily } from './lib/notifications'
@@ -160,6 +161,7 @@ function AppInner() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="Lesson" component={LessonScreen} options={{ gestureEnabled: false }} />
         <Stack.Screen name="Grammar" component={GrammarScreen} />
         <Stack.Screen name="JLPT" component={JLPTScreen} />
         <Stack.Screen name="Kanji" component={KanjiScreen} />

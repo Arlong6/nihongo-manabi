@@ -370,5 +370,32 @@
   "camera": {
     "limitTitle": "Daily photo translation limit reached",
     "limitMessage": "Free users can translate {{limit}} photos per day. Upgrade to Pro for unlimited use."
+  },
+  "lesson": {
+    "title": "Today's Lesson",
+    "roleReview": "Review",
+    "roleNew": "New word",
+    "roleGrammar": "Grammar",
+    "roleExtra": "Bonus",
+    "listenPrompt": "Listen and pick the word you heard",
+    "replay": "Play again",
+    "next": "Next",
+    "finish": "See results",
+    "resultTitle": "Done for today!",
+    "resultScore": "{{correct}} / {{total}} correct",
+    "resultNew": "{{count}} new words",
+    "resultReviewed": "{{count}} words reviewed",
+    "resultStreak": "{{count}}-day streak",
+    "resultFreezeUsed": "A streak freeze saved yesterday — streak kept",
+    "resultFreezeEarned": "You earned a streak freeze!",
+    "resultBadge": "{{count}}-day badge unlocked",
+    "levelUpTitle": "Ready for {{level}}?",
+    "levelUpMessage": "You know {{pct}}% of {{current}} words. Move up to {{level}}?",
+    "levelUpAccept": "Level up",
+    "levelUpLater": "Not yet",
+    "backHome": "Back to Home",
+    "exitTitle": "Leave lesson?",
+    "exitMessage": "Progress in this lesson won't be saved.",
+    "exitConfirm": "Leave"
   }
 }

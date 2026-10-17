@@ -395,8 +395,39 @@ export function updateStreak(
   return { newBadges, newRecord, freezeUsed, freezeEarned }
 }
 
+const LAST_LESSON_DATE_KEY = 'last_lesson_date'
+const FREEZE_USED_DATE_KEY = 'freeze_used_date'
+
+export interface LessonSummary {
+  correct: number
+  total: number
+  newWords: number
+  reviewed: number
+  durationS: number
+}
+
+/** 課程完成：打卡 + 記當日統計 + 記最後完成日期（首頁判斷「今天完成了」用）。 */
+export async function recordLessonResult(summary: LessonSummary, opts: { isPro?: boolean } = {}): Promise<StreakUpdateResult> {
+  const result = await recordDailyActivity(summary.newWords, summary.reviewed, 0, 0, opts)
+  try {
+    await AsyncStorage.setItem(LAST_LESSON_DATE_KEY, getTodayString())
+    // 首頁要顯示「昨天用了一張凍結」，但 progress 沒存這件事，單獨記日期
+    if (result.freezeUsed) await AsyncStorage.setItem(FREEZE_USED_DATE_KEY, getTodayString())
+  } catch { /* best-effort */ }
+  return result
+}
+
+export async function getLastLessonDate(): Promise<string | null> {
+  try { return await AsyncStorage.getItem(LAST_LESSON_DATE_KEY) } catch { return null }
+}
+
+export async function getFreezeUsedDate(): Promise<string | null> {
+  try { return await AsyncStorage.getItem(FREEZE_USED_DATE_KEY) } catch { return null }
+}
+
 export async function resetProgress(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY)
+  await AsyncStorage.multiRemove([LAST_LESSON_DATE_KEY, FREEZE_USED_DATE_KEY])
 }
 
 /** 裝置本地時區的 YYYY-MM-DD。全 App 的「今天」都要走這裡，不要用 toISOString（那是 UTC）。 */
