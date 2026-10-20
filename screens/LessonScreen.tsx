@@ -146,12 +146,13 @@ export default function LessonScreen() {
       await scheduleLapseReminders(progressAfter, new Date(), level)
     } catch { /* best-effort */ }
     if (await hasAskedNotificationPermission()) return
-    await markAskedNotificationPermission()
     // 已開啟提醒的用戶保留原本選的時間，不再詢問
     if ((await getNotificationSettings()).enabled) return
     // 說明視窗只有一個按鈕、按了一定接到 iOS 權限視窗（App Review 5.1.1(iv) 不接受可先關掉的預告）。
     // iOS 不會再跳視窗時（已允許或已拒絕）就不顯示，否則這唯一的按鈕會把使用者在「進度」頁關掉的提醒又打開。
     if (!(await canAskNotificationPermission())) return
+    // 確定會顯示才記「問過」：前面任何一步失敗，下次完成課程還會再試
+    await markAskedNotificationPermission()
     const { hour, minute } = suggestReminderTime()
     const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
     Alert.alert(t('notif.askTitle', { time }), t('notif.askMessage'), [
