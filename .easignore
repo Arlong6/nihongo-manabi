@@ -1,0 +1,42 @@
+# .easignore REPLACES .gitignore for EAS Build uploads.
+# Everything from .gitignore must be repeated here, plus build-irrelevant assets.
+
+# --- mirrored from .gitignore ---
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+*.pem
+.env*.local
+*.tsbuildinfo
+/ios
+/android
+screenshots/
+appstore_screenshots/
+*.png
+!assets/*.png
+*.env
+.claude/
+.vercel
+
+# --- not needed to build the app (upload-size reduction) ---
+# Reels production line: 685 files / 43MB, entirely independent of the iOS app
+nihongo-reels/
+marketing/
+design/
+iap_screenshots/
+docs/
+__tests__/
