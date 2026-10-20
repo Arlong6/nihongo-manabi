@@ -145,6 +145,11 @@ export async function hasAskedNotificationPermission(): Promise<boolean> {
 export async function markAskedNotificationPermission(): Promise<void> {
   try { await AsyncStorage.setItem(NOTIF_ASKED_KEY, 'true') } catch { /* best-effort */ }
 }
+/** iOS 還會跳出系統權限視窗（尚未決定過）才回 true；已允許或已拒絕時，再要求權限不會有任何畫面。 */
+export async function canAskNotificationPermission(): Promise<boolean> {
+  const p = await Notifications.getPermissionsAsync()
+  return !p.granted && p.canAskAgain
+}
 
 /** 取現在時間往前取整到整點或半點，當作建議的提醒時間（提醒落在平常學習時間之前；深夜不會繞到隔天 00:00）。 */
 export function suggestReminderTime(now: Date = new Date()): { hour: number; minute: number } {

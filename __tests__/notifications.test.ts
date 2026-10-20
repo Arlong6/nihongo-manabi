@@ -6,6 +6,7 @@ const mockCancelled: string[] = []
 jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),
   requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getPermissionsAsync: jest.fn(async () => ({ status: 'undetermined', granted: false, canAskAgain: true })),
   scheduleNotificationAsync: jest.fn(async (req: any) => { mockScheduled.push(req); return req.identifier }),
   cancelScheduledNotificationAsync: jest.fn(async (id: string) => { mockCancelled.push(id) }),
   cancelAllScheduledNotificationsAsync: jest.fn(async () => { mockScheduled.length = 0 }),
@@ -20,7 +21,7 @@ jest.mock('../lib/i18n', () => {
 
 import {
   syncStreakRiskNotification, scheduleLapseReminders, countDueWithin, suggestReminderTime,
-  hasAskedNotificationPermission, markAskedNotificationPermission, lapseBody,
+  hasAskedNotificationPermission, markAskedNotificationPermission, lapseBody, canAskNotificationPermission,
   STREAK_NOTIF_ID, LAPSE_IDS, DEFAULT_LAPSE_HOUR, scheduleDaily, DAILY_NOTIF_ID,
 } from '../lib/notifications'
 import { toLocalDateString } from '../lib/storage'
@@ -148,6 +149,18 @@ test('權限對話只問一次（永久旗標）', async () => {
   expect(await hasAskedNotificationPermission()).toBe(false)
   await markAskedNotificationPermission()
   expect(await hasAskedNotificationPermission()).toBe(true)
+})
+
+test('canAskNotificationPermission 只有 iOS 還沒決定過時才回 true', async () => {
+  const get = Notifications.getPermissionsAsync as jest.Mock
+  get.mockResolvedValueOnce({ status: 'undetermined', granted: false, canAskAgain: true })
+  expect(await canAskNotificationPermission()).toBe(true)
+  // 已允許：使用者在「進度」頁關掉提醒後，不能再用說明視窗把它打開
+  get.mockResolvedValueOnce({ status: 'granted', granted: true, canAskAgain: true })
+  expect(await canAskNotificationPermission()).toBe(false)
+  // 已拒絕：iOS 不會再跳視窗
+  get.mockResolvedValueOnce({ status: 'denied', granted: false, canAskAgain: false })
+  expect(await canAskNotificationPermission()).toBe(false)
 })
 
 test('lapseBody 三種文案都走 i18n', () => {

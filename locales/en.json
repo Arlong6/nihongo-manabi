@@ -425,9 +425,8 @@
     "lapse3": "Your streak stopped at {{streak}} days. Restart today in 3 minutes",
     "lapse3NoStreak": "Your streak reset. Restart today in 3 minutes",
     "lapse7": "We kept your {{level}} progress safe. Come back anytime",
-    "askTitle": "Remind you tomorrow at {{time}}?",
-    "askMessage": "One lesson a day, three minutes. We'll nudge you at the time you just studied.",
-    "askYes": "Sure",
-    "askNo": "Not now"
+    "askTitle": "Daily reminder at {{time}}",
+    "askMessage": "One lesson a day, three minutes. We'll nudge you at the time you just studied. The system will ask for notification permission next.",
+    "askContinue": "Continue"
   }
 }
