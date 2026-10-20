@@ -57,6 +57,7 @@ export default function LessonScreen() {
   const pendingWrite = useRef<Promise<void>>(Promise.resolve())
   const newIds = useRef<Set<string>>(new Set())
   const reviewedIds = useRef<Set<string>>(new Set())
+  const scrollRef = useRef<ScrollView>(null)
 
   useEffect(() => {
     (async () => {
@@ -115,6 +116,7 @@ export default function LessonScreen() {
       const nextIdx = index + 1
       setIndex(nextIdx)
       setSelected(null)
+      scrollRef.current?.scrollTo({ y: 0, animated: false })
       const q = items[nextIdx].question
       if (q.kind === 'listening' && q.audioText) speakJapanese(q.audioText)
       return
@@ -137,8 +139,11 @@ export default function LessonScreen() {
 
   // 課程完成後：重排連勝風險與 D+1/3/7 召回；首次完成才問要不要開每日提醒
   const scheduleAfterLesson = async (progressAfter: UserProgress) => {
-    await syncStreakRiskNotification(progressAfter)
-    await scheduleLapseReminders(progressAfter, new Date(), level)
+    // 還沒授權時，有些裝置排通知會直接丟錯；不能因此跳過下面的首次詢問
+    try {
+      await syncStreakRiskNotification(progressAfter)
+      await scheduleLapseReminders(progressAfter, new Date(), level)
+    } catch { /* best-effort */ }
     if (await hasAskedNotificationPermission()) return
     await markAskedNotificationPermission()
     // 已開啟提醒的用戶保留原本選的時間，不再詢問
@@ -247,41 +252,50 @@ export default function LessonScreen() {
         <View style={[styles.progressFill, { width: `${(index / items.length) * 100}%` as any }]} />
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.roleChip}>{roleLabel}</Text>
-        {q.kind === 'listening' ? (
-          <>
-            <Text style={styles.prompt}>{t('lesson.listenPrompt')}</Text>
-            <TouchableOpacity style={styles.replayBtn} onPress={() => q.audioText && speakJapanese(q.audioText)}>
-              <Text style={styles.replayText}>🔊 {t('lesson.replay')}</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <Text style={styles.prompt}>{q.prompt}</Text>
-        )}
-      </View>
-
-      <View style={styles.options}>
-        {q.options.map(opt => {
-          const isAnswer = opt === q.answer
-          const isSelected = opt === selected
-          const bg = !selected ? colors.card : isAnswer ? '#DCFCE7' : isSelected ? '#FEE2E2' : colors.card
-          return (
-            <TouchableOpacity key={opt} style={[styles.option, { backgroundColor: bg }]} onPress={() => handleSelect(opt)} disabled={!!selected}>
-              <Text style={styles.optionText}>{opt}</Text>
-            </TouchableOpacity>
-          )
-        })}
-      </View>
-
-      {selected && (
-        <View style={styles.feedback}>
-          {q.explanation ? <Text style={styles.explanation}>{q.explanation}</Text> : null}
-          <TouchableOpacity style={styles.primaryBtn} onPress={handleNext}>
-            <Text style={styles.primaryBtnText}>{index + 1 < items.length ? t('lesson.next') : t('lesson.finish')}</Text>
-          </TouchableOpacity>
+      {/* 小螢幕或大字體時題目＋選項＋解說會超出畫面：可捲動，作答後自動捲到底讓「下一題」露出來 */}
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.quizContent}
+        onContentSizeChange={() => { if (selected) scrollRef.current?.scrollToEnd({ animated: true }) }}
+      >
+        <View style={styles.card}>
+          <Text style={styles.roleChip}>{roleLabel}</Text>
+          {q.kind === 'listening' ? (
+            <>
+              <Text style={styles.prompt}>{t('lesson.listenPrompt')}</Text>
+              <TouchableOpacity style={styles.replayBtn} onPress={() => q.audioText && speakJapanese(q.audioText)}>
+                <Text style={styles.replayText}>🔊 {t('lesson.replay')}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <Text style={styles.prompt}>{q.prompt}</Text>
+          )}
         </View>
-      )}
+
+        <View style={styles.options}>
+          {q.options.map(opt => {
+            const isAnswer = opt === q.answer
+            const isSelected = opt === selected
+            const bg = !selected ? colors.card : isAnswer ? '#DCFCE7' : isSelected ? '#FEE2E2' : colors.card
+            // 標示底色固定是淺綠／淺紅，深色模式的淺色字會看不見，所以標示列改用深色字
+            const fg = !selected ? colors.text : isAnswer ? '#14532D' : isSelected ? '#7F1D1D' : colors.text
+            return (
+              <TouchableOpacity key={opt} style={[styles.option, { backgroundColor: bg }]} onPress={() => handleSelect(opt)} disabled={!!selected}>
+                <Text style={[styles.optionText, { color: fg }]}>{opt}</Text>
+              </TouchableOpacity>
+            )
+          })}
+        </View>
+
+        {selected && (
+          <View style={styles.feedback}>
+            {q.explanation ? <Text style={styles.explanation}>{q.explanation}</Text> : null}
+            <TouchableOpacity style={styles.primaryBtn} onPress={handleNext}>
+              <Text style={styles.primaryBtnText}>{index + 1 < items.length ? t('lesson.next') : t('lesson.finish')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   )
 }
@@ -294,6 +308,7 @@ function createStyles(colors: ThemeColors) {
     progressText: { fontSize: 13, color: colors.subtext },
     progressBar: { height: 6, backgroundColor: colors.border, marginHorizontal: 20, borderRadius: 3 },
     progressFill: { height: 6, backgroundColor: colors.primary, borderRadius: 3 },
+    quizContent: { paddingBottom: 24 },
     card: { margin: 20, padding: 24, borderRadius: 16, backgroundColor: colors.card, alignItems: 'center' },
     roleChip: { fontSize: 12, color: colors.subtext, marginBottom: 12, letterSpacing: 1 },
     prompt: { fontSize: 28, fontWeight: '700', color: colors.text, textAlign: 'center' },
